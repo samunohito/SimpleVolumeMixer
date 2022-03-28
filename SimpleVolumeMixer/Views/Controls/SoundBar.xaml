@@ -1,0 +1,95 @@
+﻿<UserControl x:Class="SimpleVolumeMixer.Views.Controls.SoundBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="40">
+    <Grid Name="BackCanvas">
+        <Grid.Resources>
+            <!-- Copied By https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit/blob/master/MaterialDesignThemes.Wpf/Themes/MaterialDesignTheme.Slider.xaml -->
+            <ControlTemplate x:Key="MaterialDesignDiscreteSliderVerticalCustom" TargetType="{x:Type Slider}">
+                <Border
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}"
+                    SnapsToDevicePixels="True"
+                    UseLayoutRounding="True">
+
+                    <Grid SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                          UseLayoutRounding="{TemplateBinding UseLayoutRounding}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition MinWidth="{TemplateBinding MinWidth}" Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TickBar x:Name="TopTick" Grid.Column="0" Fill="{TemplateBinding Foreground}" Margin="0,0,2,0"
+                                 Placement="Left" Visibility="Collapsed" Width="4" />
+                        <TickBar x:Name="BottomTick" Grid.Column="2" Fill="{TemplateBinding Foreground}"
+                                 Margin="2,0,0,0" Placement="Right" Visibility="Collapsed" Width="4" />
+                        <Rectangle Grid.Column="1" Fill="{TemplateBinding Foreground}" HorizontalAlignment="Center"
+                                   Opacity="0.38" RadiusX="2" RadiusY="2" Width="4" />
+                        <Canvas Grid.Column="1" HorizontalAlignment="Center" Width="6">
+                            <Rectangle x:Name="PART_SelectionRange"
+                                       Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" Width="6"
+                                       RadiusY="2" RadiusX="2" Visibility="Collapsed" />
+                        </Canvas>
+                        <Track Grid.Column="1" x:Name="PART_Track" Width="20">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.DecreaseLarge}"
+                                              Style="{StaticResource MaterialDesignRepeatButton}" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.IncreaseLarge}"
+                                              Style="{StaticResource MaterialDesignRepeatButton}" />
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Template="{StaticResource MaterialDesignLeftDiscreteSliderThumb}"
+                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                       Foreground="{TemplateBinding Foreground}" />
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="TickPlacement" Value="TopLeft">
+                        <Setter Property="Visibility" TargetName="TopTick" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="TickPlacement" Value="BottomRight">
+                        <Setter Property="Visibility" TargetName="BottomTick" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="TickPlacement" Value="Both">
+                        <Setter Property="Visibility" TargetName="TopTick" Value="Visible" />
+                        <Setter Property="Visibility" TargetName="BottomTick" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="IsSelectionRangeEnabled" Value="true">
+                        <Setter Property="Visibility" TargetName="PART_SelectionRange" Value="Visible" />
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+
+            <Style x:Key="MaterialDesignDiscreteVerticalSliderCustom" TargetType="{x:Type Slider}"
+                   BasedOn="{StaticResource MaterialDesignDiscreteVerticalSlider}">
+                <Setter Property="Template" Value="{StaticResource MaterialDesignDiscreteSliderVerticalCustom}" />
+            </Style>
+        </Grid.Resources>
+
+        <Rectangle Name="GreenArea"
+                   Width="4"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
+                   Fill="#FF8BFF19" />
+
+        <Slider Name="ValueSlider"
+                Orientation="Vertical"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource MaterialDesignDiscreteVerticalSliderCustom}"
+                Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
+                Minimum="0"
+                Maximum="100"
+                SmallChange="1"
+                LargeChange="10" />
+    </Grid>
+</UserControl>
