@@ -6,12 +6,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-    xmlns:properties="clr-namespace:SimpleVolumeMixer.Properties"
+    xmlns:properties="clr-namespace:SimpleVolumeMixer.Properties" 
     Style="{StaticResource CustomMetroWindow}"
     mc:Ignorable="d"
     MinWidth="500"
     MinHeight="350"
     Title="{x:Static properties:Resources.AppDisplayName}">
+    
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding LoadedCommand}" />
@@ -20,6 +21,7 @@
             <i:InvokeCommandAction Command="{Binding UnloadedCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
+    
     <controls:MetroWindow.LeftWindowCommands>
         <controls:WindowCommands>
             <Button

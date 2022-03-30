@@ -5,6 +5,7 @@
     <RootNamespace>SimpleVolumeMixer</RootNamespace>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>SimpleVolumeMixer.App</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.4.6" />
