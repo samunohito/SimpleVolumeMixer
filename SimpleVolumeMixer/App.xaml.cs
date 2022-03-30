@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Toolkit.Uwp.Notifications;
-
 using Prism.Ioc;
-using Prism.Mvvm;
 using Prism.Unity;
-
 using SimpleVolumeMixer.Constants;
 using SimpleVolumeMixer.Contracts.Services;
+using SimpleVolumeMixer.Core.Contracts.Models.Repository;
 using SimpleVolumeMixer.Core.Contracts.Services;
+using SimpleVolumeMixer.Core.Models.Repository;
 using SimpleVolumeMixer.Core.Services;
 using SimpleVolumeMixer.Models;
 using SimpleVolumeMixer.Services;
@@ -94,8 +91,12 @@ namespace SimpleVolumeMixer
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            // Core Repositories
+            containerRegistry.RegisterSingleton<ICoreAudioRepository, CoreAudioRepository>();
+
             // Core Services
             containerRegistry.Register<IFileService, FileService>();
+            containerRegistry.RegisterSingleton<IAudioSessionMonitoringService, AudioSessionMonitoringService>();
 
             // App Services
             containerRegistry.RegisterSingleton<IToastNotificationsService, ToastNotificationsService>();

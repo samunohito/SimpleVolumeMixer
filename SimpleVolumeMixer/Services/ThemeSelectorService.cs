@@ -45,14 +45,14 @@ namespace SimpleVolumeMixer.Services
                 ThemeManager.Current.ChangeTheme(Application.Current, $"{theme}.Blue", SystemParameters.HighContrast);
             }
 
-            App.Current.Properties["Theme"] = theme.ToString();
+            Application.Current.Properties["Theme"] = theme.ToString();
         }
 
         public AppTheme GetCurrentTheme()
         {
-            if (App.Current.Properties.Contains("Theme"))
+            if (Application.Current.Properties.Contains("Theme"))
             {
-                var themeName = App.Current.Properties["Theme"].ToString();
+                var themeName = Application.Current.Properties["Theme"].ToString();
                 Enum.TryParse(themeName, out AppTheme theme);
                 return theme;
             }
