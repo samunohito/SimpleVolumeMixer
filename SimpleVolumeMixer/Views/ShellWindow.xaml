@@ -38,7 +38,7 @@
     </controls:MetroWindow.LeftWindowCommands>
     <controls:MetroWindow.Content>
         <controls:SplitView
-            x:Name="splitView"
+            x:Name="SplitView"
             PanePlacement="Right"
             OpenPaneLength="400"
             Focusable="False">
@@ -47,7 +47,7 @@
                     BorderThickness="1,1,0,0"
                     BorderBrush="{DynamicResource MahApps.Brushes.Controls.Border}">
                     <ContentControl
-                        x:Name="rightPaneContentControl" />
+                        x:Name="RightPaneContentControl" />
                 </Border>
             </controls:SplitView.Pane>
             <controls:SplitView.Content>
@@ -62,14 +62,10 @@
                             <Separator />
                             <MenuItem Header="{x:Static properties:Resources.ShellMenuItemFileExitHeader}" Command="{Binding MenuFileExitCommand}" AutomationProperties.Name="{Binding Header, RelativeSource={RelativeSource Self}}" />
                         </MenuItem>
-                        <MenuItem Header="{x:Static properties:Resources.ShellMenuViewsHeader}" AutomationProperties.Name="{Binding Header, RelativeSource={RelativeSource Self}}">
-                            <!--TODO WTS: Review the MenuItem headers in Resources.resx file for all of your views and place '_' before the letter that you want to use for menu keyboard usage-->
-                            <MenuItem Header="{x:Static properties:Resources.ShellMenuItemViewsMainPageHeader}" Command="{Binding MenuViewsMainCommand}" AutomationProperties.Name="{Binding Header, RelativeSource={RelativeSource Self}}" />
-                        </MenuItem>
                     </Menu>
                     <ContentControl
                         Grid.Row="1"
-                        x:Name="menuContentControl" />
+                        x:Name="MenuContentControl" />
                 </Grid>
             </controls:SplitView.Content>
         </controls:SplitView>

@@ -6,13 +6,14 @@ using System.Threading;
 using CSCore.CoreAudioAPI;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
 public class AudioSessionManagerAccessor : IDisposable
 {
     public event EventHandler<AudioSessionManagerStartedEventArgs>? SessionManagerOpened;
-    public event EventHandler<EventArgs>? SessionManagerClosed; 
+    public event EventHandler<EventArgs>? SessionManagerClosed;
 
     private readonly object _sessionLock = new object();
     private readonly CompositeDisposable _disposable;
@@ -58,7 +59,16 @@ public class AudioSessionManagerAccessor : IDisposable
     private void AudioSessionOnStateChanged(object sender, AudioSessionStateChangedEventArgs e)
     {
         Debug.WriteLine("AudioSessionOnStateChanged");
-        DisposeSession((AudioSessionAccessor)sender);
+        
+        switch (e.NewState)
+        {
+            case AudioSessionStateType.AudioSessionStateActive:
+                break;
+            case AudioSessionStateType.AudioSessionStateExpired:
+            case AudioSessionStateType.AudioSessionStateInactive:
+                DisposeSession((AudioSessionAccessor)sender);
+                break;
+        }
     }
 
     private void AccessorOnDisposed(object sender, EventArgs e)
@@ -96,7 +106,7 @@ public class AudioSessionManagerAccessor : IDisposable
     {
         lock (_sessionLock)
         {
-            DropSessions();
+            DisposeSessions();
 
             if (_sessionManager != null)
             {
@@ -106,7 +116,7 @@ public class AudioSessionManagerAccessor : IDisposable
 
                 _sessionManager.Dispose();
                 _sessionManager = null;
-                
+
                 SessionManagerClosed?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -116,7 +126,7 @@ public class AudioSessionManagerAccessor : IDisposable
     {
         lock (_sessionLock)
         {
-            DropSessions();
+            DisposeSessions();
             if (_sessionManager != null)
             {
                 using var sessionEnumerator = _sessionManager.GetSessionEnumerator();
@@ -128,7 +138,7 @@ public class AudioSessionManagerAccessor : IDisposable
         }
     }
 
-    private void DropSessions()
+    private void DisposeSessions()
     {
         lock (_sessionLock)
         {

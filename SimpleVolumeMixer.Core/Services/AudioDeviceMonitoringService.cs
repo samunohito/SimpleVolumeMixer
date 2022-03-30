@@ -7,19 +7,20 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Contracts.Models.Repository;
 using SimpleVolumeMixer.Core.Contracts.Services;
+using SimpleVolumeMixer.Core.Helper.Utils;
 using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 namespace SimpleVolumeMixer.Core.Services;
 
-public class AudioSessionMonitoringService : IDisposable, IAudioSessionMonitoringService
+public class AudioDeviceMonitoringService : IDisposable, IAudioDeviceMonitoringService
 {
-    private const int RefreshInterval = 5;
+    private const int RefreshInterval = 1000;
 
     private readonly CompositeDisposable _disposable;
     private readonly ICoreAudioRepository _coreAudioRepository;
     private readonly Timer _timer;
 
-    public AudioSessionMonitoringService(ICoreAudioRepository coreAudioRepository)
+    public AudioDeviceMonitoringService(ICoreAudioRepository coreAudioRepository)
     {
         _disposable = new CompositeDisposable();
         _coreAudioRepository = coreAudioRepository;
@@ -27,32 +28,15 @@ public class AudioSessionMonitoringService : IDisposable, IAudioSessionMonitorin
         _timer = new Timer().AddTo(_disposable);
         _timer.Interval = RefreshInterval;
         _timer.Elapsed += TimerOnElapsed;
-
+        
         Devices = coreAudioRepository.AudioDevices
             .ToReadOnlyReactiveCollection(x => new AudioDevice(x))
-            .AddTo(_disposable);
-
-        CurrentDevice = new ReactivePropertySlim<AudioDevice>().AddTo(_disposable);
-
-        CurrentDevice.Zip(CurrentDevice.Skip(1), (x, y) => new { OldValue = x, NewValue = y })
-            .Subscribe(x =>
-            {
-                if (Equals(x?.OldValue, x?.NewValue))
-                {
-                    return;
-                }
-
-                x?.OldValue?.CloseSession();
-                x?.NewValue?.OpenSession();
-            })
             .AddTo(_disposable);
 
         _timer.Start();
     }
 
     public ReadOnlyReactiveCollection<AudioDevice> Devices { get; }
-
-    public IReactiveProperty<AudioDevice> CurrentDevice { get; }
 
     public double MonitoringInterval
     {

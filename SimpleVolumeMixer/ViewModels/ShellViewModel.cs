@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 
@@ -8,6 +9,7 @@ using Prism.Regions;
 
 using SimpleVolumeMixer.Constants;
 using SimpleVolumeMixer.Contracts.Services;
+using SimpleVolumeMixer.Views;
 
 namespace SimpleVolumeMixer.ViewModels
 {
@@ -47,8 +49,10 @@ namespace SimpleVolumeMixer.ViewModels
 
         private void OnLoaded()
         {
+            Debug.WriteLine(DateTime.Now);
             _navigationService = _regionManager.Regions[Regions.Main].NavigationService;
             _navigationService.Navigated += OnNavigated;
+            RequestNavigate(PageKeys.Main);
         }
 
         private void OnUnloaded()

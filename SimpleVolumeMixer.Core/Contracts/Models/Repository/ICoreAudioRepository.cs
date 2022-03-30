@@ -1,12 +1,11 @@
-﻿using System;
-using Reactive.Bindings;
+﻿using Reactive.Bindings;
 using SimpleVolumeMixer.Core.Helper.CoreAudio;
 
 namespace SimpleVolumeMixer.Core.Contracts.Models.Repository;
 
 public interface ICoreAudioRepository
 {
-    ReactiveCollection<AudioDeviceAccessor> AudioDevices { get; }
-    
+    ReadOnlyReactiveCollection<AudioDeviceAccessor> AudioDevices { get; }
+
     void RefreshAudioDevices();
 }

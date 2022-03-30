@@ -23,7 +23,7 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
     private readonly PropertyHolder<float> _peekValue;
     private readonly PropertyHolder<int> _meteringChannelCount;
 
-    public AudioDevice(AudioDeviceAccessor ax)
+    internal AudioDevice(AudioDeviceAccessor ax)
     {
         _disposable = new CompositeDisposable();
         _accessor = ax.AddTo(_disposable);
@@ -69,6 +69,7 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
     }
 
     public ReadOnlyReactiveCollection<AudioSession> Sessions { get; }
+    public DeviceRole Role => _accessor.Role;
     public IReactiveProperty<string> DeviceId => _deviceId.Holder;
     public IReactiveProperty<string> FriendlyName => _friendlyName.Holder;
     public IReactiveProperty<string> DevicePath => _devicePath.Holder;

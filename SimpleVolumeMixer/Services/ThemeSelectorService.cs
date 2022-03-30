@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 
 using ControlzEx.Theming;
 
 using MahApps.Metro.Theming;
-
+using MaterialDesignThemes.MahApps;
+using MaterialDesignThemes.Wpf;
 using SimpleVolumeMixer.Contracts.Services;
 using SimpleVolumeMixer.Models;
 
@@ -33,16 +35,29 @@ namespace SimpleVolumeMixer.Services
 
         public void SetTheme(AppTheme theme)
         {
+            var mahAppBundledTheme =
+                Application.Current.Resources.MergedDictionaries.FirstOrDefault(x => x is MahAppsBundledTheme) as MahAppsBundledTheme;
+            
             if (theme == AppTheme.Default)
             {
                 ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
                 ThemeManager.Current.SyncTheme();
+
+                if (mahAppBundledTheme != null)
+                {
+                    mahAppBundledTheme.BaseTheme = BaseTheme.Inherit;
+                }
             }
             else
             {
                 ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithHighContrast;
                 ThemeManager.Current.SyncTheme();
                 ThemeManager.Current.ChangeTheme(Application.Current, $"{theme}.Blue", SystemParameters.HighContrast);
+                
+                if (mahAppBundledTheme != null)
+                {
+                    mahAppBundledTheme.BaseTheme = theme == AppTheme.Light ? BaseTheme.Light : BaseTheme.Dark;
+                }
             }
 
             Application.Current.Properties["Theme"] = theme.ToString();

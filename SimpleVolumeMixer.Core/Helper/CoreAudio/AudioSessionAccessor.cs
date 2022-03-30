@@ -12,15 +12,7 @@ public class AudioSessionAccessor : IDisposable
 {
     public event EventHandler<AudioSessionStateChangedEventArgs>? StateChanged;
     public event EventHandler<EventArgs>? Disposed; 
-
-    private static readonly IDictionary<AudioSessionState, AudioSessionStateType> StateTypes =
-        new Dictionary<AudioSessionState, AudioSessionStateType>()
-        {
-            { AudioSessionState.AudioSessionStateInactive, AudioSessionStateType.AudioSessionStateInactive },
-            { AudioSessionState.AudioSessionStateActive, AudioSessionStateType.AudioSessionStateActive },
-            { AudioSessionState.AudioSessionStateExpired, AudioSessionStateType.AudioSessionStateExpired },
-        };
-
+    
     private readonly CompositeDisposable _disposable;
     private readonly AudioSessionControl _session;
     private readonly AudioMeterInformation _meterInformation;
@@ -44,7 +36,7 @@ public class AudioSessionAccessor : IDisposable
     }
 
     public Process Process => _sessionControl2.Process;
-    public AudioSessionStateType SessionState => StateTypes[_session.SessionState];
+    public AudioSessionStateType SessionState => AccessorHelper.SessionStates[_session.SessionState];
     public float PeekValue => _meterInformation.PeakValue;
     public int MeteringChannelCount => _meterInformation.MeteringChannelCount;
     
@@ -108,7 +100,7 @@ public class AudioSessionAccessor : IDisposable
     private void SessionOnStateChanged(object sender, CSCore.CoreAudioAPI.AudioSessionStateChangedEventArgs e)
     {
         Debug.WriteLine("SessionOnStateChanged");
-        StateChanged?.Invoke(this, new AudioSessionStateChangedEventArgs(StateTypes[e.NewState]));
+        StateChanged?.Invoke(this, new AudioSessionStateChangedEventArgs(AccessorHelper.SessionStates[e.NewState]));
     }
 
     private void SessionOnSessionDisconnected(object sender, AudioSessionDisconnectedEventArgs e)

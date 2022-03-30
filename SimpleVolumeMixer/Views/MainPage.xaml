@@ -27,10 +27,10 @@
                       Height="Auto">
                 <Grid>
                     <ComboBox ItemsSource="{Binding Devices}"
-                              SelectedItem="{Binding SelectedDevice.Value}">
+                              SelectedItem="{Binding SelectedDevice.Value, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Foreground="White" Text="{Binding FriendlyName.Value}" />
+                                <TextBlock Text="{Binding FriendlyName.Value}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -51,7 +51,12 @@
                                            TextAlignment="Center" 
                                            Text="{Binding Path=DisplayName.Value}"/>
                                 <controls:SoundBar
-                                    Maximum="1.0"
+                                    MeterMaximum="1.0"
+                                    Maximum="1000.0"
+                                    Minimum="0.0"
+                                    SmallChange="1.0"
+                                    LargeChange="10.0"
+                                    Value="{Binding MasterVolume.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     Handler="{Binding SoundBarHandler.Value, Mode=OneWayToSource}"
                                     HorizontalAlignment="Center" />
                             </DockPanel>

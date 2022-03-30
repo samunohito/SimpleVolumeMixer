@@ -23,7 +23,7 @@ public class AudioSession : NotifyPropertyChangedBase, IDisposable
     private readonly PropertyHolder<float> _masterVolume;
     private readonly PropertyHolder<bool> _isMuted;
 
-    public AudioSession(AudioSessionAccessor ax)
+    internal AudioSession(AudioSessionAccessor ax)
     {
         _disposable = new CompositeDisposable();
         _accessor = ax.AddTo(_disposable);
@@ -46,10 +46,10 @@ public class AudioSession : NotifyPropertyChangedBase, IDisposable
         _groupingParam =
             new PropertyHolder<Guid>(() => ax.GroupingParam, nameof(GroupingParam), act);
         _masterVolume =
-            new PropertyHolder<float>(() => ax.MasterVolume, nameof(MasterVolume), act);
+            new PropertyHolder<float>(() => ax.MasterVolume, nameof(MasterVolume), act, x => ax.MasterVolume = x);
         _isMuted =
             new PropertyHolder<bool>(() => ax.IsMuted, nameof(IsMuted), act);
-
+        
         var disposables = new IDisposable[]
         {
             _sessionState,

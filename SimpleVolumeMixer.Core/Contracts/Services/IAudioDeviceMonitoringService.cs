@@ -4,10 +4,10 @@ using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 namespace SimpleVolumeMixer.Core.Contracts.Services;
 
-public interface IAudioSessionMonitoringService
+public interface IAudioDeviceMonitoringService
 {
     ReadOnlyReactiveCollection<AudioDevice> Devices { get; }
-    IReactiveProperty<AudioDevice> CurrentDevice { get; }
+    
     double MonitoringInterval { get; set; }
 
     void RefreshAudioDevices();

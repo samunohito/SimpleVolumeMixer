@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -23,8 +24,16 @@ namespace SimpleVolumeMixer.ViewModels.Main
             DisplayName = session.DisplayName.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
             IconPath = session.IconPath.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
             GroupingParam = session.GroupingParam.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
-            MasterVolume = session.MasterVolume.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
-            IsMuted = session.IsMuted.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
+            MasterVolume = session.MasterVolume
+                .ToReactivePropertyAsSynchronized(
+                    x => x.Value,
+                    i => i * 1000.0f,
+                    i => i / 1000.0f
+                )
+                .AddTo(_disposable);
+            IsMuted = session.IsMuted
+                .ToReactivePropertyAsSynchronized(x => x.Value)
+                .AddTo(_disposable);
 
             SoundBarHandler = new ReactiveProperty<ISoundBarHandler>().AddTo(_disposable);
 
@@ -40,9 +49,9 @@ namespace SimpleVolumeMixer.ViewModels.Main
         public IReadOnlyReactiveProperty<string> DisplayName { get; }
         public IReadOnlyReactiveProperty<string> IconPath { get; }
         public IReadOnlyReactiveProperty<Guid> GroupingParam { get; }
-        public IReadOnlyReactiveProperty<float> MasterVolume { get; }
-        public IReadOnlyReactiveProperty<bool> IsMuted { get; }
-        
+        public IReactiveProperty<float> MasterVolume { get; }
+        public IReactiveProperty<bool> IsMuted { get; }
+
         public ReactiveProperty<ISoundBarHandler> SoundBarHandler { get; }
 
         public void Dispose()

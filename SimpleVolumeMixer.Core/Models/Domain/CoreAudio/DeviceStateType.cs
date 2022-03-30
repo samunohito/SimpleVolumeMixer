@@ -2,7 +2,6 @@
 {
     public enum DeviceStateType
     {
-        Unknown = -1,
         /// <summary>
         /// The audio endpoint device is active. That is, the audio adapter that connects to the endpoint device is present and enabled. In addition, if the endpoint device plugs into a jack on the adapter, then the endpoint device is plugged in.
         /// </summary>

@@ -5,41 +5,48 @@ using Reactive.Bindings.Extensions;
 
 namespace SimpleVolumeMixer.Core.Helper.Utils;
 
-public class PropertyHolder<T> : IPropertyHolder, IDisposable
+public class PropertyHolder<T> : NotifyPropertyChangedBase, IPropertyHolder, IDisposable
 {
     private readonly CompositeDisposable _disposable;
-    
+
     private readonly Func<T> _newValueGetter;
     private readonly string _propertyName;
     private readonly Action<string> _notifier;
 
-    public IReactiveProperty<T> Holder { get; }
+    private T _value;
 
-    public PropertyHolder(Func<T> newValueGetter, string propertyName, Action<string> notifier, Action<T>? writer = null)
+    public T Value
+    {
+        get => _value;
+        set => _value = value;
+    }
+
+    public PropertyHolder(Func<T> newValueGetter, string propertyName, Action<string> notifier,
+        Action<T>? writer = null)
     {
         _disposable = new CompositeDisposable();
-        
+
         _newValueGetter = newValueGetter;
         _propertyName = propertyName;
         _notifier = notifier;
 
-        Holder = new ReactivePropertySlim<T>().AddTo(_disposable);
+        Holder = new ReactivePropertySlim<T>(
+            newValueGetter(),
+            ReactivePropertyMode.DistinctUntilChanged
+        ).AddTo(_disposable);
+        
         Holder
-            .Subscribe(x => writer?.Invoke(x))
+            .Subscribe(x =>
+            {
+                writer?.Invoke(x);
+                _notifier(_propertyName);
+            })
             .AddTo(_disposable);
     }
 
     public void Refresh()
     {
-        var oldValue = Holder.Value;
-        var newValue = _newValueGetter();
-        if (Equals(oldValue, newValue))
-        {
-            return;
-        }
-
-        Holder.Value = newValue;
-        _notifier(_propertyName);
+        Holder.Value = _newValueGetter();
     }
 
     public void Dispose()

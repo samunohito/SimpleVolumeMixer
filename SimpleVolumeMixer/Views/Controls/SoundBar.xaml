@@ -76,6 +76,8 @@
 
         <Rectangle Name="GreenArea"
                    Width="4"
+                   RadiusX="2"
+                   RadiusY="2"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Bottom"
                    Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
@@ -87,9 +89,11 @@
                 VerticalAlignment="Bottom"
                 Style="{StaticResource MaterialDesignDiscreteVerticalSliderCustom}"
                 Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
-                Minimum="0"
-                Maximum="100"
-                SmallChange="1"
-                LargeChange="10" />
+                ValueChanged="ValueSlider_OnValueChanged"
+                Value="0.0"
+                Minimum="0.0"
+                Maximum="1.0"
+                SmallChange="0.01"
+                LargeChange="0.1" />
     </Grid>
 </UserControl>
