@@ -36,7 +36,8 @@ public class AudioDeviceAccessor : IDisposable
     public DeviceStateType DeviceState => AccessorHelper.DeviceStates[Device.DeviceState];
     public DataFlowType DataFlow => AccessorHelper.DataFlows[Device.DataFlow];
     public int ChannelCount => _endpointVolume.ChannelCount;
-    public float PeekValue => _meterInformation.PeakValue;
+    public float PeakValue => _meterInformation.PeakValue;
+    public float[] ChannelsPeakValues => _meterInformation.GetChannelsPeakValues();
     public int MeteringChannelCount => _meterInformation.MeteringChannelCount;
 
     public float MasterVolumeLevel

@@ -31,7 +31,6 @@
                 <TextBlock
                     Text="&#xE72B;"
                     FontSize="14"
-                    FontFamily="Segoe MDL2 Assets"
                     AutomationProperties.Name="{x:Static properties:Resources.ShellGoBackButton}" />
             </Button>
         </controls:WindowCommands>

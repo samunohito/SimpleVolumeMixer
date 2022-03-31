@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -18,8 +19,11 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
     private readonly PropertyMonitor<DeviceStateType> _deviceState;
     private readonly PropertyMonitor<DataFlowType> _dataFlow;
     private readonly PropertyMonitor<int> _channelCount;
-    private readonly PropertyMonitor<float> _peekValue;
+    private readonly PropertyMonitor<float> _peakValue;
     private readonly PropertyMonitor<int> _meteringChannelCount;
+    private readonly PropertyMonitor<float> _masterVolumeLevel;
+    private readonly PropertyMonitor<float> _masterVolumeLevelScalar;
+    private readonly PropertyMonitor<bool> _isMuted;
 
     internal AudioDevice(AudioDeviceAccessor ax)
     {
@@ -55,14 +59,32 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
             () => ax.ChannelCount,
             comparer: PropertyMonitor.IntComparer
         );
-        _peekValue = new PropertyMonitor<float>(
+        _peakValue = new PropertyMonitor<float>(
             PropertyMonitorIntervalType.High,
-            () => ax.PeekValue,
+            () => ax.PeakValue,
             comparer: PropertyMonitor.FloatComparer
         );
         _meteringChannelCount = new PropertyMonitor<int>(
             PropertyMonitorIntervalType.Low,
             () => ax.MeteringChannelCount
+        );
+        _masterVolumeLevel = new PropertyMonitor<float>(
+            PropertyMonitorIntervalType.Normal,
+            () => ax.MasterVolumeLevel,
+            (x) => ax.MasterVolumeLevel = x,
+            PropertyMonitor.FloatComparer
+        );
+        _masterVolumeLevelScalar = new PropertyMonitor<float>(
+            PropertyMonitorIntervalType.Normal,
+            () => ax.MasterVolumeLevelScalar,
+            (x) => ax.MasterVolumeLevelScalar = x,
+            PropertyMonitor.FloatComparer
+        );
+        _isMuted = new PropertyMonitor<bool>(
+            PropertyMonitorIntervalType.Normal,
+            () => ax.IsMuted,
+            (x) => ax.IsMuted = x,
+            PropertyMonitor.BoolComparer
         );
 
         DeviceId = _deviceId.ToReactivePropertySlimAsSynchronized(x => x.Value);
@@ -71,8 +93,11 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
         DeviceState = _deviceState.ToReactivePropertySlimAsSynchronized(x => x.Value);
         DataFlow = _dataFlow.ToReactivePropertySlimAsSynchronized(x => x.Value);
         ChannelCount = _channelCount.ToReactivePropertySlimAsSynchronized(x => x.Value);
-        PeekValue = _peekValue.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        PeakValue = _peakValue.ToReactivePropertySlimAsSynchronized(x => x.Value);
         MeteringChannelCount = _meteringChannelCount.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        MasterVolumeLevel = _masterVolumeLevel.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        MasterVolumeLevelScalar = _masterVolumeLevelScalar.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        IsMuted = _isMuted.ToReactivePropertySlimAsSynchronized(x => x.Value);
 
         var disposables = new IDisposable[]
         {
@@ -82,16 +107,22 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
             _deviceState,
             _dataFlow,
             _channelCount,
-            _peekValue,
+            _peakValue,
             _meteringChannelCount,
+            _masterVolumeLevel,
+            _masterVolumeLevelScalar,
+            _isMuted,
             DeviceId,
             FriendlyName,
             DevicePath,
             DeviceState,
             DataFlow,
             ChannelCount,
-            PeekValue,
+            PeakValue,
             MeteringChannelCount,
+            MasterVolumeLevel,
+            MasterVolumeLevelScalar,
+            IsMuted,
         };
         foreach (var disposable in disposables)
         {
@@ -107,8 +138,11 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
     public IReadOnlyReactiveProperty<DeviceStateType> DeviceState { get; }
     public IReadOnlyReactiveProperty<DataFlowType> DataFlow { get; }
     public IReadOnlyReactiveProperty<int> ChannelCount { get; }
-    public IReadOnlyReactiveProperty<float> PeekValue { get; }
+    public IReadOnlyReactiveProperty<float> PeakValue { get; }
     public IReadOnlyReactiveProperty<int> MeteringChannelCount { get; }
+    public IReactiveProperty<float> MasterVolumeLevel { get; }
+    public IReactiveProperty<float> MasterVolumeLevelScalar { get; }
+    public IReactiveProperty<bool> IsMuted { get; }
 
     public void OpenSession()
     {

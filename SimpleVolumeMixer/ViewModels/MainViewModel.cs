@@ -1,36 +1,35 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Windows.Threading;
+using System.Windows.Input;
+using Prism.Commands;
 using Prism.Mvvm;
-using Prism.Regions;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
-using Reactive.Bindings.Helpers;
 using SimpleVolumeMixer.Core.Contracts.Services;
-using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 using SimpleVolumeMixer.ViewModels.Main;
+using SimpleVolumeMixer.Views.Controls;
 
 namespace SimpleVolumeMixer.ViewModels
 {
     public class MainViewModel : BindableBase
     {
         private readonly CompositeDisposable _disposable;
-        private readonly IAudioDeviceMonitoringService _audioDeviceMonitoringService;
-        
-        public MainViewModel(IAudioDeviceMonitoringService audioDeviceMonitoringService)
+        private readonly ICoreAudioService _coreAudioService;
+        private ISoundBarHandler? _soundBarHandler;
+
+        public MainViewModel(ICoreAudioService coreAudioService)
         {
             _disposable = new CompositeDisposable();
-            _audioDeviceMonitoringService = audioDeviceMonitoringService;
+            _coreAudioService = coreAudioService;
+            _soundBarHandler = null;
 
-            Devices = audioDeviceMonitoringService.Devices
+            Devices = coreAudioService.Devices
                 .ToReadOnlyReactiveCollection(x => new AudioDeviceViewModel(x))
                 .AddTo(_disposable);
-            SelectedDevice = new ReactiveProperty<AudioDeviceViewModel>().AddTo(_disposable);
-            
+            SelectedDevice = new ReactiveProperty<AudioDeviceViewModel?>().AddTo(_disposable);
+
             SelectedDevice.Zip(SelectedDevice.Skip(1), (x, y) => new { OldValue = x, NewValue = y })
                 .Subscribe(x =>
                 {
@@ -44,24 +43,36 @@ namespace SimpleVolumeMixer.ViewModels
                 })
                 .AddTo(_disposable);
 
-            OnLoadedCommand = new ReactiveCommand().AddTo(_disposable);
-            OnLoadedCommand
-                .Subscribe(x =>
-                {
-                    audioDeviceMonitoringService.RefreshAudioDevices();
-                    SelectedDevice.Value = Devices.FirstOrDefault(i => i.Role.Multimedia);
-                })
+            SelectedDevice
+                .Where(x => x != null)
+                .Select(x => x!)
+                .Subscribe(x => { x.SoundBarHandler = _soundBarHandler; })
                 .AddTo(_disposable);
+
+            OnLoadedCommand = new DelegateCommand(OnLoaded);
+            SoundBarReadyCommand = new DelegateCommand<SoundBarReadyEventArgs>(OnSoundBarReady);
         }
 
         ~MainViewModel()
         {
             _disposable.Dispose();
         }
-        
+
         public ReadOnlyReactiveCollection<AudioDeviceViewModel> Devices { get; }
-        public ReactiveProperty<AudioDeviceViewModel> SelectedDevice { get; }
-        
-        public ReactiveCommand OnLoadedCommand { get; }
+        public IReactiveProperty<AudioDeviceViewModel?> SelectedDevice { get; }
+
+        public ICommand OnLoadedCommand { get; }
+        public ICommand SoundBarReadyCommand { get; }
+
+        private void OnLoaded()
+        {
+            _coreAudioService.RefreshAudioDevices();
+            SelectedDevice.Value = Devices.FirstOrDefault(i => i.Role.Multimedia);
+        }
+
+        private void OnSoundBarReady(SoundBarReadyEventArgs e)
+        {
+            _soundBarHandler = e.Handler;
+        }
     }
 }

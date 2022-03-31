@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:SimpleVolumeMixer.Views.Controls"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="40">
     <Grid Name="BackCanvas">
@@ -73,6 +74,15 @@
                 <Setter Property="Template" Value="{StaticResource MaterialDesignDiscreteSliderVerticalCustom}" />
             </Style>
         </Grid.Resources>
+        
+        <Rectangle Name="GrayArea"
+                   Width="4"
+                   RadiusX="2"
+                   RadiusY="2"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
+                   Fill="#FFA5A5A5" />
 
         <Rectangle Name="GreenArea"
                    Width="4"
@@ -81,19 +91,18 @@
                    HorizontalAlignment="Center"
                    VerticalAlignment="Bottom"
                    Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
-                   Fill="#FF8BFF19" />
+                   Fill="#FFB7FF70" />
 
         <Slider Name="ValueSlider"
                 Orientation="Vertical"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Bottom"
+                Maximum="{Binding Maximum, RelativeSource={RelativeSource AncestorType={x:Type controls:SoundBar}}}"
+                Minimum="{Binding Minimum, RelativeSource={RelativeSource AncestorType={x:Type controls:SoundBar}}}"
+                SmallChange="{Binding SmallChange, RelativeSource={RelativeSource AncestorType={x:Type controls:SoundBar}}}"
+                LargeChange="{Binding LargeChange, RelativeSource={RelativeSource AncestorType={x:Type controls:SoundBar}}}"
+                Value="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type controls:SoundBar}}}"
                 Style="{StaticResource MaterialDesignDiscreteVerticalSliderCustom}"
-                Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
-                ValueChanged="ValueSlider_OnValueChanged"
-                Value="0.0"
-                Minimum="0.0"
-                Maximum="1.0"
-                SmallChange="0.01"
-                LargeChange="0.1" />
+                Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"/>
     </Grid>
 </UserControl>

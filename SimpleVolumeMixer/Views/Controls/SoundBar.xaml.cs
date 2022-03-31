@@ -9,6 +9,13 @@ namespace SimpleVolumeMixer.Views.Controls
     /// </summary>
     public partial class SoundBar : UserControl
     {
+        public event EventHandler<SoundBarReadyEventArgs>? Ready
+        {
+            add { value?.Invoke(this, new SoundBarReadyEventArgs(_handler)); }
+            // ReSharper disable once ValueParameterNotUsed
+            remove { }
+        }
+
         public static readonly DependencyProperty MeterMaximumProperty =
             DependencyProperty.Register(
                 nameof(MeterMaximum),
@@ -28,42 +35,37 @@ namespace SimpleVolumeMixer.Views.Controls
                 nameof(Value),
                 typeof(double),
                 typeof(SoundBar),
-                new PropertyMetadata(0.0, ValuePropertyChanged));
+                new PropertyMetadata(0.0));
 
         private static readonly DependencyProperty MaximumProperty =
             DependencyProperty.Register(
                 nameof(Maximum),
                 typeof(double),
                 typeof(SoundBar),
-                new PropertyMetadata(100.0, MaximumPropertyChanged));
+                new PropertyMetadata(100.0));
 
         private static readonly DependencyProperty MinimumProperty =
             DependencyProperty.Register(
                 nameof(Minimum),
                 typeof(double),
                 typeof(SoundBar),
-                new PropertyMetadata(0.0, MinimumPropertyChanged));
+                new PropertyMetadata(0.0));
 
         private static readonly DependencyProperty SmallChangeProperty =
             DependencyProperty.Register(
                 nameof(SmallChange),
                 typeof(double),
                 typeof(SoundBar),
-                new PropertyMetadata(1.0, SmallChangePropertyChanged));
+                new PropertyMetadata(1.0));
 
         private static readonly DependencyProperty LargeChangeProperty =
             DependencyProperty.Register(
                 nameof(LargeChange),
                 typeof(double),
                 typeof(SoundBar),
-                new PropertyMetadata(10.0, LargeChangePropertyChanged));
+                new PropertyMetadata(10.0));
 
-        private static readonly DependencyProperty HandlerProperty =
-            DependencyProperty.Register(
-                nameof(Handler),
-                typeof(ISoundBarHandler),
-                typeof(SoundBar),
-                new PropertyMetadata(null));
+        private readonly InternalSoundBarHandler _handler;
 
         public double MeterMaximum
         {
@@ -107,57 +109,19 @@ namespace SimpleVolumeMixer.Views.Controls
             set => SetValue(LargeChangeProperty, value);
         }
 
-        public ISoundBarHandler Handler
+        public SoundBar()
         {
-            get => (ISoundBarHandler)GetValue(HandlerProperty);
-            set => SetValue(HandlerProperty, value);
+            InitializeComponent();
+
+            _handler = new InternalSoundBarHandler();
+            _handler.NotifiedValue += OnNotifiedValue;
+            _handler.NotifyValue(0.0);
         }
 
         private static void MeterMaximumPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var soundBar = (SoundBar)d;
-            soundBar.UpdateGreenAreaHeight(soundBar.MeterValue);
-        }
-
-        private static void ValuePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var soundBar = (SoundBar)d;
-            soundBar.ValueSlider.Value = (double)e.NewValue;
-        }
-
-        private static void MaximumPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var soundBar = (SoundBar)d;
-            soundBar.ValueSlider.Maximum = (double)e.NewValue;
-        }
-
-        private static void MinimumPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var soundBar = (SoundBar)d;
-            soundBar.ValueSlider.Minimum = (double)e.NewValue;
-        }
-
-        private static void SmallChangePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var soundBar = (SoundBar)d;
-            soundBar.ValueSlider.SmallChange = (double)e.NewValue;
-        }
-
-        private static void LargeChangePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var soundBar = (SoundBar)d;
-            soundBar.ValueSlider.LargeChange = (double)e.NewValue;
-        }
-
-        public SoundBar()
-        {
-            InitializeComponent();
-
-            var handler = new InternalSoundBarHandler();
-            handler.NotifiedValue += OnNotifiedValue;
-
-            handler.NotifyValue(0.0);
-            Dispatcher.BeginInvoke((Action)(() => Handler = handler));
+            soundBar.UpdateMeterArea(soundBar.MeterValue);
         }
 
         private void OnNotifiedValue(object? sender, SoundBarNotifyValueEventArgs e)
@@ -166,47 +130,48 @@ namespace SimpleVolumeMixer.Views.Controls
 
             Dispatcher.Invoke(() =>
             {
-                UpdateGreenAreaHeight(value);
+                UpdateMeterArea(value);
                 MeterValue = value;
             });
         }
 
-        private void UpdateGreenAreaHeight(double value)
+        private void UpdateMeterArea(double newMeterValue)
         {
             var canvasHeight = BackCanvas.ActualHeight;
 
-            if (value <= 0.0)
+            if (newMeterValue <= 0.0)
             {
+                GrayArea.Height = 0;
                 GreenArea.Height = 0;
                 return;
             }
 
-            var maximum = MeterMaximum;
-            if (maximum <= value)
+            var barRatio = Maximum == 0.0 ? 1.0 : (Value / Maximum);
+            var meterMaximum = MeterMaximum;
+            if (meterMaximum <= newMeterValue)
             {
-                GreenArea.Height = canvasHeight;
+                GrayArea.Height = canvasHeight;
+                GreenArea.Height = canvasHeight * barRatio;
                 return;
             }
 
-            var newHeight = canvasHeight * (value / maximum);
+            var newHeight = canvasHeight * (newMeterValue / meterMaximum);
             if (newHeight <= 0.0)
             {
+                GrayArea.Height = 0;
                 GreenArea.Height = 0;
                 return;
             }
 
             if (canvasHeight <= newHeight)
             {
-                GreenArea.Height = canvasHeight;
+                GrayArea.Height = canvasHeight;
+                GreenArea.Height = canvasHeight * barRatio;
                 return;
             }
 
-            GreenArea.Height = newHeight;
-        }
-        
-        private void ValueSlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            Value = e.NewValue;
+            GrayArea.Height = newHeight;
+            GreenArea.Height = newHeight * barRatio;
         }
 
         private class InternalSoundBarHandler : ISoundBarHandler

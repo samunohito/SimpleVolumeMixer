@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using System.Windows.Input;
+using Prism.Commands;
 using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -12,10 +13,12 @@ namespace SimpleVolumeMixer.ViewModels.Main
     public class AudioSessionViewModel : BindableBase, IDisposable
     {
         private readonly CompositeDisposable _disposable;
+        private ISoundBarHandler? _soundBarHandler;
 
         public AudioSessionViewModel(AudioSession session)
         {
             _disposable = new CompositeDisposable();
+            _soundBarHandler = null;
 
             Session = session;
             SessionState = session.SessionState.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
@@ -35,11 +38,11 @@ namespace SimpleVolumeMixer.ViewModels.Main
                 .ToReactivePropertyAsSynchronized(x => x.Value)
                 .AddTo(_disposable);
 
-            SoundBarHandler = new ReactiveProperty<ISoundBarHandler>().AddTo(_disposable);
-
             PeekValue
-                .Subscribe(x => SoundBarHandler.Value?.NotifyValue(x))
+                .Subscribe(x => _soundBarHandler?.NotifyValue(x))
                 .AddTo(_disposable);
+
+            SoundBarReadyCommand = new DelegateCommand<SoundBarReadyEventArgs>(OnSoundBarReady);
         }
 
         public AudioSession Session { get; }
@@ -51,8 +54,12 @@ namespace SimpleVolumeMixer.ViewModels.Main
         public IReadOnlyReactiveProperty<Guid> GroupingParam { get; }
         public IReactiveProperty<float> MasterVolume { get; }
         public IReactiveProperty<bool> IsMuted { get; }
+        public ICommand SoundBarReadyCommand { get; }
 
-        public ReactiveProperty<ISoundBarHandler> SoundBarHandler { get; }
+        private void OnSoundBarReady(SoundBarReadyEventArgs e)
+        {
+            _soundBarHandler = e.Handler;
+        }
 
         public void Dispose()
         {

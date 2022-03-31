@@ -12,11 +12,11 @@ public static class PropertyMonitor
     public static readonly Func<bool, bool, bool> BoolComparer = (x, y) => x == y;
 }
 
-public class PropertyMonitor<T> : NotifyPropertyChangedBase, IPropertyHolder, IDisposable
+public class PropertyMonitor<T> : NotifyPropertyChangedBase, IDisposable
 {
     private static readonly Func<T, T, bool> DefaultComparer = (x, y) => Equals(x, y);
-
     private static readonly Action<T> DefaultWriter = (_) => { };
+
     private readonly CompositeDisposable _disposable;
     private readonly Func<T> _reader;
     private readonly Action<T> _writer;

@@ -8,12 +8,12 @@ using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 namespace SimpleVolumeMixer.Core.Services;
 
-public class AudioDeviceMonitoringService : IDisposable, IAudioDeviceMonitoringService
+public class CoreAudioService : IDisposable, ICoreAudioService
 {
     private readonly CompositeDisposable _disposable;
     private readonly ICoreAudioRepository _coreAudioRepository;
 
-    public AudioDeviceMonitoringService(ICoreAudioRepository coreAudioRepository)
+    public CoreAudioService(ICoreAudioRepository coreAudioRepository)
     {
         _disposable = new CompositeDisposable();
         _coreAudioRepository = coreAudioRepository;

@@ -4,14 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:properties="clr-namespace:SimpleVolumeMixer.Properties"
-    xmlns:controls="clr-namespace:SimpleVolumeMixer.Views.Controls" 
+    xmlns:controls="clr-namespace:SimpleVolumeMixer.Views.Controls"
     xmlns:viewmodels="clr-namespace:SimpleVolumeMixer.ViewModels"
     xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:interactivity="http://prismlibrary.com/"
     d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
     Style="{StaticResource BaseUserControlStyle}"
     mc:Ignorable="d"
-    d:DesignHeight="450" 
+    d:DesignHeight="450"
     d:DesignWidth="800">
 
     <b:Interaction.Triggers>
@@ -37,33 +37,62 @@
                 </Grid>
             </GroupBox>
 
-            <GroupBox Header="Applications">
-                <ItemsControl ItemsSource="{Binding SelectedDevice.Value.Sessions}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <DockPanel Margin="0,5,10,5">
-                                <TextBlock DockPanel.Dock="Bottom"
-                                           TextAlignment="Center" 
-                                           Text="{Binding Path=DisplayName.Value}"/>
-                                <controls:SoundBar
-                                    MeterMaximum="1.0"
-                                    Maximum="1000.0"
-                                    Minimum="0.0"
-                                    SmallChange="1.0"
-                                    LargeChange="10.0"
-                                    Value="{Binding MasterVolume.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Handler="{Binding SoundBarHandler.Value, Mode=OneWayToSource}"
-                                    HorizontalAlignment="Center" />
-                            </DockPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </GroupBox>
+            <DockPanel>
+                <GroupBox Header="Master" DockPanel.Dock="Left">
+                    <DockPanel Margin="10,5,10,5">
+                        <TextBlock DockPanel.Dock="Bottom"
+                                   TextAlignment="Center"
+                                   Text="Master" />
+                        <controls:SoundBar
+                            HorizontalAlignment="Center"
+                            MeterMaximum="1.0"
+                            Maximum="1000.0"
+                            Minimum="0.0"
+                            SmallChange="1.0"
+                            LargeChange="10.0"
+                            Value="{Binding SelectedDevice.Value.MasterVolume.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <b:Interaction.Triggers>
+                                <b:EventTrigger EventName="Ready">
+                                    <interactivity:InvokeCommandAction Command="{Binding SoundBarReadyCommand}" />
+                                </b:EventTrigger>
+                            </b:Interaction.Triggers>
+                        </controls:SoundBar>
+                    </DockPanel>
+                </GroupBox>
+                <GroupBox Header="Applications" DataContext="{Binding SelectedDevice.Value}">
+                    <ItemsControl ItemsSource="{Binding Sessions}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,5,10,5">
+                                    <TextBlock DockPanel.Dock="Bottom"
+                                               TextAlignment="Center"
+                                               Text="{Binding Path=DisplayName.Value}" />
+                                    <controls:SoundBar
+                                        HorizontalAlignment="Center"
+                                        MeterMaximum="1.0"
+                                        Maximum="1000.0"
+                                        Minimum="0.0"
+                                        SmallChange="1.0"
+                                        LargeChange="10.0"
+                                        Value="{Binding MasterVolume.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        <b:Interaction.Triggers>
+                                            <b:EventTrigger EventName="Ready">
+                                                <interactivity:InvokeCommandAction
+                                                    Command="{Binding SoundBarReadyCommand}" />
+                                            </b:EventTrigger>
+                                        </b:Interaction.Triggers>
+                                    </controls:SoundBar>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </GroupBox>
+            </DockPanel>
         </DockPanel>
     </Grid>
 </UserControl>

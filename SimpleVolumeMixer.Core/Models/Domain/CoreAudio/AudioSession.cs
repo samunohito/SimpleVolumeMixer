@@ -60,12 +60,14 @@ public class AudioSession : NotifyPropertyChangedBase, IDisposable
             PropertyMonitorIntervalType.Low,
             () => ax.GroupingParam
         );
-        _masterVolume = new PropertyMonitor<float>(PropertyMonitorIntervalType.Normal,
+        _masterVolume = new PropertyMonitor<float>(
+            PropertyMonitorIntervalType.Normal,
             () => ax.MasterVolume,
             (x) => ax.MasterVolume = x,
             PropertyMonitor.FloatComparer
         );
-        _isMuted = new PropertyMonitor<bool>(PropertyMonitorIntervalType.Normal,
+        _isMuted = new PropertyMonitor<bool>(
+            PropertyMonitorIntervalType.Normal,
             () => ax.IsMuted,
             (x) => ax.IsMuted = x,
             PropertyMonitor.BoolComparer

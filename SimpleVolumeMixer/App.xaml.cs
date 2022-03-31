@@ -96,7 +96,7 @@ namespace SimpleVolumeMixer
 
             // Core Services
             containerRegistry.Register<IFileService, FileService>();
-            containerRegistry.RegisterSingleton<IAudioDeviceMonitoringService, AudioDeviceMonitoringService>();
+            containerRegistry.RegisterSingleton<ICoreAudioService, CoreAudioService>();
 
             // App Services
             containerRegistry.RegisterSingleton<IToastNotificationsService, ToastNotificationsService>();

@@ -3,7 +3,7 @@ using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 namespace SimpleVolumeMixer.Core.Contracts.Services;
 
-public interface IAudioDeviceMonitoringService
+public interface ICoreAudioService
 {
     ReadOnlyReactiveCollection<AudioDevice> Devices { get; }
 
