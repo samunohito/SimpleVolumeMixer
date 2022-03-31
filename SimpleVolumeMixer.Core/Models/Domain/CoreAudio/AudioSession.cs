@@ -10,18 +10,21 @@ namespace SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 public class AudioSession : NotifyPropertyChangedBase, IDisposable
 {
+    private static readonly string SystemSoundText = "SystemSound";
+    private static readonly string SystemSoundDisplayName = @"@%SystemRoot%\System32\AudioSrv.Dll";
+
     private readonly CompositeDisposable _disposable;
     private readonly AudioSessionAccessor _accessor;
     private readonly bool _isSystemSound;
 
-    private readonly PropertyHolder<AudioSessionStateType> _sessionState;
-    private readonly PropertyHolder<float> _peekValue;
-    private readonly PropertyHolder<int> _meteringChannelCount;
-    private readonly PropertyHolder<string> _displayName;
-    private readonly PropertyHolder<string> _iconPath;
-    private readonly PropertyHolder<Guid> _groupingParam;
-    private readonly PropertyHolder<float> _masterVolume;
-    private readonly PropertyHolder<bool> _isMuted;
+    private readonly PropertyMonitor<AudioSessionStateType> _sessionState;
+    private readonly PropertyMonitor<float> _peekValue;
+    private readonly PropertyMonitor<int> _meteringChannelCount;
+    private readonly PropertyMonitor<string> _displayName;
+    private readonly PropertyMonitor<string> _iconPath;
+    private readonly PropertyMonitor<Guid> _groupingParam;
+    private readonly PropertyMonitor<float> _masterVolume;
+    private readonly PropertyMonitor<bool> _isMuted;
 
     internal AudioSession(AudioSessionAccessor ax)
     {
@@ -29,27 +32,54 @@ public class AudioSession : NotifyPropertyChangedBase, IDisposable
         _accessor = ax.AddTo(_disposable);
         ax.Disposed += SessionOnDisposed;
 
-        _isSystemSound = _accessor.DisplayName?.Contains(@"@%SystemRoot%\System32\AudioSrv.Dll") ?? false;
+        _isSystemSound = _accessor.DisplayName.Contains(SystemSoundDisplayName);
 
-        Action<string> act = (propertyName) => OnPropertyChanged(propertyName);
+        _sessionState = new PropertyMonitor<AudioSessionStateType>(
+            PropertyMonitorIntervalType.Normal,
+            () => ax.SessionState
+        );
+        _peekValue = new PropertyMonitor<float>(
+            PropertyMonitorIntervalType.High,
+            () => ax.PeekValue,
+            comparer: PropertyMonitor.FloatComparer
+        );
+        _meteringChannelCount = new PropertyMonitor<int>(
+            PropertyMonitorIntervalType.LowMiddle,
+            () => ax.MeteringChannelCount,
+            comparer: PropertyMonitor.IntComparer
+        );
+        _displayName = new PropertyMonitor<string>(
+            PropertyMonitorIntervalType.LowMiddle,
+            ResolveDisplayName
+        );
+        _iconPath = new PropertyMonitor<string>(
+            PropertyMonitorIntervalType.Low,
+            () => ax.IconPath
+        );
+        _groupingParam = new PropertyMonitor<Guid>(
+            PropertyMonitorIntervalType.Low,
+            () => ax.GroupingParam
+        );
+        _masterVolume = new PropertyMonitor<float>(PropertyMonitorIntervalType.Normal,
+            () => ax.MasterVolume,
+            (x) => ax.MasterVolume = x,
+            PropertyMonitor.FloatComparer
+        );
+        _isMuted = new PropertyMonitor<bool>(PropertyMonitorIntervalType.Normal,
+            () => ax.IsMuted,
+            (x) => ax.IsMuted = x,
+            PropertyMonitor.BoolComparer
+        );
 
-        _sessionState =
-            new PropertyHolder<AudioSessionStateType>(() => ax.SessionState, nameof(SessionState), act);
-        _peekValue =
-            new PropertyHolder<float>(() => ax.PeekValue, nameof(PeekValue), act);
-        _meteringChannelCount =
-            new PropertyHolder<int>(() => ax.MeteringChannelCount, nameof(MeteringChannelCount), act);
-        _displayName =
-            new PropertyHolder<string>(ResolveDisplayName, nameof(DisplayName), act);
-        _iconPath =
-            new PropertyHolder<string>(() => ax.IconPath, nameof(IconPath), act);
-        _groupingParam =
-            new PropertyHolder<Guid>(() => ax.GroupingParam, nameof(GroupingParam), act);
-        _masterVolume =
-            new PropertyHolder<float>(() => ax.MasterVolume, nameof(MasterVolume), act, x => ax.MasterVolume = x);
-        _isMuted =
-            new PropertyHolder<bool>(() => ax.IsMuted, nameof(IsMuted), act);
-        
+        SessionState = _sessionState.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        PeekValue = _peekValue.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        MeteringChannelCount = _meteringChannelCount.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        DisplayName = _displayName.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        IconPath = _iconPath.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        GroupingParam = _groupingParam.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        MasterVolume = _masterVolume.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        IsMuted = _isMuted.ToReactivePropertySlimAsSynchronized(x => x.Value);
+
         var disposables = new IDisposable[]
         {
             _sessionState,
@@ -60,6 +90,14 @@ public class AudioSession : NotifyPropertyChangedBase, IDisposable
             _groupingParam,
             _masterVolume,
             _isMuted,
+            SessionState,
+            PeekValue,
+            MeteringChannelCount,
+            DisplayName,
+            IconPath,
+            GroupingParam,
+            MasterVolume,
+            IsMuted,
         };
         foreach (var disposable in disposables)
         {
@@ -67,15 +105,15 @@ public class AudioSession : NotifyPropertyChangedBase, IDisposable
         }
     }
 
-    public IReactiveProperty<AudioSessionStateType> SessionState => _sessionState.Holder;
-    public IReactiveProperty<float> PeekValue => _peekValue.Holder;
-    public IReactiveProperty<int> MeteringChannelCount => _meteringChannelCount.Holder;
-    public IReactiveProperty<string> DisplayName => _displayName.Holder;
-    public IReactiveProperty<string> IconPath => _iconPath.Holder;
-    public IReactiveProperty<Guid> GroupingParam => _groupingParam.Holder;
-    public IReactiveProperty<float> MasterVolume => _masterVolume.Holder;
-    public IReactiveProperty<bool> IsMuted => _isMuted.Holder;
-    
+    public IReadOnlyReactiveProperty<AudioSessionStateType> SessionState { get; }
+    public IReadOnlyReactiveProperty<float> PeekValue { get; }
+    public IReadOnlyReactiveProperty<int> MeteringChannelCount { get; }
+    public IReadOnlyReactiveProperty<string> DisplayName { get; }
+    public IReadOnlyReactiveProperty<string> IconPath { get; }
+    public IReadOnlyReactiveProperty<Guid> GroupingParam { get; }
+    public IReactiveProperty<float> MasterVolume { get; }
+    public IReactiveProperty<bool> IsMuted { get; }
+
     private void SessionOnDisposed(object sender, EventArgs e)
     {
         Dispose();
@@ -85,9 +123,9 @@ public class AudioSession : NotifyPropertyChangedBase, IDisposable
     {
         if (_isSystemSound)
         {
-            return "SystemSound";
+            return SystemSoundText;
         }
-        
+
         var displayName = _accessor.DisplayName;
         if (!string.IsNullOrWhiteSpace(displayName))
         {
@@ -100,7 +138,7 @@ public class AudioSession : NotifyPropertyChangedBase, IDisposable
         {
             return title;
         }
-        
+
         var procName = proc.ProcessName;
         if (!string.IsNullOrWhiteSpace(procName))
         {
@@ -118,30 +156,6 @@ public class AudioSession : NotifyPropertyChangedBase, IDisposable
         }
 
         return "";
-    }
-
-    public void Refresh()
-    {
-        if (_disposable.IsDisposed || _accessor.IsDisposed)
-        {
-            return;
-        }
-        
-        var monitors = new IPropertyHolder[]
-        {
-            _sessionState,
-            _peekValue,
-            _meteringChannelCount,
-            _displayName,
-            _iconPath,
-            _groupingParam,
-            _masterVolume,
-            _isMuted,
-        };
-        foreach (var monitor in monitors)
-        {
-            monitor.Refresh();
-        }
     }
 
     public void Dispose()

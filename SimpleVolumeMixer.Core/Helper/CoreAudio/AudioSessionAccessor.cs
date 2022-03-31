@@ -40,13 +40,13 @@ public class AudioSessionAccessor : IDisposable
     public float PeekValue => _meterInformation.PeakValue;
     public int MeteringChannelCount => _meterInformation.MeteringChannelCount;
     
-    public string? DisplayName
+    public string DisplayName
     {
         get => _session.DisplayName;
         set => _session.DisplayName = value;
     }
 
-    public string? IconPath
+    public string IconPath
     {
         get => _session.IconPath;
         set => _session.IconPath = value;

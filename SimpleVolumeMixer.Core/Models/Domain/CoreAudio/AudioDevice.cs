@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.CoreAudio;
@@ -14,14 +12,14 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
     private readonly CompositeDisposable _disposable;
     private readonly AudioDeviceAccessor _accessor;
 
-    private readonly PropertyHolder<string> _deviceId;
-    private readonly PropertyHolder<string> _friendlyName;
-    private readonly PropertyHolder<string> _devicePath;
-    private readonly PropertyHolder<DeviceStateType> _deviceState;
-    private readonly PropertyHolder<DataFlowType> _dataFlow;
-    private readonly PropertyHolder<int> _channelCount;
-    private readonly PropertyHolder<float> _peekValue;
-    private readonly PropertyHolder<int> _meteringChannelCount;
+    private readonly PropertyMonitor<string> _deviceId;
+    private readonly PropertyMonitor<string> _friendlyName;
+    private readonly PropertyMonitor<string> _devicePath;
+    private readonly PropertyMonitor<DeviceStateType> _deviceState;
+    private readonly PropertyMonitor<DataFlowType> _dataFlow;
+    private readonly PropertyMonitor<int> _channelCount;
+    private readonly PropertyMonitor<float> _peekValue;
+    private readonly PropertyMonitor<int> _meteringChannelCount;
 
     internal AudioDevice(AudioDeviceAccessor ax)
     {
@@ -32,24 +30,49 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
             .ToReadOnlyReactiveCollection(x => new AudioSession(x))
             .AddTo(_disposable);
 
-        Action<string> act = (propertyName) => OnPropertyChanged(propertyName);
+        _deviceId = new PropertyMonitor<string>(
+            PropertyMonitorIntervalType.Manual,
+            () => ax.DeviceId
+        );
+        _friendlyName = new PropertyMonitor<string>(
+            PropertyMonitorIntervalType.Manual,
+            () => ax.FriendlyName
+        );
+        _devicePath = new PropertyMonitor<string>(
+            PropertyMonitorIntervalType.Manual,
+            () => ax.DevicePath
+        );
+        _deviceState = new PropertyMonitor<DeviceStateType>(
+            PropertyMonitorIntervalType.Normal,
+            () => ax.DeviceState
+        );
+        _dataFlow = new PropertyMonitor<DataFlowType>(
+            PropertyMonitorIntervalType.Manual,
+            () => ax.DataFlow
+        );
+        _channelCount = new PropertyMonitor<int>(
+            PropertyMonitorIntervalType.Manual,
+            () => ax.ChannelCount,
+            comparer: PropertyMonitor.IntComparer
+        );
+        _peekValue = new PropertyMonitor<float>(
+            PropertyMonitorIntervalType.High,
+            () => ax.PeekValue,
+            comparer: PropertyMonitor.FloatComparer
+        );
+        _meteringChannelCount = new PropertyMonitor<int>(
+            PropertyMonitorIntervalType.Low,
+            () => ax.MeteringChannelCount
+        );
 
-        _deviceId =
-            new PropertyHolder<string>(() => ax.DeviceId, nameof(DeviceId), act);
-        _friendlyName =
-            new PropertyHolder<string>(() => ax.FriendlyName, nameof(FriendlyName), act);
-        _devicePath =
-            new PropertyHolder<string>(() => ax.DevicePath, nameof(DevicePath), act);
-        _deviceState =
-            new PropertyHolder<DeviceStateType>(() => ax.DeviceState, nameof(DeviceState), act);
-        _dataFlow =
-            new PropertyHolder<DataFlowType>(() => ax.DataFlow, nameof(DataFlow), act);
-        _channelCount =
-            new PropertyHolder<int>(() => ax.ChannelCount, nameof(ChannelCount), act);
-        _peekValue =
-            new PropertyHolder<float>(() => ax.PeekValue, nameof(PeekValue), act);
-        _meteringChannelCount =
-            new PropertyHolder<int>(() => ax.MeteringChannelCount, nameof(MeteringChannelCount), act);
+        DeviceId = _deviceId.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        FriendlyName = _friendlyName.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        DevicePath = _devicePath.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        DeviceState = _deviceState.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        DataFlow = _dataFlow.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        ChannelCount = _channelCount.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        PeekValue = _peekValue.ToReactivePropertySlimAsSynchronized(x => x.Value);
+        MeteringChannelCount = _meteringChannelCount.ToReactivePropertySlimAsSynchronized(x => x.Value);
 
         var disposables = new IDisposable[]
         {
@@ -61,6 +84,14 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
             _channelCount,
             _peekValue,
             _meteringChannelCount,
+            DeviceId,
+            FriendlyName,
+            DevicePath,
+            DeviceState,
+            DataFlow,
+            ChannelCount,
+            PeekValue,
+            MeteringChannelCount,
         };
         foreach (var disposable in disposables)
         {
@@ -70,43 +101,14 @@ public class AudioDevice : NotifyPropertyChangedBase, IDisposable
 
     public ReadOnlyReactiveCollection<AudioSession> Sessions { get; }
     public DeviceRole Role => _accessor.Role;
-    public IReactiveProperty<string> DeviceId => _deviceId.Holder;
-    public IReactiveProperty<string> FriendlyName => _friendlyName.Holder;
-    public IReactiveProperty<string> DevicePath => _devicePath.Holder;
-    public IReactiveProperty<DeviceStateType> DeviceState => _deviceState.Holder;
-    public IReactiveProperty<DataFlowType> DataFlow => _dataFlow.Holder;
-    public IReactiveProperty<int> ChannelCount => _channelCount.Holder;
-    public IReactiveProperty<float> PeekValue => _peekValue.Holder;
-    public IReactiveProperty<int> MeteringChannelCount => _meteringChannelCount.Holder;
-
-    public void Refresh()
-    {
-        if (_accessor.IsDisposed)
-        {
-            return;
-        }
-        
-        var monitors = new IPropertyHolder[]
-        {
-            _deviceId,
-            _friendlyName,
-            _devicePath,
-            _deviceState,
-            _dataFlow,
-            _channelCount,
-            _peekValue,
-            _meteringChannelCount,
-        };
-        foreach (var monitor in monitors)
-        {
-            monitor.Refresh();
-        }
-
-        foreach (var audioSession in Sessions.ToList())
-        {
-            audioSession.Refresh();
-        }
-    }
+    public IReadOnlyReactiveProperty<string> DeviceId { get; }
+    public IReadOnlyReactiveProperty<string> FriendlyName { get; }
+    public IReadOnlyReactiveProperty<string> DevicePath { get; }
+    public IReadOnlyReactiveProperty<DeviceStateType> DeviceState { get; }
+    public IReadOnlyReactiveProperty<DataFlowType> DataFlow { get; }
+    public IReadOnlyReactiveProperty<int> ChannelCount { get; }
+    public IReadOnlyReactiveProperty<float> PeekValue { get; }
+    public IReadOnlyReactiveProperty<int> MeteringChannelCount { get; }
 
     public void OpenSession()
     {

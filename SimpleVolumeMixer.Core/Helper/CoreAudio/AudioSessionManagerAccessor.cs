@@ -63,12 +63,13 @@ public class AudioSessionManagerAccessor : IDisposable
         switch (e.NewState)
         {
             case AudioSessionStateType.AudioSessionStateActive:
+            case AudioSessionStateType.AudioSessionStateInactive:
                 break;
             case AudioSessionStateType.AudioSessionStateExpired:
-            case AudioSessionStateType.AudioSessionStateInactive:
                 DisposeSession((AudioSessionAccessor)sender);
                 break;
         }
+        
     }
 
     private void AccessorOnDisposed(object sender, EventArgs e)
