@@ -16,7 +16,7 @@ namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
 public class AudioSessionManagerAccessor : SafetyAccessorComponent
 {
-    public event EventHandler<AudioSessionManagerStartedEventArgs>? SessionManagerOpened;
+    public event EventHandler<EventArgs>? SessionManagerOpened;
     public event EventHandler<EventArgs>? SessionManagerClosed;
 
     private readonly object _sessionLock = new();
@@ -30,10 +30,27 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
         _device = device;
         _sessions = new ReactiveCollection<AudioSessionAccessor>().AddTo(Disposable);
         Sessions = _sessions.ToReadOnlyReactiveCollection().AddTo(Disposable);
+        
+        SessionManagerOpened += OnSessionManagerOpened;
     }
-
+    
     public ReadOnlyReactiveCollection<AudioSessionAccessor> Sessions { get; }
 
+    private void OnSessionManagerOpened(object? sender, EventArgs e)
+    {
+        lock (_sessionLock)
+        {
+            if (_sessionManager != null)
+            {
+                _sessionManager.SessionCreated += SessionManagerOnSessionCreated;
+                _sessionManager.VolumeDuckNotification += SessionManagerOnVolumeDuckNotification;
+                _sessionManager.VolumeUnDuckNotification += SessionManagerOnVolumeUnDuckNotification;
+                
+                RefreshSessions();
+            }
+        }
+    }
+    
     private void SessionManagerOnSessionCreated(object? sender, SessionCreatedEventArgs e)
     {
         Debug.WriteLine("SessionManagerOnSessionCreated " + e);
@@ -92,12 +109,7 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
 
                 // 個別で破棄するのでDisposableには入れない
                 _sessionManager = AudioSessionManager2.FromMMDevice(_device.Device);
-                _sessionManager.SessionCreated += SessionManagerOnSessionCreated;
-                _sessionManager.VolumeDuckNotification += SessionManagerOnVolumeDuckNotification;
-                _sessionManager.VolumeUnDuckNotification += SessionManagerOnVolumeUnDuckNotification;
-
-                RefreshSessions();
-                SessionManagerOpened?.Invoke(this, new AudioSessionManagerStartedEventArgs(Sessions));
+                SessionManagerOpened?.Invoke(this, EventArgs.Empty);
             }
         });
         thread.SetApartmentState(ApartmentState.MTA);
@@ -109,7 +121,7 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
         lock (_sessionLock)
         {
             DisposeSessions();
-
+            
             if (_sessionManager != null)
             {
                 _sessionManager.VolumeUnDuckNotification -= SessionManagerOnVolumeUnDuckNotification;
@@ -129,6 +141,7 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
         lock (_sessionLock)
         {
             DisposeSessions();
+            
             if (_sessionManager != null)
             {
                 // タイミングが早すぎると不正な状態のAudioSessionControl（参照先がIntPtr.Zero）が生成されるため、
@@ -197,6 +210,7 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
     protected override void OnDisposing()
     {
         base.OnDisposing();
+        SessionManagerOpened -= OnSessionManagerOpened;
         CloseSessionManager();
     }
 }

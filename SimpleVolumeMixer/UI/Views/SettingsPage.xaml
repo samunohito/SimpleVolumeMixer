@@ -8,7 +8,10 @@
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:converters="clr-namespace:SimpleVolumeMixer.UI.Converters"
     xmlns:models="clr-namespace:SimpleVolumeMixer.UI.Models"
+    xmlns:viewModels="clr-namespace:SimpleVolumeMixer.UI.ViewModels"
     Style="{StaticResource BaseUserControlStyle}"
+    d:DataContext="{d:DesignInstance Type=viewModels:SettingsViewModel}"
+    Background="Black"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
@@ -84,21 +87,21 @@
                     Text="{Binding VersionDescription, Mode=OneWay}"
                     Margin="{StaticResource XSmallTopMargin}"
                     Style="{StaticResource BodyTextStyle}" />
-                <TextBlock
-                    Margin="{StaticResource XSmallTopMargin}"
-                    Style="{StaticResource BodyTextStyle}"
-                    Text="{x:Static properties:Resources.SettingsPageAboutText}" />
-
+                
                 <TextBlock
                     Margin="{StaticResource SmallTopMargin}"
-                    AutomationProperties.Name="{Binding Text, ElementName=settingsPrivacyStatement}">
+                    Style="{StaticResource SubtitleTextStyle}"
+                    Text="{x:Static properties:Resources.SettingsPageLicensesTitle}" />
+                <TextBlock
+                    Margin="{StaticResource SmallTopMargin}"
+                    AutomationProperties.Name="{Binding Text, ElementName=SettingsGitHubStatement}">
                     <Hyperlink
-                        Command="{Binding PrivacyStatementCommand}"
-                        AutomationProperties.Name="{Binding Text, ElementName=settingsPrivacyStatement}">
+                        Command="{Binding GitHubStatementCommand}"
+                        AutomationProperties.Name="{Binding Text, ElementName=SettingsGitHubStatement}">
                         <TextBlock
-                            x:Name="settingsPrivacyStatement"
+                            x:Name="SettingsGitHubStatement"
                             Style="{StaticResource BodyTextStyle}"
-                            Text="{x:Static properties:Resources.SettingsPagePrivacyStatementText}" />
+                            Text="{x:Static properties:Resources.SettingsPageGitHubText}" />
                     </Hyperlink>
                 </TextBlock>
             </StackPanel>

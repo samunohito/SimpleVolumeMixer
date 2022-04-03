@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Disposables;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -6,11 +9,19 @@ using SimpleVolumeMixer.Core.Contracts.Models.Repository;
 using SimpleVolumeMixer.Core.Helper.CoreAudio;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
+using SimpleVolumeMixer.Core.Helper.InteropServices;
 
 namespace SimpleVolumeMixer.Core.Models.Repository;
 
 public class CoreAudioRepository : ICoreAudioRepository
 {
+    private static readonly IDictionary<RoleType, ERole> Roles = new Dictionary<RoleType, ERole>()
+    {
+        { RoleType.Console, ERole.Console },
+        { RoleType.Communications, ERole.Communications },
+        { RoleType.Multimedia, ERole.Multimedia },
+    };
+
     private readonly CompositeDisposable _disposable;
     private readonly CoreAudioAccessor _accessor;
 
@@ -19,9 +30,12 @@ public class CoreAudioRepository : ICoreAudioRepository
         _disposable = new CompositeDisposable();
         _accessor = new CoreAudioAccessor().AddTo(_disposable);
         _accessor.DeviceRoleChanged += OnDeviceRoleChanged;
+        _accessor.DeviceDisposed += OnDeviceDisposed;
 
-        CommunicationRoleDevice = new ReactivePropertySlim<AudioDeviceAccessor?>().AddTo(_disposable);
-        MultimediaRoleDevice = new ReactivePropertySlim<AudioDeviceAccessor?>().AddTo(_disposable);
+        // RoleChangedは断続的に発生するため、簡易的な仕組みのReactivePropertySlimだと不整合が起こってしまう。
+        // ReactivePropertyを使用し、イベントを通知された順に処理する。
+        CommunicationRoleDevice = new ReactiveProperty<AudioDeviceAccessor?>().AddTo(_disposable);
+        MultimediaRoleDevice = new ReactiveProperty<AudioDeviceAccessor?>().AddTo(_disposable);
 
         _accessor.RefreshDevices();
     }
@@ -32,35 +46,49 @@ public class CoreAudioRepository : ICoreAudioRepository
 
     private void OnDeviceRoleChanged(object? sender, DeviceRoleHolderChangedEventArgs e)
     {
-        if (e.Role == RoleType.Communications)
+        if (e.Role == RoleType.Communications && e.NewState)
         {
-            if (e.NewState)
-            {
-                CommunicationRoleDevice.Value = e.Device;
-            }
-            else
-            {
-                if (AudioDevices.All(x => !x.Role.Communications))
-                {
-                    CommunicationRoleDevice.Value = null;
-                }
-            }
+            CommunicationRoleDevice.Value = e.Device;
         }
 
-        if (e.Role == RoleType.Multimedia)
+        if (e.Role == RoleType.Multimedia && e.NewState)
         {
-            if (e.NewState)
-            {
-                MultimediaRoleDevice.Value = e.Device;
-            }
-            else
-            {
-                if (AudioDevices.All(x => !x.Role.Multimedia))
-                {
-                    MultimediaRoleDevice.Value = null;
-                }
-            }
+            MultimediaRoleDevice.Value = e.Device;
         }
+    }
+    
+    private void OnDeviceDisposed(object? sender, DeviceDisposeEventArgs e)
+    {
+        if (e.Device == CommunicationRoleDevice.Value)
+        {
+            // CommunicationRoleDevice.Value = null;
+        }
+
+        if (e.Device == MultimediaRoleDevice.Value)
+        {
+            // MultimediaRoleDevice.Value = null;
+        }
+    }
+
+    public void SetDefaultDevice(AudioDeviceAccessor accessor, RoleType roleType)
+    {
+        var deviceId = accessor.DeviceId;
+        if (accessor.IsDisposed || deviceId == null || roleType == RoleType.Unknown)
+        {
+            return;
+        }
+
+        if (roleType == RoleType.Communications && deviceId == CommunicationRoleDevice.Value?.DeviceId)
+        {
+            return;
+        } 
+        
+        if (roleType == RoleType.Multimedia && deviceId == MultimediaRoleDevice.Value?.DeviceId)
+        {
+            return;
+        } 
+
+        PolicyConfigClient.SetDefaultDevice(deviceId, Roles[roleType]);
     }
 
     public void Dispose()

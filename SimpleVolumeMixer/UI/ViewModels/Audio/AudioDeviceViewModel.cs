@@ -17,14 +17,13 @@ namespace SimpleVolumeMixer.UI.ViewModels.Audio;
 
 public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
 {
-    private readonly AudioDevice _device;
     private readonly CompositeDisposable _disposable;
     private ISoundBarHandler? _soundBarHandler;
 
     public AudioDeviceViewModel(AudioDevice device)
     {
         _disposable = new CompositeDisposable();
-        _device = device;
+        Device = device;
         _soundBarHandler = null;
 
         Sessions = device.Sessions
@@ -60,8 +59,9 @@ public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
         MuteStateChangeCommand = new DelegateCommand(OnOnMuteStateChange);
     }
 
+    public AudioDevice Device { get; }
     public ReadOnlyReactiveCollection<AudioSessionViewModel> Sessions { get; }
-    public DeviceRole Role => _device.Role;
+    public DeviceRole Role => Device.Role;
     public IReadOnlyReactiveProperty<string?> DeviceId { get; }
     public IReadOnlyReactiveProperty<string?> FriendlyName { get; }
     public IReadOnlyReactiveProperty<string?> DevicePath { get; }
@@ -82,7 +82,10 @@ public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
 
     public void Dispose()
     {
-        foreach (var session in Sessions.ToList()) session.Dispose();
+        foreach (var session in Sessions.ToList())
+        {
+            session.Dispose();
+        }
 
         _disposable.Dispose();
     }
@@ -99,11 +102,11 @@ public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
 
     public void OpenSession()
     {
-        _device.OpenSession();
+        Device.OpenSession();
     }
 
     public void CloseSession()
     {
-        _device.CloseSession();
+        Device.CloseSession();
     }
 }

@@ -146,23 +146,26 @@ public class AudioSession : DisposableComponent
         }
 
         var proc = _accessor.Process;
-        var title = proc?.MainWindowTitle;
-        if (!string.IsNullOrWhiteSpace(title))
+        if (proc?.HasExited == false)
         {
-            return title;
-        }
+            var title = proc.MainWindowTitle;
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                return title;
+            }
 
-        var procName = proc?.ProcessName;
-        if (!string.IsNullOrWhiteSpace(procName))
-        {
-            return procName;
-        }
+            var procName = proc.ProcessName;
+            if (!string.IsNullOrWhiteSpace(procName))
+            {
+                return procName;
+            }
 
-        var fileName = proc?.StartInfo.FileName;
-        if (!string.IsNullOrWhiteSpace(fileName))
-        {
-            var fileInfo = new FileInfo(fileName);
-            if (fileInfo.Exists) return fileInfo.Name;
+            var fileName = proc.StartInfo.FileName;
+            if (!string.IsNullOrWhiteSpace(fileName))
+            {
+                var fileInfo = new FileInfo(fileName);
+                if (fileInfo.Exists) return fileInfo.Name;
+            }
         }
 
         return null;

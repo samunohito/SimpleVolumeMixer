@@ -16,7 +16,7 @@ public class SettingsViewModel : BindableBase, INavigationAware
     private readonly IApplicationInfoService _applicationInfoService;
     private readonly ISystemService _systemService;
     private readonly IThemeSelectorService _themeSelectorService;
-    private ICommand _privacyStatementCommand;
+    private ICommand _GitHubStatementCommand;
     private ICommand _setThemeCommand;
     private AppTheme _theme;
     private string _versionDescription;
@@ -44,8 +44,8 @@ public class SettingsViewModel : BindableBase, INavigationAware
 
     public ICommand SetThemeCommand => _setThemeCommand ?? (_setThemeCommand = new DelegateCommand<string>(OnSetTheme));
 
-    public ICommand PrivacyStatementCommand => _privacyStatementCommand ??
-                                               (_privacyStatementCommand = new DelegateCommand(OnPrivacyStatement));
+    public ICommand GitHubStatementCommand => _GitHubStatementCommand ??
+                                               (_GitHubStatementCommand = new DelegateCommand(OnGitHubStatement));
 
     public void OnNavigatedTo(NavigationContext navigationContext)
     {
@@ -68,8 +68,8 @@ public class SettingsViewModel : BindableBase, INavigationAware
         _themeSelectorService.SetTheme(theme);
     }
 
-    private void OnPrivacyStatement()
+    private void OnGitHubStatement()
     {
-        _systemService.OpenInWebBrowser(_appConfig.PrivacyStatement);
+        _systemService.OpenInWebBrowser(Resources.SettingsPageGitHubLink);
     }
 }

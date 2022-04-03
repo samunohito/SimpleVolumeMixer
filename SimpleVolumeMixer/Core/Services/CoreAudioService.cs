@@ -9,6 +9,7 @@ using SimpleVolumeMixer.Core.Contracts.Models.Repository;
 using SimpleVolumeMixer.Core.Contracts.Services;
 using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio;
+using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 namespace SimpleVolumeMixer.Core.Services;
@@ -41,6 +42,11 @@ public class CoreAudioService : IDisposable, ICoreAudioService
     public ReadOnlyReactiveCollection<AudioDevice> Devices { get; }
     public IReadOnlyReactiveProperty<AudioDevice?> CommunicationRoleDevice { get; }
     public IReadOnlyReactiveProperty<AudioDevice?> MultimediaRoleDevice { get; }
+    
+    public void SetDefaultDevice(AudioDevice device, RoleType roleType)
+    {
+        _coreAudioRepository.SetDefaultDevice(device.Device, roleType);
+    }
 
     public void Dispose()
     {

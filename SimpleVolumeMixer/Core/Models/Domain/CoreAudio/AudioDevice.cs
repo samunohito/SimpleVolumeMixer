@@ -11,8 +11,6 @@ namespace SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 public class AudioDevice : DisposableComponent
 {
-    private readonly AudioDeviceAccessor _accessor;
-
     private readonly PropertyMonitor<string?> _deviceId;
     private readonly PropertyMonitor<string?> _friendlyName;
     private readonly PropertyMonitor<string?> _devicePath;
@@ -27,7 +25,7 @@ public class AudioDevice : DisposableComponent
 
     internal AudioDevice(AudioDeviceAccessor ax)
     {
-        _accessor = ax.AddTo(Disposable);
+        Device = ax.AddTo(Disposable);
 
         Sessions = ax.Sessions
             .ToReadOnlyReactiveCollection(x => new AudioSession(x))
@@ -86,7 +84,7 @@ public class AudioDevice : DisposableComponent
             PropertyMonitor.BoolComparer
         );
 
-        Role = new DeviceRole(this, ax.Role);
+        Role = new DeviceRole(this, ax.Role).AddTo(Disposable);
         DeviceId = _deviceId.ToReactivePropertySlimAsSynchronized(x => x.Value);
         FriendlyName = _friendlyName.ToReactivePropertySlimAsSynchronized(x => x.Value);
         DevicePath = _devicePath.ToReactivePropertySlimAsSynchronized(x => x.Value);
@@ -141,6 +139,8 @@ public class AudioDevice : DisposableComponent
     {
         Dispose();
     }
+    
+    public AudioDeviceAccessor Device { get; }
 
     public ReadOnlyReactiveCollection<AudioSession> Sessions { get; }
     public DeviceRole Role { get; }
@@ -158,12 +158,12 @@ public class AudioDevice : DisposableComponent
 
     public void OpenSession()
     {
-        _accessor.OpenSession();
+        Device.OpenSession();
     }
 
     public void CloseSession()
     {
-        _accessor.CloseSession();
+        Device.CloseSession();
     }
 
     protected override void OnDisposing()

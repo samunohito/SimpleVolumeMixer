@@ -39,12 +39,12 @@ public class KeyValueInstanceManager<TK, TV> : DisposableComponent where TK : ID
         {
             return;
         }
-
-        var key = (TK)sender;
-        key.Disposed -= KeyOnDisposed;
-
+        
         lock (_gate)
         {
+            var key = (TK)sender;
+            key.Disposed -= KeyOnDisposed;
+
             if (_instances.ContainsKey(key))
             {
                 _instances.Remove(key);

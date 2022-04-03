@@ -54,6 +54,11 @@ public abstract class DisposableComponent : IDisposableComponent
     /// <inheritdoc cref="IDisposableComponent.Dispose"/>
     public void Dispose()
     {
+        if (_disposable.IsDisposed)
+        {
+            return;
+        }
+        
         OnDisposing();
         _disposable.Dispose();
         OnDisposed();

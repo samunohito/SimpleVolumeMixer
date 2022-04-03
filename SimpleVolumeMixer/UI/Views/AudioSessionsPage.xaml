@@ -23,14 +23,14 @@
     </b:Interaction.Triggers>
 
     <UserControl.Resources>
-        <ItemsPanelTemplate x:Key="AudioSessionPanelTemplate">
+        <ItemsPanelTemplate x:Key="VerticalAudioSessionsPanelTemplate">
             <StackPanel Orientation="Horizontal" />
         </ItemsPanelTemplate>
         <DataTemplate x:Key="VerticalAudioSessionDataTemplate" DataType="audio:IAudioSessionCard">
             <materialDesign:Card Margin="4,0,4,0"
-                                 Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
+                                 Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
                 <DockPanel Margin="8,10,8,5" Width="80">
-                    <DockPanel DockPanel.Dock="Top">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,4,0,0">
                         <TextBlock DockPanel.Dock="Bottom"
                                    Margin="0, 4, 0, 0"
                                    TextAlignment="Center"
@@ -163,14 +163,15 @@
                 </DockPanel.Style>
                 <GroupBox Header="Master" DockPanel.Dock="Left">
                     <ItemsControl ItemsSource="{Binding SelectedDeviceForMaster}"
-                                  ItemsPanel="{StaticResource AudioSessionPanelTemplate}"
+                                  ItemsPanel="{StaticResource VerticalAudioSessionsPanelTemplate}"
                                   ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}" />
                 </GroupBox>
                 <GroupBox Header="Applications" DataContext="{Binding SelectedDevice.Value}">
                     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
                         <ItemsControl ItemsSource="{Binding Sessions}"
-                                      ItemsPanel="{StaticResource AudioSessionPanelTemplate}"
-                                      ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}" />
+                                      ItemsPanel="{StaticResource VerticalAudioSessionsPanelTemplate}"
+                                      ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}"
+                                      Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}"/>
                     </ScrollViewer>
                 </GroupBox>
             </DockPanel>

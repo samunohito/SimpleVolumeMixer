@@ -106,6 +106,42 @@ namespace SimpleVolumeMixer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to https://github.com/samunohito/SimpleVolumeMixer.
+        /// </summary>
+        public static string SettingsPageGitHubLink {
+            get {
+                return ResourceManager.GetString("SettingsPageGitHubLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to GitHub.
+        /// </summary>
+        public static string SettingsPageGitHubText {
+            get {
+                return ResourceManager.GetString("SettingsPageGitHubText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HomePage.
+        /// </summary>
+        public static string SettingsPageHomePagesTitle {
+            get {
+                return ResourceManager.GetString("SettingsPageHomePagesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Licences.
+        /// </summary>
+        public static string SettingsPageLicensesTitle {
+            get {
+                return ResourceManager.GetString("SettingsPageLicensesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Personalization.
         /// </summary>
         public static string SettingsPagePersonalizationTitle {

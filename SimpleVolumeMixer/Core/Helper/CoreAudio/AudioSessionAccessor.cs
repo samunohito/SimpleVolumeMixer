@@ -32,7 +32,10 @@ public class AudioSessionAccessor : SafetyAccessorComponent
 
         _meterInformation = _session.QueryInterface<AudioMeterInformation>().AddTo(Disposable);
         _audioVolume = _session.QueryInterface<SimpleAudioVolume>().AddTo(Disposable);
-        _sessionControl2 = _session.QueryInterface<AudioSessionControl2>().AddTo(Disposable);
+        
+        // AudioSessionControlと同一ポインタのようなのでDisposableへの追加は不要。
+        // 逆に追加すると多重に開放してしまいハングアップする
+        _sessionControl2 = _session.QueryInterface<AudioSessionControl2>();
     }
 
     public Process? Process => SafeRead(() => _sessionControl2.Process, null);

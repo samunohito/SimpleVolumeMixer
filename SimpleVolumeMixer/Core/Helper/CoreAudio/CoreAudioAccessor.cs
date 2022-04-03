@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 using CSCore.CoreAudioAPI;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -37,7 +40,7 @@ public class CoreAudioAccessor : SafetyAccessorComponent
     }
 
     public ReadOnlyReactiveCollection<AudioDeviceAccessor> AudioDevices { get; }
-    
+
     private void NotificationClientOnDevicePropertyChanged(object? sender, DevicePropertyChangedEventArgs e)
     {
         Debug.WriteLine("NotificationClientOnDevicePropertyChanged " + e);
@@ -66,10 +69,29 @@ public class CoreAudioAccessor : SafetyAccessorComponent
         var dataFlowType = AccessorHelper.DataFlows[e.DataFlow];
         DeviceRoleSync(e.DeviceId, dataFlowType, newRoleType);
     }
-    
+
     private void NotificationClientOnDeviceStateChanged(object? sender, DeviceStateChangedEventArgs e)
     {
         Debug.WriteLine("NotificationClientOnDeviceStateChanged " + e);
+
+        switch (e.DeviceState)
+        {
+            case DeviceState.Active:
+                if (e.TryGetDevice(out var device))
+                {
+                    AppendDevice(device);
+                }
+                break;
+            case DeviceState.Disabled:
+            case DeviceState.NotPresent:
+            case DeviceState.UnPlugged:
+                var target = _devices.FirstOrDefault(x => x.DeviceId == e.DeviceId);
+                if (target != null)
+                {
+                    DisposeDevice(target);
+                }
+                break;
+        }
     }
 
     private void DeviceRoleSync(string deviceId, DataFlowType dataFlowType, RoleType roleType)
@@ -101,7 +123,7 @@ public class CoreAudioAccessor : SafetyAccessorComponent
             }
         }
     }
-    
+
     public void RefreshDevices()
     {
         DisposeDevices();
@@ -161,17 +183,17 @@ public class CoreAudioAccessor : SafetyAccessorComponent
     {
         DeviceRoleChanged?.Invoke(this, e);
     }
-    
+
     protected override void OnDisposing()
     {
         base.OnDisposing();
-        
+
         _notificationClient.DeviceAdded -= NotificationClientOnDeviceAdded;
         _notificationClient.DeviceRemoved -= NotificationClientOnDeviceRemoved;
         _notificationClient.DevicePropertyChanged -= NotificationClientOnDevicePropertyChanged;
         _notificationClient.DeviceStateChanged -= NotificationClientOnDeviceStateChanged;
         _notificationClient.DefaultDeviceChanged -= NotificationClientOnDefaultDeviceChanged;
-        
+
         DisposeDevices();
     }
 }

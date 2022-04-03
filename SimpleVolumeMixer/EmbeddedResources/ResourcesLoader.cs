@@ -8,11 +8,6 @@ public class ResourcesLoader
 {
     private const string NameSpace = "SimpleVolumeMixer.EmbeddedResources.";
 
-    public static readonly ResourcesLoader MaterialVolumeHigh = new(NameSpace + "Material-VolumeHigh.png");
-    public static readonly ResourcesLoader MaterialVolumeOff = new(NameSpace + "Material-VolumeOff.png");
-    public static readonly ResourcesLoader MaterialVolumeAudio = new(NameSpace + "Microns-Audio.png");
-    public static readonly ResourcesLoader TypiconsDeviceDesktop = new(NameSpace + "Typicons-DeviceDesktop.png");
-
     private readonly Lazy<byte[]> _lazy;
 
     private ResourcesLoader(string path)

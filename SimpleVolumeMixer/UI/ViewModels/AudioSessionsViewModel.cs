@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
@@ -8,6 +9,7 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Contracts.Services;
 using SimpleVolumeMixer.Core.Helper.Component;
+using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 using SimpleVolumeMixer.Core.Helper.Utils;
 using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 using SimpleVolumeMixer.UI.ViewModels.Audio;
@@ -43,6 +45,7 @@ public class AudioSessionsViewModel : BindableBase
             })
             .AddTo(_disposable);
         SelectedDevice
+            .ObserveOnUIDispatcher()
             .Subscribe(x =>
             {
                 SelectedDeviceForMaster.Clear();
