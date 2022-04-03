@@ -10,49 +10,55 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Styles/_FontSizes.xaml" />
-                <ResourceDictionary Source="/Styles/_Thickness.xaml" />
-                <ResourceDictionary Source="/Styles/MetroWindow.xaml" />
-                <ResourceDictionary Source="/Styles/TextBlock.xaml" />
-                <ResourceDictionary Source="/Styles/UserControl.xaml" />
+                <ResourceDictionary Source="/UI/Styles/_FontSizes.xaml" />
+                <ResourceDictionary Source="/UI/Styles/_Thickness.xaml" />
+                <ResourceDictionary Source="/UI/Styles/MetroWindow.xaml" />
+                <ResourceDictionary Source="/UI/Styles/TextBlock.xaml" />
+                <ResourceDictionary Source="/UI/Styles/UserControl.xaml" />
                 <!--
                 MahApps.Metro resource dictionaries.
                 Learn more about using MahApps.Metro at https://mahapps.com/
                 -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                
+
                 <!-- Accent and AppTheme setting -->
                 <!--MahApps-->
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Blue.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
+                <ResourceDictionary
+                    Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Steel.xaml" />
+                <ResourceDictionary
+                    Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Steel.xaml" />
 
                 <!--Material Design-->
                 <materialDesign:MahAppsBundledTheme BaseTheme="Inherit" PrimaryColor="Grey" SecondaryColor="Lime" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary
+                    Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
 
                 <!--Material Design: MahApps統合設定 -->
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Fonts.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Flyout.xaml" />
+                <ResourceDictionary
+                    Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Fonts.xaml" />
+                <ResourceDictionary
+                    Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Flyout.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            
+
             <!--  MahApps Brushes  -->
-            <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="{DynamicResource Primary700}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.AccentBase" Color="{DynamicResource Primary600}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent" Color="{DynamicResource Primary500}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="{DynamicResource Primary400}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="{DynamicResource Primary300}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent4" Color="{DynamicResource Primary200}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.WindowTitle" Color="{DynamicResource Primary700}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.Selected.Foreground" Color="{DynamicResource Primary500Foreground}" />
-            <LinearGradientBrush x:Key="MahApps.Brushes.Progress" StartPoint="1.002,0.5" EndPoint="0.001,0.5">
-                <GradientStop Offset="0" Color="{DynamicResource Primary700}" />
-                <GradientStop Offset="1" Color="{DynamicResource Primary300}" />
-            </LinearGradientBrush>
-            <SolidColorBrush x:Key="MahApps.Brushes.CheckmarkFill" Color="{DynamicResource Primary500}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.RightArrowFill" Color="{DynamicResource Primary500}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.IdealForeground" Color="{DynamicResource Primary500Foreground}" />
-            <SolidColorBrush x:Key="MahApps.Brushes.IdealForegroundDisabled" Color="{DynamicResource Primary500}" Opacity="0.4" />
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="{DynamicResource Primary700}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.AccentBase" Color="{DynamicResource Primary600}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.Accent" Color="{DynamicResource Primary500}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="{DynamicResource Primary400}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="{DynamicResource Primary300}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.Accent4" Color="{DynamicResource Primary200}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.WindowTitle" Color="{DynamicResource Primary700}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.Selected.Foreground" Color="{DynamicResource Primary500Foreground}" /> -->
+            <!-- <LinearGradientBrush x:Key="MahApps.Brushes.Progress" StartPoint="1.002,0.5" EndPoint="0.001,0.5"> -->
+            <!--     <GradientStop Offset="0" Color="{DynamicResource Primary700}" /> -->
+            <!--     <GradientStop Offset="1" Color="{DynamicResource Primary300}" /> -->
+            <!-- </LinearGradientBrush> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.CheckmarkFill" Color="{DynamicResource Primary500}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.RightArrowFill" Color="{DynamicResource Primary500}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.IdealForeground" Color="{DynamicResource Primary500Foreground}" /> -->
+            <!-- <SolidColorBrush x:Key="MahApps.Brushes.IdealForegroundDisabled" Color="{DynamicResource Primary500}" -->
+            <!--                  Opacity="0.4" /> -->
         </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>

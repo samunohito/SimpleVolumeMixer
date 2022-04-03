@@ -10,6 +10,19 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="EmbeddedResources\Material-VolumeHigh.png" />
+    <None Remove="EmbeddedResources\Material-VolumeOff.png" />
+    <None Remove="EmbeddedResources\Microns-Audio.png" />
+    <None Remove="EmbeddedResources\Typicons-DeviceDesktop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResources\Material-VolumeHigh.png" />
+    <EmbeddedResource Include="EmbeddedResources\Material-VolumeOff.png" />
+    <EmbeddedResource Include="EmbeddedResources\Microns-Audio.png" />
+    <EmbeddedResource Include="EmbeddedResources\Typicons-DeviceDesktop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CSCore" Version="1.2.1.2" />
     <PackageReference Include="MahApps.Metro" Version="2.4.6" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="4.11.0" />
     <PackageReference Include="MaterialDesignThemes" Version="4.4.0" />
@@ -19,11 +32,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.16" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.16" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="PInvoke.Gdi32" Version="0.7.104" />
     <PackageReference Include="Prism.Unity" Version="8.1.97" />
     <PackageReference Include="ReactiveProperty" Version="8.0.5" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SimpleVolumeMixer.Core\SimpleVolumeMixer.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,8 +60,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Views\Controls\SoundBar.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
+    <Folder Include="Core" />
   </ItemGroup>
 </Project>
