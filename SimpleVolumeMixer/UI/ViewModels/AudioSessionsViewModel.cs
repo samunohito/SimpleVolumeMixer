@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
@@ -9,7 +8,6 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Contracts.Services;
 using SimpleVolumeMixer.Core.Helper.Component;
-using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 using SimpleVolumeMixer.Core.Helper.Utils;
 using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 using SimpleVolumeMixer.UI.ViewModels.Audio;
@@ -25,8 +23,9 @@ public class AudioSessionsViewModel : BindableBase
     public AudioSessionsViewModel(ICoreAudioService coreAudioService)
     {
         _disposable = new CompositeDisposable();
-        _instanceManager =
-            new KeyValueInstanceManager<AudioDevice, AudioDeviceViewModel>(x => new AudioDeviceViewModel(x));
+        _instanceManager = new KeyValueInstanceManager<AudioDevice, AudioDeviceViewModel>(
+            x => new AudioDeviceViewModel(x, coreAudioService)
+        );
         _coreAudioService = coreAudioService;
 
         Devices = coreAudioService.Devices
@@ -36,13 +35,7 @@ public class AudioSessionsViewModel : BindableBase
 
         SelectedDevice = new ReactiveProperty<AudioDeviceViewModel?>().AddTo(_disposable);
         SelectedDevice.Zip(SelectedDevice.Skip(1), (x, y) => new { OldValue = x, NewValue = y })
-            .Subscribe(x =>
-            {
-                if (Equals(x?.OldValue, x?.NewValue)) return;
-
-                x?.OldValue?.CloseSession();
-                x?.NewValue?.OpenSession();
-            })
+            .Subscribe(x => OnDeviceChanged(x.OldValue, x.NewValue))
             .AddTo(_disposable);
         SelectedDevice
             .ObserveOnUIDispatcher()
@@ -53,11 +46,16 @@ public class AudioSessionsViewModel : BindableBase
             })
             .AddTo(_disposable);
 
-        _coreAudioService.MultimediaRoleDevice
+        coreAudioService.MultimediaRoleDevice
             .Subscribe(x => { SelectedDevice.Value = x != null ? _instanceManager.Obtain(x) : null; })
             .AddTo(_disposable);
 
         OnLoadedCommand = new DelegateCommand(OnLoaded);
+    }
+
+    ~AudioSessionsViewModel()
+    {
+        _disposable.Dispose();
     }
 
     public ReadOnlyReactiveCollection<AudioDeviceViewModel> Devices { get; }
@@ -66,9 +64,18 @@ public class AudioSessionsViewModel : BindableBase
 
     public ICommand OnLoadedCommand { get; }
 
-    ~AudioSessionsViewModel()
+    private async void OnDeviceChanged(AudioDeviceViewModel? oldDevice, AudioDeviceViewModel? newDevice)
     {
-        _disposable.Dispose();
+        if (Equals(oldDevice, newDevice))
+        {
+            return;
+        }
+
+        oldDevice?.CloseSession();
+        if (newDevice != null)
+        {
+            await newDevice.OpenSession();
+        }
     }
 
     private void OnLoaded()

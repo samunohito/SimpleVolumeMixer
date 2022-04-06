@@ -11,6 +11,7 @@ using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.Component.Types;
 using SimpleVolumeMixer.Core.Helper.CoreAudio;
+using SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
@@ -45,12 +46,12 @@ public class AudioSession : DisposableComponent
             comparer: PropertyMonitor.FloatComparer
         );
         _meteringChannelCount = new PropertyMonitor<int>(
-            PropertyMonitorIntervalType.LowMiddle,
+            PropertyMonitorIntervalType.Low,
             () => ax.MeteringChannelCount,
             comparer: PropertyMonitor.IntComparer
         );
         _displayName = new PropertyMonitor<string?>(
-            PropertyMonitorIntervalType.LowMiddle,
+            PropertyMonitorIntervalType.Manual,
             ResolveDisplayName
         );
         _iconSource = new PropertyMonitor<ImageSource?>(
@@ -58,17 +59,17 @@ public class AudioSession : DisposableComponent
             ResolveIcon
         );
         _groupingParam = new PropertyMonitor<Guid>(
-            PropertyMonitorIntervalType.Low,
+            PropertyMonitorIntervalType.Manual,
             () => ax.GroupingParam
         );
         _masterVolume = new PropertyMonitor<float>(
-            PropertyMonitorIntervalType.Normal,
+            PropertyMonitorIntervalType.Manual,
             () => ax.MasterVolume,
             (x) => ax.MasterVolume = x,
             PropertyMonitor.FloatComparer
         );
         _isMuted = new PropertyMonitor<bool>(
-            PropertyMonitorIntervalType.Normal,
+            PropertyMonitorIntervalType.Manual,
             () => ax.IsMuted,
             (x) => ax.IsMuted = x,
             PropertyMonitor.BoolComparer
@@ -107,7 +108,12 @@ public class AudioSession : DisposableComponent
             disposable.AddTo(Disposable);
         }
 
-        ax.Disposed += SessionOnDisposed;
+        ax.Disposing += OnSessionDisposing;
+        ax.DisplayNameChanged += OnDisplayNameChanged;
+        ax.IconPathChanged += OnIconPathChanged;
+        ax.SimpleVolumeChanged += OnSimpleVolumeChanged;
+        ax.GroupingParamChanged += OnGroupingParamChanged;
+
         if (ax.IsDisposed)
         {
             // 無いだろうけど、初期化中にAccessorが破棄された時のために
@@ -126,9 +132,30 @@ public class AudioSession : DisposableComponent
     public IReactiveProperty<float> MasterVolume { get; }
     public IReactiveProperty<bool> IsMuted { get; }
 
-    private void SessionOnDisposed(object? sender, EventArgs e)
+    private void OnSessionDisposing(object? sender, EventArgs e)
     {
         Dispose();
+    }
+
+    private void OnDisplayNameChanged(object? sender, AudioSessionAccessorDisplayNameChangedEventArgs e)
+    {
+        _displayName.Refresh();
+    }
+
+    private void OnIconPathChanged(object? sender, AudioSessionAccessorIconPathChangedEventArgs e)
+    {
+        _iconSource.Refresh();
+    }
+
+    private void OnSimpleVolumeChanged(object? sender, AudioSessionAccessorSimpleVolumeChangedEventArgs e)
+    {
+        _masterVolume.Refresh();
+        _isMuted.Refresh();
+    }
+
+    private void OnGroupingParamChanged(object? sender, AudioSessionAccessorGroupingParamChangedEventArgs e)
+    {
+        _groupingParam.Refresh();
     }
 
     private string? ResolveDisplayName()
@@ -164,7 +191,10 @@ public class AudioSession : DisposableComponent
             if (!string.IsNullOrWhiteSpace(fileName))
             {
                 var fileInfo = new FileInfo(fileName);
-                if (fileInfo.Exists) return fileInfo.Name;
+                if (fileInfo.Exists)
+                {
+                    return fileInfo.Name;
+                }
             }
         }
 
@@ -222,5 +252,32 @@ public class AudioSession : DisposableComponent
         biImg.StreamSource = ms;
         biImg.EndInit();
         return biImg;
+    }
+
+    protected override void OnDisposing()
+    {
+        var monitors = new IPropertyMonitor[]
+        {
+            _sessionState,
+            _peakValue,
+            _meteringChannelCount,
+            _displayName,
+            _iconSource,
+            _groupingParam,
+            _masterVolume,
+            _isMuted
+        };
+        foreach (var monitor in monitors)
+        {
+            monitor.Stop();
+        }
+
+        _accessor.Disposing -= OnSessionDisposing;
+        _accessor.DisplayNameChanged -= OnDisplayNameChanged;
+        _accessor.IconPathChanged -= OnIconPathChanged;
+        _accessor.SimpleVolumeChanged -= OnSimpleVolumeChanged;
+        _accessor.GroupingParamChanged -= OnGroupingParamChanged;
+
+        base.OnDisposing();
     }
 }

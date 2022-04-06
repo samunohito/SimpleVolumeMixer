@@ -196,6 +196,15 @@ namespace SimpleVolumeMixer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AudioDevices.
+        /// </summary>
+        public static string ShellAudioDevicesPage {
+            get {
+                return ResourceManager.GetString("ShellAudioDevicesPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AudioSessions.
         /// </summary>
         public static string ShellAudioSessionsPage {

@@ -2,9 +2,9 @@
 
 namespace SimpleVolumeMixer.UI.Views;
 
-public partial class MainPage : UserControl
+public partial class AudioSessionsPage : UserControl
 {
-    public MainPage()
+    public AudioSessionsPage()
     {
         InitializeComponent();
     }

@@ -2,6 +2,7 @@
 
 public class PageKeys
 {
-    public const string Main = "Main";
+    public const string AudioSessions = "AudioSessions";
+    public const string AudioDevices = "AudioDevices";
     public const string Settings = "Settings";
 }

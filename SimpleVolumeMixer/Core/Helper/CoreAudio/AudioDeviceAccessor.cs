@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
 using CSCore.CoreAudioAPI;
+using Microsoft.Extensions.Logging;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
@@ -11,7 +13,7 @@ namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
 public class AudioDeviceAccessor : SafetyAccessorComponent
 {
-    public event EventHandler<DeviceRoleHolderChangedEventArgs>? RoleChanged
+    public event EventHandler<DeviceAccessorRoleHolderChangedEventArgs>? RoleChanged
     {
         add => Role.RoleChanged += value;
         remove => Role.RoleChanged -= value;
@@ -19,22 +21,22 @@ public class AudioDeviceAccessor : SafetyAccessorComponent
 
     private readonly AudioEndpointVolume _endpointVolume;
     private readonly AudioMeterInformation _meterInformation;
-    private readonly AudioSessionManagerAccessor _sessionManager;
+    private readonly AudioSessionAccessorManager _accessorManager;
 
-    internal AudioDeviceAccessor(MMDevice device)
+    public AudioDeviceAccessor(MMDevice device, ILogger logger)
     {
         Device = device.AddTo(Disposable);
 
         _endpointVolume = AudioEndpointVolume.FromDevice(Device).AddTo(Disposable);
         _meterInformation = AudioMeterInformation.FromDevice(Device).AddTo(Disposable);
-        _sessionManager = new AudioSessionManagerAccessor(this);
+        _accessorManager = new AudioSessionAccessorManager(this, logger);
 
         Role = new DeviceRoleHolder(this);
     }
 
     public MMDevice Device { get; }
     public DeviceRoleHolder Role { get; }
-    public ReadOnlyReactiveCollection<AudioSessionAccessor> Sessions => _sessionManager.Sessions;
+    public ReadOnlyReactiveCollection<AudioSessionAccessor> Sessions => _accessorManager.ReadOnlyCollection;
     public string? DeviceId => SafeRead(() => Device.DeviceID, null);
     public string? FriendlyName => SafeRead(() => Device.FriendlyName, null);
     public string? DevicePath => SafeRead(() => Device.DevicePath, null);
@@ -70,14 +72,14 @@ public class AudioDeviceAccessor : SafetyAccessorComponent
         set => SafeWrite(v => _endpointVolume.IsMuted = v, value);
     }
 
-    public void OpenSession()
+    public Task OpenSession()
     {
-        _sessionManager.OpenSessionManager();
+        return _accessorManager.OpenSession();
     }
 
     public void CloseSession()
     {
-        _sessionManager.CloseSessionManager();
+        _accessorManager.CloseSession();
     }
 
     protected override void OnDisposing()

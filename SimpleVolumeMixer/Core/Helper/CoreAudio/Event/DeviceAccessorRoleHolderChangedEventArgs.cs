@@ -2,17 +2,16 @@
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 
-public class DeviceRoleHolderChangedEventArgs : System.EventArgs
+public class DeviceAccessorRoleHolderChangedEventArgs : AudioDeviceAccessorEventArgs
 {
-    internal DeviceRoleHolderChangedEventArgs(AudioDeviceAccessor device, RoleType role, bool oldState, bool newState)
+    internal DeviceAccessorRoleHolderChangedEventArgs(AudioDeviceAccessor device, RoleType role, bool oldState, bool newState) :
+        base(device)
     {
-        Device = device;
         Role = role;
         OldState = oldState;
         NewState = newState;
     }
 
-    public AudioDeviceAccessor Device { get; }
     public RoleType Role { get; }
     public bool OldState { get; }
     public bool NewState { get; }

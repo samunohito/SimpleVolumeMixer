@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Threading.Tasks;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
@@ -66,7 +67,7 @@ public class AudioDevice : DisposableComponent
             () => ax.MeteringChannelCount
         );
         _masterVolumeLevel = new PropertyMonitor<float>(
-            PropertyMonitorIntervalType.Normal,
+            PropertyMonitorIntervalType.Manual,
             () => ax.MasterVolumeLevel,
             (x) => ax.MasterVolumeLevel = x,
             PropertyMonitor.FloatComparer
@@ -156,9 +157,9 @@ public class AudioDevice : DisposableComponent
     public IReactiveProperty<float> MasterVolumeLevelScalar { get; }
     public IReactiveProperty<bool> IsMuted { get; }
 
-    public void OpenSession()
+    public Task OpenSession()
     {
-        Device.OpenSession();
+        return Device.OpenSession();
     }
 
     public void CloseSession()

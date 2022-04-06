@@ -167,4 +167,7 @@
     <data name="ShellAudioSessionsPage" xml:space="preserve">
         <value>AudioSessions</value>
     </data>
+    <data name="ShellAudioDevicesPage" xml:space="preserve">
+        <value>AudioDevices</value>
+    </data>
 </root>

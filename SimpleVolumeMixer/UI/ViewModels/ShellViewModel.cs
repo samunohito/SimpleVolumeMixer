@@ -48,7 +48,8 @@ public class ShellViewModel : BindableBase
     // TODO WTS: Change the icons and titles for all HamburgerMenuItems here.
     public ObservableCollection<HamburgerMenuItem> MenuItems { get; } = new()
     {
-        new HamburgerMenuPackIconItem { Label = Resources.ShellAudioSessionsPage, Kind = PackIconKind.VolumeHigh, Tag = PageKeys.Main }
+        new HamburgerMenuPackIconItem { Label = Resources.ShellAudioSessionsPage, Kind = PackIconKind.VolumeHigh, Tag = PageKeys.AudioSessions },
+        new HamburgerMenuPackIconItem { Label = Resources.ShellAudioDevicesPage, Kind = PackIconKind.SpeakerMultiple, Tag = PageKeys.AudioDevices },
     };
 
     public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; } = new()

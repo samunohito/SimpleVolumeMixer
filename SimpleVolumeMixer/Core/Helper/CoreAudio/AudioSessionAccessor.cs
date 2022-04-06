@@ -1,44 +1,57 @@
 ﻿using System;
 using System.Diagnostics;
 using CSCore.CoreAudioAPI;
+using Microsoft.Extensions.Logging;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
+using SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
+using SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Internal;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
-using AudioSessionStateChangedEventArgs =
-    SimpleVolumeMixer.Core.Helper.CoreAudio.Event.AudioSessionStateChangedEventArgs;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
 public class AudioSessionAccessor : SafetyAccessorComponent
 {
-    public event EventHandler<AudioSessionStateChangedEventArgs>? StateChanged;
+    public event EventHandler<AudioSessionAccessorDisplayNameChangedEventArgs>? DisplayNameChanged;
+    public event EventHandler<AudioSessionAccessorIconPathChangedEventArgs>? IconPathChanged;
+    public event EventHandler<AudioSessionAccessorSimpleVolumeChangedEventArgs>? SimpleVolumeChanged;
+    public event EventHandler<AudioSessionAccessorChannelVolumeChangedEventArgs>? ChannelVolumeChanged;
+    public event EventHandler<AudioSessionAccessorGroupingParamChangedEventArgs>? GroupingParamChanged;
+    public event EventHandler<AudioSessionAccessorStateChangedEventArgs>? StateChanged;
+    public event EventHandler<AudioSessionAccessorDisconnectedEventArgs>? SessionDisconnected;
 
+    private readonly ILogger _logger;
     private readonly AudioSessionControl _session;
     private readonly AudioSessionControl2 _sessionControl2;
     private readonly AudioMeterInformation _meterInformation;
     private readonly SimpleAudioVolume _audioVolume;
+    private readonly AudioSessionEventAdapter _eventAdapter;
 
-    internal AudioSessionAccessor(AudioSessionControl audioSessionControl)
+    internal AudioSessionAccessor(AudioSessionControl audioSessionControl, ILogger logger)
     {
+        _logger = logger;
         _session = audioSessionControl.AddTo(Disposable);
-        _session.DisplayNameChanged += SessionOnDisplayNameChanged;
-        _session.IconPathChanged += SessionOnIconPathChanged;
-        _session.SimpleVolumeChanged += SessionOnSimpleVolumeChanged;
-        _session.ChannelVolumeChanged += SessionOnChannelVolumeChanged;
-        _session.GroupingParamChanged += SessionOnGroupingParamChanged;
-        _session.StateChanged += SessionOnStateChanged;
-        _session.SessionDisconnected += SessionOnSessionDisconnected;
 
         _meterInformation = _session.QueryInterface<AudioMeterInformation>().AddTo(Disposable);
         _audioVolume = _session.QueryInterface<SimpleAudioVolume>().AddTo(Disposable);
-        
+
         // AudioSessionControlと同一ポインタのようなのでDisposableへの追加は不要。
         // 逆に追加すると多重に開放してしまいハングアップする
         _sessionControl2 = _session.QueryInterface<AudioSessionControl2>();
+
+        _eventAdapter = new AudioSessionEventAdapter(_session, logger).AddTo(Disposable);
+        _eventAdapter.DisplayNameChanged += OnDisplayNameChanged;
+        _eventAdapter.IconPathChanged += OnIconPathChanged;
+        _eventAdapter.SimpleVolumeChanged += OnSimpleVolumeChanged;
+        _eventAdapter.ChannelVolumeChanged += OnChannelVolumeChanged;
+        _eventAdapter.GroupingParamChanged += OnGroupingParamChanged;
+        _eventAdapter.StateChanged += OnStateChanged;
+        _eventAdapter.SessionDisconnected += OnSessionDisconnected;
     }
 
     public Process? Process => SafeRead(() => _sessionControl2.Process, null);
+
     public bool IsSystemSoundSession => SafeRead(() => _sessionControl2.IsSystemSoundSession, false);
 
     public AudioSessionStateType SessionState => SafeRead(
@@ -78,50 +91,82 @@ public class AudioSessionAccessor : SafetyAccessorComponent
         set => SafeWrite(v => _audioVolume.IsMuted = v, value);
     }
 
-    private void SessionOnDisplayNameChanged(object? sender, AudioSessionDisplayNameChangedEventArgs e)
+    private void OnDisplayNameChanged(object? sender, AudioSessionDisplayNameChangedEventArgs e)
     {
-        Debug.WriteLine("SessionOnDisplayNameChanged " + e);
+        DisplayNameChanged?.Invoke(
+            this,
+            new AudioSessionAccessorDisplayNameChangedEventArgs(this, e.NewDisplayName)
+        );
     }
 
-    private void SessionOnIconPathChanged(object? sender, AudioSessionIconPathChangedEventArgs e)
+    private void OnIconPathChanged(object? sender, AudioSessionIconPathChangedEventArgs e)
     {
-        Debug.WriteLine("SessionOnIconPathChanged " + e);
+        IconPathChanged?.Invoke(
+            this,
+            new AudioSessionAccessorIconPathChangedEventArgs(this, e.NewIconPath)
+        );
     }
 
-    private void SessionOnSimpleVolumeChanged(object? sender, AudioSessionSimpleVolumeChangedEventArgs e)
+    private void OnSimpleVolumeChanged(object? sender, AudioSessionSimpleVolumeChangedEventArgs e)
     {
-        Debug.WriteLine("SessionOnSimpleVolumeChanged " + e);
+        SimpleVolumeChanged?.Invoke(
+            this,
+            new AudioSessionAccessorSimpleVolumeChangedEventArgs(this, e.NewVolume, e.IsMuted)
+        );
     }
 
-    private void SessionOnChannelVolumeChanged(object? sender, AudioSessionChannelVolumeChangedEventArgs e)
+    private void OnChannelVolumeChanged(object? sender, AudioSessionChannelVolumeChangedEventArgs e)
     {
-        Debug.WriteLine("SessionOnChannelVolumeChanged " + e);
+        ChannelVolumeChanged?.Invoke(
+            this,
+            new AudioSessionAccessorChannelVolumeChangedEventArgs(
+                this,
+                e.ChangedChannel,
+                e.ChannelVolumes,
+                e.ChangedChannel)
+        );
     }
 
-    private void SessionOnGroupingParamChanged(object? sender, AudioSessionGroupingParamChangedEventArgs e)
+    private void OnGroupingParamChanged(object? sender, AudioSessionGroupingParamChangedEventArgs e)
     {
-        Debug.WriteLine("SessionOnGroupingParamChanged " + e);
+        GroupingParamChanged?.Invoke(
+            this,
+            new AudioSessionAccessorGroupingParamChangedEventArgs(
+                this,
+                e.NewGroupingParam)
+        );
     }
 
-    private void SessionOnStateChanged(object? sender, CSCore.CoreAudioAPI.AudioSessionStateChangedEventArgs e)
+    private void OnStateChanged(object? sender, AudioSessionStateChangedEventArgs e)
     {
-        Debug.WriteLine("SessionOnStateChanged " + e);
-        StateChanged?.Invoke(this, new AudioSessionStateChangedEventArgs(AccessorHelper.SessionStates[e.NewState]));
+        StateChanged?.Invoke(
+            this,
+            new AudioSessionAccessorStateChangedEventArgs(
+                this,
+                AccessorHelper.SessionStates[e.NewState])
+        );
     }
 
-    private void SessionOnSessionDisconnected(object? sender, AudioSessionDisconnectedEventArgs e)
+    private void OnSessionDisconnected(object? sender, AudioSessionDisconnectedEventArgs e)
     {
-        Debug.WriteLine("SessionOnSessionDisconnected " + e);
+        SessionDisconnected?.Invoke(
+            this,
+            new AudioSessionAccessorDisconnectedEventArgs(
+                this,
+                AccessorHelper.SessionDisconnectReasons[e.DisconnectReason])
+        );
     }
 
     protected override void OnDisposing()
     {
-        _session.DisplayNameChanged -= SessionOnDisplayNameChanged;
-        _session.IconPathChanged -= SessionOnIconPathChanged;
-        _session.SimpleVolumeChanged -= SessionOnSimpleVolumeChanged;
-        _session.ChannelVolumeChanged -= SessionOnChannelVolumeChanged;
-        _session.GroupingParamChanged -= SessionOnGroupingParamChanged;
-        _session.StateChanged -= SessionOnStateChanged;
-        _session.SessionDisconnected -= SessionOnSessionDisconnected;
+        _eventAdapter.DisplayNameChanged -= OnDisplayNameChanged;
+        _eventAdapter.IconPathChanged -= OnIconPathChanged;
+        _eventAdapter.SimpleVolumeChanged -= OnSimpleVolumeChanged;
+        _eventAdapter.ChannelVolumeChanged -= OnChannelVolumeChanged;
+        _eventAdapter.GroupingParamChanged -= OnGroupingParamChanged;
+        _eventAdapter.StateChanged -= OnStateChanged;
+        _eventAdapter.SessionDisconnected -= OnSessionDisconnected;
+
+        base.OnDisposing();
     }
 }

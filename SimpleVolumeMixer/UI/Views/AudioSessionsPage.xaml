@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="SimpleVolumeMixer.UI.Views.MainPage"
+    x:Class="SimpleVolumeMixer.UI.Views.AudioSessionsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -36,80 +36,59 @@
                                    TextAlignment="Center"
                                    TextTrimming="CharacterEllipsis"
                                    Text="{Binding DisplayName.Value}" />
-                        <Grid
+                        <Control
                             Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
-                            <materialDesign:PackIcon
-                                HorizontalAlignment="Center"
-                                Kind="{Binding PackIconKind}"
-                                Width="32"
-                                Height="32" />
-
-                            <Grid.Style>
-                                <Style TargetType="Grid">
+                            <Control.Style>
+                                <Style TargetType="Control">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding UsePackIcon}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate>
+                                                        <materialDesign:PackIcon
+                                                            HorizontalAlignment="Center"
+                                                            Kind="{Binding PackIconKind}"
+                                                            Width="32"
+                                                            Height="32" />
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding UsePackIcon}" Value="False">
-                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate>
+                                                        <Image Name="IconSource"
+                                                               HorizontalAlignment="Center"
+                                                               Source="{Binding IconSource.Value}"
+                                                               Width="32"
+                                                               Height="32" />
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </Grid.Style>
-                        </Grid>
-                        <Grid
-                            Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
-                            <Image Name="IconSource"
-                                   HorizontalAlignment="Center"
-                                   Source="{Binding IconSource.Value}"
-                                   Width="32"
-                                   Height="32" />
-
-                            <Grid.Style>
-                                <Style TargetType="Grid">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding UsePackIcon}" Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding UsePackIcon}" Value="False">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Grid.Style>
-                        </Grid>
+                            </Control.Style>
+                        </Control>
                     </DockPanel>
                     <Grid DockPanel.Dock="Bottom" Margin="0,4,0,0">
-                        <Button Command="{Binding MuteStateChangeCommand}">
-                            <materialDesign:PackIcon Kind="VolumeHigh" />
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+                        <ToggleButton Command="{Binding MuteStateChangeCommand}">
+                            <ToggleButton.Style>
+                                <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignIconButton}">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Setter Property="Content" 
+                                                    Value="{materialDesign:PackIcon Kind=VolumeOff}" />
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
-                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Setter Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=VolumeHigh}" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </Button.Style>
-                        </Button>
-                        <Button Command="{Binding MuteStateChangeCommand}">
-                            <materialDesign:PackIcon Kind="VolumeOff" />
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                            </ToggleButton.Style>
+                        </ToggleButton>
                     </Grid>
                     <controls:PeakBar
                         HorizontalAlignment="Center"
@@ -171,7 +150,7 @@
                         <ItemsControl ItemsSource="{Binding Sessions}"
                                       ItemsPanel="{StaticResource VerticalAudioSessionsPanelTemplate}"
                                       ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}"
-                                      Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}"/>
+                                      Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}" />
                     </ScrollViewer>
                 </GroupBox>
             </DockPanel>

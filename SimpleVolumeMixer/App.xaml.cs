@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Uwp.Notifications;
+using NLog.Extensions.Logging;
 using Prism.Ioc;
 using Prism.Unity;
 using SimpleVolumeMixer.Core.Contracts.Models.Repository;
@@ -64,13 +66,6 @@ public partial class App : PrismApplication
             });
         };
 
-        var toastNotificationsService = Container.Resolve<IToastNotificationsService>();
-        toastNotificationsService.ShowToastNotificationSample();
-
-        if (ToastNotificationManagerCompat.WasCurrentProcessToastActivated())
-            // ToastNotificationActivator code will run after this completes and will show a window if necessary.
-            return;
-
         base.OnInitialized();
         await Task.CompletedTask;
     }
@@ -100,7 +95,9 @@ public partial class App : PrismApplication
 
         // Views
         containerRegistry.RegisterForNavigation<SettingsPage, SettingsViewModel>(PageKeys.Settings);
-        containerRegistry.RegisterForNavigation<MainPage, AudioSessionsViewModel>(PageKeys.Main);
+        containerRegistry.RegisterForNavigation<AudioSessionsPage, AudioSessionsViewModel>(PageKeys.AudioSessions);
+        containerRegistry.RegisterForNavigation<AudioDevicesPage, AudioDevicesViewModel>(PageKeys.AudioDevices);
+
         containerRegistry.RegisterForNavigation<ShellWindow, ShellViewModel>();
 
         // Configuration
@@ -112,6 +109,12 @@ public partial class App : PrismApplication
         // Register configurations to IoC
         containerRegistry.RegisterInstance(configuration);
         containerRegistry.RegisterInstance(appConfig);
+
+        // Logger
+        var loggerFactory = new NLogLoggerFactory();
+        var defaultLogger = loggerFactory.CreateLogger("default");
+        containerRegistry.RegisterInstance<ILoggerFactory>(loggerFactory);
+        containerRegistry.RegisterInstance(defaultLogger);
     }
 
     private IConfiguration BuildConfiguration()

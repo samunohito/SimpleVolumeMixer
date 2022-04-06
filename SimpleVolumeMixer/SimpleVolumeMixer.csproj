@@ -26,6 +26,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.16" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NLog" Version="5.0.0-rc2" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.0.0-rc2" />
+    <PackageReference Include="NLog.Schema" Version="5.0.0-rc2" />
     <PackageReference Include="Prism.Unity" Version="8.1.97" />
     <PackageReference Include="ReactiveProperty" Version="8.0.5" />
   </ItemGroup>
@@ -53,5 +56,12 @@
 
   <ItemGroup>
     <Folder Include="Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="NLog.config" />
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

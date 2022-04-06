@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Microsoft.Extensions.Logging;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Contracts.Models.Repository;
@@ -22,71 +20,87 @@ public class CoreAudioRepository : ICoreAudioRepository
         { RoleType.Multimedia, ERole.Multimedia },
     };
 
+    private readonly ILogger _logger;
     private readonly CompositeDisposable _disposable;
     private readonly CoreAudioAccessor _accessor;
+    private readonly IReactiveProperty<AudioDeviceAccessor?> _communicationRoleDevice;
+    private readonly IReactiveProperty<AudioDeviceAccessor?> _multimediaRoleDevice;
 
-    public CoreAudioRepository()
+    public CoreAudioRepository(ILogger logger)
     {
+        _logger = logger;
         _disposable = new CompositeDisposable();
-        _accessor = new CoreAudioAccessor().AddTo(_disposable);
+        _accessor = new CoreAudioAccessor(logger).AddTo(_disposable);
         _accessor.DeviceRoleChanged += OnDeviceRoleChanged;
         _accessor.DeviceDisposed += OnDeviceDisposed;
 
-        // RoleChangedは断続的に発生するため、簡易的な仕組みのReactivePropertySlimだと不整合が起こってしまう。
-        // ReactivePropertyを使用し、イベントを通知された順に処理する。
-        CommunicationRoleDevice = new ReactiveProperty<AudioDeviceAccessor?>().AddTo(_disposable);
-        MultimediaRoleDevice = new ReactiveProperty<AudioDeviceAccessor?>().AddTo(_disposable);
-
-        _accessor.RefreshDevices();
+        _communicationRoleDevice = new ReactivePropertySlim<AudioDeviceAccessor?>(_accessor.GetDefaultDevice(
+                DataFlowType.Render,
+                RoleType.Communications)
+            )
+            .AddTo(_disposable);
+        _multimediaRoleDevice = new ReactivePropertySlim<AudioDeviceAccessor?>(_accessor.GetDefaultDevice(
+                DataFlowType.Render,
+                RoleType.Multimedia)
+            )
+            .AddTo(_disposable);
     }
 
     public ReadOnlyReactiveCollection<AudioDeviceAccessor> AudioDevices => _accessor.AudioDevices;
-    public IReactiveProperty<AudioDeviceAccessor?> CommunicationRoleDevice { get; }
-    public IReactiveProperty<AudioDeviceAccessor?> MultimediaRoleDevice { get; }
+    public IReadOnlyReactiveProperty<AudioDeviceAccessor?> CommunicationRoleDevice => _communicationRoleDevice;
+    public IReadOnlyReactiveProperty<AudioDeviceAccessor?> MultimediaRoleDevice => _multimediaRoleDevice;
 
-    private void OnDeviceRoleChanged(object? sender, DeviceRoleHolderChangedEventArgs e)
+    private void OnDeviceRoleChanged(object? sender, DeviceAccessorRoleHolderChangedEventArgs e)
     {
         if (e.Role == RoleType.Communications && e.NewState)
         {
-            CommunicationRoleDevice.Value = e.Device;
+            _communicationRoleDevice.Value = e.Device;
         }
 
         if (e.Role == RoleType.Multimedia && e.NewState)
         {
-            MultimediaRoleDevice.Value = e.Device;
+            _multimediaRoleDevice.Value = e.Device;
         }
     }
-    
-    private void OnDeviceDisposed(object? sender, DeviceDisposeEventArgs e)
+
+    private void OnDeviceDisposed(object? sender, AudioDeviceAccessorEventArgs e)
     {
         if (e.Device == CommunicationRoleDevice.Value)
         {
-            // CommunicationRoleDevice.Value = null;
+            _communicationRoleDevice.Value = null;
         }
 
         if (e.Device == MultimediaRoleDevice.Value)
         {
-            // MultimediaRoleDevice.Value = null;
+            _multimediaRoleDevice.Value = null;
         }
     }
 
-    public void SetDefaultDevice(AudioDeviceAccessor accessor, RoleType roleType)
+    public void SetDefaultDevice(AudioDeviceAccessor accessor, DataFlowType dataFlowType, RoleType roleType)
     {
         var deviceId = accessor.DeviceId;
-        if (accessor.IsDisposed || deviceId == null || roleType == RoleType.Unknown)
+        if (accessor.IsDisposed || deviceId == null)
         {
             return;
         }
 
-        if (roleType == RoleType.Communications && deviceId == CommunicationRoleDevice.Value?.DeviceId)
+        AudioDeviceAccessor? currentDevice;
+        switch (roleType)
+        {
+            case RoleType.Communications:
+                currentDevice = _accessor.GetDefaultDevice(dataFlowType, RoleType.Communications);
+                break;
+            case RoleType.Multimedia:
+                currentDevice = _accessor.GetDefaultDevice(dataFlowType, RoleType.Multimedia);
+                break;
+            default:
+                return;
+        }
+
+        if (currentDevice?.DeviceId == accessor.DeviceId)
         {
             return;
-        } 
-        
-        if (roleType == RoleType.Multimedia && deviceId == MultimediaRoleDevice.Value?.DeviceId)
-        {
-            return;
-        } 
+        }
 
         PolicyConfigClient.SetDefaultDevice(deviceId, Roles[roleType]);
     }

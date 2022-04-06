@@ -13,7 +13,7 @@ public static class PropertyMonitor
     public static readonly Func<bool, bool, bool> BoolComparer = (x, y) => x == y;
 }
 
-public class PropertyMonitor<T> : NotifyPropertyChangedBase, IDisposable
+public class PropertyMonitor<T> : NotifyPropertyChangedBase, IDisposable, IPropertyMonitor<T>
 {
     private static readonly Func<T, T, bool> DefaultComparer = (x, y) => Equals(x, y);
     private static readonly Action<T> DefaultWriter = _ => { };
@@ -58,6 +58,14 @@ public class PropertyMonitor<T> : NotifyPropertyChangedBase, IDisposable
         }
     }
 
+    object IPropertyMonitor.Value
+    {
+#pragma warning disable CS8603
+        get => Value;
+#pragma warning restore CS8603
+        set => Value = (T)value;
+    }
+
     public PropertyMonitorIntervalType IntervalType
     {
         get => _intervalType;
@@ -86,6 +94,21 @@ public class PropertyMonitor<T> : NotifyPropertyChangedBase, IDisposable
         }
     }
 
+    public void Start()
+    {
+        if (_intervalType == PropertyMonitorIntervalType.Manual)
+        {
+            throw new InvalidOperationException("state is manual.");
+        }
+
+        _timer.Start();
+    }
+
+    public void Stop()
+    {
+        _timer.Stop();
+    }
+
     public void Refresh()
     {
         var newValue = ReadValue();
@@ -96,20 +119,20 @@ public class PropertyMonitor<T> : NotifyPropertyChangedBase, IDisposable
         }
     }
 
-    public virtual T ReadValue()
+    protected virtual T ReadValue()
     {
         return _reader();
     }
 
-    public virtual void WriteValue(T value)
+    protected virtual void WriteValue(T value)
     {
         _writer(value);
-    } 
-    
+    }
+
     public void Dispose()
     {
-        _timer.Elapsed -= TimerOnElapsed;
         _timer.Stop();
+        _timer.Elapsed -= TimerOnElapsed;
 
         _disposable.Dispose();
     }

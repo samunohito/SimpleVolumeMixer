@@ -7,7 +7,7 @@ namespace SimpleVolumeMixer.Core.Contracts.Models.Repository;
 public interface ICoreAudioRepository
 {
     ReadOnlyReactiveCollection<AudioDeviceAccessor> AudioDevices { get; }
-    IReactiveProperty<AudioDeviceAccessor?> CommunicationRoleDevice { get; }
-    IReactiveProperty<AudioDeviceAccessor?> MultimediaRoleDevice { get; }
-    void SetDefaultDevice(AudioDeviceAccessor accessor, RoleType roleType);
+    IReadOnlyReactiveProperty<AudioDeviceAccessor?> CommunicationRoleDevice { get; }
+    IReadOnlyReactiveProperty<AudioDeviceAccessor?> MultimediaRoleDevice { get; }
+    void SetDefaultDevice(AudioDeviceAccessor accessor, DataFlowType dataFlowType, RoleType roleType);
 }

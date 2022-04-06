@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
@@ -8,7 +10,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
-using SimpleVolumeMixer.Core.Helper.CoreAudio;
+using SimpleVolumeMixer.Core.Contracts.Services;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 using SimpleVolumeMixer.UI.Views.Controls;
@@ -17,14 +19,16 @@ namespace SimpleVolumeMixer.UI.ViewModels.Audio;
 
 public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
 {
+    private readonly ICoreAudioService _coreAudioService;
     private readonly CompositeDisposable _disposable;
     private ISoundBarHandler? _soundBarHandler;
 
-    public AudioDeviceViewModel(AudioDevice device)
+    public AudioDeviceViewModel(AudioDevice device, ICoreAudioService coreAudioService)
     {
         _disposable = new CompositeDisposable();
-        Device = device;
         _soundBarHandler = null;
+        _coreAudioService = coreAudioService;
+        Device = device;
 
         Sessions = device.Sessions
             .ToReadOnlyReactiveCollection(x => new AudioSessionViewModel(x))
@@ -52,11 +56,14 @@ public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
             .Subscribe(x => _soundBarHandler?.NotifyValue(x))
             .AddTo(_disposable);
 
+        PeakBarReadyCommand = new DelegateCommand<SoundBarReadyEventArgs>(OnSoundBarReady);
+        MuteStateChangeCommand = new DelegateCommand(OnMuteStateChange);
+        CommunicationRoleApplyCommand = new DelegateCommand(OnCommunicationRoleApply);
+        MultimediaRoleApplyCommand = new DelegateCommand(OnMultimediaRoleApply);
+        
+        // for IAudioSessionCard
         IconSource = new ReactivePropertySlim<ImageSource?>().AddTo(_disposable);
         DisplayName = new ReactivePropertySlim<string?>("Master").AddTo(_disposable);
-
-        PeakBarReadyCommand = new DelegateCommand<SoundBarReadyEventArgs>(OnSoundBarReady);
-        MuteStateChangeCommand = new DelegateCommand(OnOnMuteStateChange);
     }
 
     public AudioDevice Device { get; }
@@ -79,6 +86,8 @@ public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
     public IReactiveProperty<bool> IsMuted { get; }
     public ICommand PeakBarReadyCommand { get; }
     public ICommand MuteStateChangeCommand { get; }
+    public ICommand CommunicationRoleApplyCommand { get; }
+    public ICommand MultimediaRoleApplyCommand { get; }
 
     public void Dispose()
     {
@@ -95,14 +104,24 @@ public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
         _soundBarHandler = e.Handler;
     }
 
-    private void OnOnMuteStateChange()
+    private void OnMuteStateChange()
     {
         IsMuted.Value = !IsMuted.Value;
     }
 
-    public void OpenSession()
+    private void OnCommunicationRoleApply()
     {
-        Device.OpenSession();
+        _coreAudioService.SetDefaultDevice(Device, DataFlowType.Render, RoleType.Communications);
+    }
+
+    private void OnMultimediaRoleApply()
+    {
+        _coreAudioService.SetDefaultDevice(Device, DataFlowType.Render, RoleType.Multimedia);
+    }
+
+    public Task OpenSession()
+    {
+        return Device.OpenSession();
     }
 
     public void CloseSession()

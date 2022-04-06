@@ -7,7 +7,7 @@ namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
 public class DeviceRoleHolder : NotifyPropertyChangedBase
 {
-    internal event EventHandler<DeviceRoleHolderChangedEventArgs>? RoleChanged;
+    internal event EventHandler<DeviceAccessorRoleHolderChangedEventArgs>? RoleChanged;
 
     private readonly AudioDeviceAccessor _device;
     private bool _multimedia;
@@ -50,6 +50,6 @@ public class DeviceRoleHolder : NotifyPropertyChangedBase
 
     private void RaiseDeviceRoleChanged(RoleType roleType, bool oldState, bool newState)
     {
-        RoleChanged?.Invoke(this, new DeviceRoleHolderChangedEventArgs(_device, roleType, oldState, newState));
+        RoleChanged?.Invoke(this, new DeviceAccessorRoleHolderChangedEventArgs(_device, roleType, oldState, newState));
     }
 }

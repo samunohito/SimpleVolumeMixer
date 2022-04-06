@@ -43,9 +43,9 @@ public class CoreAudioService : IDisposable, ICoreAudioService
     public IReadOnlyReactiveProperty<AudioDevice?> CommunicationRoleDevice { get; }
     public IReadOnlyReactiveProperty<AudioDevice?> MultimediaRoleDevice { get; }
     
-    public void SetDefaultDevice(AudioDevice device, RoleType roleType)
+    public void SetDefaultDevice(AudioDevice device, DataFlowType dataFlowType, RoleType roleType)
     {
-        _coreAudioRepository.SetDefaultDevice(device.Device, roleType);
+        _coreAudioRepository.SetDefaultDevice(device.Device, dataFlowType, roleType);
     }
 
     public void Dispose()
