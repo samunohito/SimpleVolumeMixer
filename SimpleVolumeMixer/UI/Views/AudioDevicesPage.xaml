@@ -126,11 +126,14 @@
 
     <Grid>
         <GroupBox Header="Devices">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
-                <ItemsControl ItemsSource="{Binding Devices}"
-                              ItemsPanel="{StaticResource VerticalAudioDevicesPanelTemplate}"
-                              ItemTemplate="{StaticResource VerticalAudioDeviceDataTemplate}"
-                              Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}"/>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden" Margin="-9">
+                <Border Padding="9"
+                        BorderThickness="0"
+                        Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
+                    <ItemsControl ItemsSource="{Binding Devices}"
+                                  ItemsPanel="{StaticResource VerticalAudioDevicesPanelTemplate}"
+                                  ItemTemplate="{StaticResource VerticalAudioDeviceDataTemplate}"/>
+                </Border>
             </ScrollViewer>
         </GroupBox>
     </Grid>

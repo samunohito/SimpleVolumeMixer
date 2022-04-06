@@ -78,7 +78,7 @@
                                 <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignIconButton}">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
-                                            <Setter Property="Content" 
+                                            <Setter Property="Content"
                                                     Value="{materialDesign:PackIcon Kind=VolumeOff}" />
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
@@ -145,12 +145,16 @@
                                   ItemsPanel="{StaticResource VerticalAudioSessionsPanelTemplate}"
                                   ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}" />
                 </GroupBox>
-                <GroupBox Header="Applications" DataContext="{Binding SelectedDevice.Value}">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
-                        <ItemsControl ItemsSource="{Binding Sessions}"
-                                      ItemsPanel="{StaticResource VerticalAudioSessionsPanelTemplate}"
-                                      ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}"
-                                      Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}" />
+                <GroupBox Header="Applications"
+                          DataContext="{Binding SelectedDevice.Value}">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden" Margin="-9">
+                        <Border Padding="9"
+                                BorderThickness="0"
+                                Height="{Binding  ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
+                            <ItemsControl ItemsSource="{Binding Sessions}"
+                                          ItemsPanel="{StaticResource VerticalAudioSessionsPanelTemplate}"
+                                          ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}" />
+                        </Border>
                     </ScrollViewer>
                 </GroupBox>
             </DockPanel>
