@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -50,7 +51,10 @@ public class AudioSessionsViewModel : BindableBase
             .Subscribe(x => { SelectedDevice.Value = x != null ? _instanceManager.Obtain(x) : null; })
             .AddTo(_disposable);
 
+        Orientation = new ReactivePropertySlim<Orientation>(System.Windows.Controls.Orientation.Horizontal);
+
         OnLoadedCommand = new DelegateCommand(OnLoaded);
+        OnOrientationChangeCommand = new DelegateCommand(OnOrientationChange);
     }
 
     ~AudioSessionsViewModel()
@@ -61,9 +65,12 @@ public class AudioSessionsViewModel : BindableBase
     public ReadOnlyReactiveCollection<AudioDeviceViewModel> Devices { get; }
     public ReactiveCollection<AudioDeviceViewModel> SelectedDeviceForMaster { get; }
     public IReactiveProperty<AudioDeviceViewModel?> SelectedDevice { get; }
+    
+    public IReactiveProperty<Orientation> Orientation { get; }
 
     public ICommand OnLoadedCommand { get; }
-
+    public ICommand OnOrientationChangeCommand { get; }
+    
     private async void OnDeviceChanged(AudioDeviceViewModel? oldDevice, AudioDeviceViewModel? newDevice)
     {
         if (Equals(oldDevice, newDevice))
@@ -80,5 +87,12 @@ public class AudioSessionsViewModel : BindableBase
 
     private void OnLoaded()
     {
+    }
+
+    private void OnOrientationChange()
+    {
+        Orientation.Value = Orientation.Value == System.Windows.Controls.Orientation.Horizontal
+            ? System.Windows.Controls.Orientation.Vertical
+            : System.Windows.Controls.Orientation.Horizontal;
     }
 }

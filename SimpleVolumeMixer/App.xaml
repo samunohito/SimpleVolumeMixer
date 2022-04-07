@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
     Exit="OnExit"
     DispatcherUnhandledException="OnDispatcherUnhandledException">
 
@@ -33,6 +34,8 @@
                 <materialDesign:MahAppsBundledTheme BaseTheme="Inherit" PrimaryColor="Grey" SecondaryColor="Lime" />
                 <ResourceDictionary
                     Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary 
+                    Source="pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.Grey.Primary.xaml" />
 
                 <!--Material Design: MahApps統合設定 -->
                 <ResourceDictionary
@@ -40,6 +43,13 @@
                 <ResourceDictionary
                     Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Flyout.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="{StaticResource Primary200}" po:Freeze="True" />
+            <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="{StaticResource Primary200Foreground}" po:Freeze="True" />
+            <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="{StaticResource Primary500}" po:Freeze="True" />
+            <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="{StaticResource Primary500Foreground}" po:Freeze="True" />
+            <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="{StaticResource Primary700}" po:Freeze="True" />
+            <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="{StaticResource Primary700Foreground}" po:Freeze="True" />
         </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>

@@ -57,8 +57,17 @@ public partial class PeakBar : UserControl
             typeof(double),
             typeof(PeakBar),
             new PropertyMetadata(10.0));
+    
+    private static readonly DependencyProperty OrientationProperty =
+        DependencyProperty.Register(
+            nameof(Orientation),
+            typeof(Orientation),
+            typeof(PeakBar),
+            new PropertyMetadata(Orientation.Vertical));
 
     private readonly InternalSoundBarHandler _handler;
+    private readonly double _originWidth = 4.0;
+    private readonly double _originHeight = 4.0;
 
     public PeakBar()
     {
@@ -110,6 +119,12 @@ public partial class PeakBar : UserControl
         get => (double)GetValue(LargeChangeProperty);
         set => SetValue(LargeChangeProperty, value);
     }
+    
+    public Orientation Orientation
+    {
+        get => (Orientation)GetValue(OrientationProperty);
+        set => SetValue(OrientationProperty, value);
+    }
 
     public event EventHandler<SoundBarReadyEventArgs>? Ready
     {
@@ -137,41 +152,64 @@ public partial class PeakBar : UserControl
 
     private void UpdateMeterArea(double newMeterValue)
     {
-        var canvasHeight = BackCanvas.ActualHeight;
+        var canvasSize = (Orientation == Orientation.Horizontal)
+            ? BackCanvas.ActualWidth
+            : BackCanvas.ActualHeight;
 
-        if (newMeterValue <= 0.0)
+        if (newMeterValue <= 0.0 || Maximum == 0.0)
         {
-            GrayArea.Height = 0;
-            GreenArea.Height = 0;
+            SetAreaSize(0);
             return;
         }
 
-        var barRatio = Maximum == 0.0 ? 1.0 : Value / Maximum;
         var meterMaximum = MeterMaximum;
         if (meterMaximum <= newMeterValue)
         {
-            GrayArea.Height = canvasHeight;
-            GreenArea.Height = canvasHeight * barRatio;
+            SetAreaSize(canvasSize);
             return;
         }
 
-        var newHeight = canvasHeight * (newMeterValue / meterMaximum);
+        var newHeight = canvasSize * (newMeterValue / meterMaximum);
         if (newHeight <= 0.0)
         {
-            GrayArea.Height = 0;
-            GreenArea.Height = 0;
+            SetAreaSize(0);
             return;
         }
 
-        if (canvasHeight <= newHeight)
+        if (canvasSize <= newHeight)
         {
-            GrayArea.Height = canvasHeight;
-            GreenArea.Height = canvasHeight * barRatio;
+            SetAreaSize(newHeight);
             return;
         }
 
-        GrayArea.Height = newHeight;
-        GreenArea.Height = newHeight * barRatio;
+        SetAreaSize(newHeight);
+    }
+
+    private void SetAreaSize(double newMeterValue)
+    {
+        var maximum = Maximum == 0.0 ? 1.0 : Maximum;
+        var barRatio = Value / maximum;
+        switch (Orientation)
+        {
+            case Orientation.Horizontal:
+                GrayArea.Width = newMeterValue;
+                GreenArea.Width = newMeterValue * barRatio;
+                if (Math.Abs(GrayArea.Height - _originHeight) > 0.01)
+                {
+                    GrayArea.Height = _originHeight;
+                    GreenArea.Height = _originHeight;
+                }
+                break;
+            case Orientation.Vertical:
+                GrayArea.Height = newMeterValue;
+                GreenArea.Height = newMeterValue * barRatio;
+                if (Math.Abs(GrayArea.Width - _originWidth) > 0.01)
+                {
+                    GrayArea.Width = _originWidth;
+                    GreenArea.Width = _originWidth;
+                }
+                break;
+        }
     }
 
     private class InternalSoundBarHandler : ISoundBarHandler

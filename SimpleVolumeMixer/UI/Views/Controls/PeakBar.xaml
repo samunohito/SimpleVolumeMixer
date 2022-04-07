@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:controls1="clr-namespace:SimpleVolumeMixer.UI.Views.Controls"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="40">
+             d:DesignHeight="450" d:DesignWidth="450">
     <Grid Name="BackCanvas">
         <Grid.Resources>
             <!-- Copied By https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit/blob/master/MaterialDesignThemes.Wpf/Themes/MaterialDesignTheme.Slider.xaml -->
@@ -68,41 +68,204 @@
                     </Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate>
+            <ControlTemplate x:Key="MaterialDesignDiscreteSliderHorizontalCustom" TargetType="{x:Type Slider}">
+                <Border
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}"
+                    SnapsToDevicePixels="True"
+                    UseLayoutRounding="True">
+                    <Grid SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                          UseLayoutRounding="{TemplateBinding UseLayoutRounding}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" MinHeight="{TemplateBinding MinHeight}" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TickBar x:Name="TopTick" Grid.Row="0" Fill="{TemplateBinding Foreground}" Height="4"
+                                 Margin="0,0,0,2" Placement="Top" Visibility="Collapsed" />
+                        <TickBar x:Name="BottomTick" Grid.Row="2" Fill="{TemplateBinding Foreground}" Height="4"
+                                 Margin="0,2,0,0" Placement="Bottom" Visibility="Collapsed" />
+                        <Rectangle Grid.Row="1" Fill="{TemplateBinding Foreground}" Height="4" Opacity="0.38"
+                                   VerticalAlignment="Center" RadiusX="2" RadiusY="2" />
+                        <!--  Selection range must be wrapped in a Canvas for the position to be updated correctly  -->
+                        <Canvas Grid.Row="1" VerticalAlignment="Center" Height="6">
+                            <Rectangle x:Name="PART_SelectionRange"
+                                       Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" Height="6"
+                                       RadiusY="2" RadiusX="2" Visibility="Collapsed" />
+                        </Canvas>
+                        <Track Grid.Row="1" x:Name="PART_Track" Height="20">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.DecreaseLarge}"
+                                              Style="{StaticResource MaterialDesignRepeatButton}" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.IncreaseLarge}"
+                                              Style="{StaticResource MaterialDesignRepeatButton}" />
+                            </Track.IncreaseRepeatButton>
+                            <!--  It's important that the Thumb gets added last in the XAML to make sure it is drawn on top of both repeat buttons  -->
+                            <Track.Thumb>
+                                <Thumb Template="{StaticResource MaterialDesignSliderThumb}"
+                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                       Foreground="{TemplateBinding Foreground}" />
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="TickPlacement" Value="TopLeft">
+                        <Setter Property="Visibility" TargetName="TopTick" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="TickPlacement" Value="BottomRight">
+                        <Setter Property="Visibility" TargetName="BottomTick" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="TickPlacement" Value="Both">
+                        <Setter Property="Visibility" TargetName="TopTick" Value="Visible" />
+                        <Setter Property="Visibility" TargetName="BottomTick" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="IsSelectionRangeEnabled" Value="true">
+                        <Setter Property="Visibility" TargetName="PART_SelectionRange" Value="Visible" />
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
 
             <Style x:Key="MaterialDesignDiscreteVerticalSliderCustom" TargetType="{x:Type Slider}"
                    BasedOn="{StaticResource MaterialDesignDiscreteVerticalSlider}">
                 <Setter Property="Template" Value="{StaticResource MaterialDesignDiscreteSliderVerticalCustom}" />
             </Style>
+            <Style x:Key="MaterialDesignDiscreteHorizontalSliderCustom" TargetType="{x:Type Slider}"
+                   BasedOn="{StaticResource MaterialDesignDiscreteVerticalSlider}">
+                <Setter Property="Template" Value="{StaticResource MaterialDesignDiscreteSliderHorizontalCustom}" />
+            </Style>
         </Grid.Resources>
 
         <Rectangle Name="GrayArea"
-                   Width="4"
                    RadiusX="2"
                    RadiusY="2"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Bottom"
-                   Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
-                   Fill="#D8C3C3C3" />
+                   Fill="#D8C3C3C3">
+            <Rectangle.Style>
+                <Style TargetType="Rectangle">
+                    <Style.Triggers>
+                        <DataTrigger
+                            Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                            Value="Vertical">
+                            <Setter Property="Width" Value="4" />
+                            <Setter Property="Height"
+                                    Value="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}" />
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                            <Setter Property="VerticalAlignment" Value="Bottom" />
+                        </DataTrigger>
+                        <DataTrigger
+                            Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                            Value="Horizontal">
+                            <Setter Property="Width"
+                                    Value="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}" />
+                            <Setter Property="Height" Value="4" />
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Rectangle.Style>
+        </Rectangle>
 
         <Rectangle Name="GreenArea"
-                   Width="4"
                    RadiusX="2"
                    RadiusY="2"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Bottom"
-                   Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
-                   Fill="#DCB7FF70" />
+                   Fill="#DCB7FF70">
+            <Rectangle.Style>
+                <Style TargetType="Rectangle">
+                    <Style.Triggers>
+                        <DataTrigger
+                            Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                            Value="Vertical">
+                            <Setter Property="Width" Value="4" />
+                            <Setter Property="Height"
+                                    Value="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}" />
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                            <Setter Property="VerticalAlignment" Value="Bottom" />
+                        </DataTrigger>
+                        <DataTrigger
+                            Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                            Value="Horizontal">
+                            <Setter Property="Width"
+                                    Value="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}" />
+                            <Setter Property="Height" Value="4" />
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Rectangle.Style>
+        </Rectangle>
 
-        <Slider Name="ValueSlider"
-                Orientation="Vertical"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                Maximum="{Binding Maximum, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
-                Minimum="{Binding Minimum, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
-                SmallChange="{Binding SmallChange, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
-                LargeChange="{Binding LargeChange, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
-                Value="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
-                Style="{StaticResource MaterialDesignDiscreteVerticalSliderCustom}"
-                Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}" />
+        <Grid Width="Auto"
+              Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}">
+
+            <Slider Name="VerticalValueSlider"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Vertical"
+                    Width="Auto"
+                    Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
+                    Style="{StaticResource MaterialDesignDiscreteVerticalSliderCustom}"
+                    Maximum="{Binding Maximum, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                    Minimum="{Binding Minimum, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                    SmallChange="{Binding SmallChange, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                    LargeChange="{Binding LargeChange, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                    Value="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}" />
+
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger
+                            Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                            Value="Vertical">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger
+                            Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                            Value="Horizontal">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+        </Grid>
+
+        <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}" 
+              Height="Auto">
+
+            <Slider Name="HorizontalValueSlider"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
+                    Height="Auto"
+                    Style="{StaticResource MaterialDesignDiscreteHorizontalSliderCustom}"
+                    Maximum="{Binding Maximum, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                    Minimum="{Binding Minimum, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                    SmallChange="{Binding SmallChange, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                    LargeChange="{Binding LargeChange, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                    Value="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}" />
+
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger
+                            Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                            Value="Vertical">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger
+                            Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type controls1:PeakBar}}}"
+                            Value="Horizontal">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+        </Grid>
+
     </Grid>
 </UserControl>
