@@ -26,6 +26,9 @@
         <ItemsPanelTemplate x:Key="VerticalAudioSessionsPanelTemplate">
             <StackPanel Orientation="Horizontal" />
         </ItemsPanelTemplate>
+        <ItemsPanelTemplate x:Key="HorizontalAudioSessionsPanelTemplate">
+            <StackPanel Orientation="Vertical" />
+        </ItemsPanelTemplate>
         <DataTemplate x:Key="VerticalAudioSessionDataTemplate" DataType="audio:IAudioSessionCard">
             <materialDesign:Card Margin="4,0,4,0"
                                  Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
@@ -73,22 +76,34 @@
                         </Control>
                     </DockPanel>
                     <Grid DockPanel.Dock="Bottom" Margin="0,4,0,0">
-                        <ToggleButton Command="{Binding MuteStateChangeCommand}">
-                            <ToggleButton.Style>
-                                <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignIconButton}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
-                                            <Setter Property="Content"
-                                                    Value="{materialDesign:PackIcon Kind=VolumeOff}" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
-                                            <Setter Property="Content"
-                                                    Value="{materialDesign:PackIcon Kind=VolumeHigh}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ToggleButton.Style>
-                        </ToggleButton>
+                        <Button Command="{Binding MuteStateChangeCommand}" 
+                                Width="32" 
+                                Height="32"
+                                Style="{StaticResource MaterialDesignFlatButton}">
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Grid Background="Transparent">
+                                        <materialDesign:PackIcon Width="24"
+                                                                 Height="24"
+                                                                 VerticalAlignment="Center"
+                                                                 HorizontalAlignment="Center">
+                                            <materialDesign:PackIcon.Style>
+                                                <Style TargetType="materialDesign:PackIcon">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
+                                                            <Setter Property="Kind" Value="VolumeOff" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
+                                                            <Setter Property="Kind" Value="VolumeHigh" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </materialDesign:PackIcon.Style>
+                                        </materialDesign:PackIcon>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </Grid>
                     <controls:PeakBar
                         HorizontalAlignment="Center"
@@ -110,13 +125,115 @@
                 </DockPanel>
             </materialDesign:Card>
         </DataTemplate>
+
+
+        <DataTemplate x:Key="HorizontalAudioSessionDataTemplate" DataType="audio:IAudioSessionCard">
+            <materialDesign:Card Margin="0,4,0,4"
+                                 Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
+                <DockPanel Margin="8,5,8,7">
+                    <DockPanel DockPanel.Dock="Left" Margin="0,0,0,0">
+                        <TextBlock DockPanel.Dock="Right"
+                                   Margin="8, 0, 0, 0"
+                                   Width="80"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Left"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding DisplayName.Value}" />
+                        <Control
+                            Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
+                            <Control.Style>
+                                <Style TargetType="Control">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UsePackIcon}" Value="True">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate>
+                                                        <materialDesign:PackIcon
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            Kind="{Binding PackIconKind}"
+                                                            Width="32"
+                                                            Height="32" />
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding UsePackIcon}" Value="False">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate>
+                                                        <Image Name="IconSource"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               Source="{Binding IconSource.Value}"
+                                                               Width="32"
+                                                               Height="32" />
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Control.Style>
+                        </Control>
+                    </DockPanel>
+                    <Grid DockPanel.Dock="Right" Margin="12,0,0,0">
+                        <Button Command="{Binding MuteStateChangeCommand}"
+                                Width="32"
+                                Height="32">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
+                                            <Setter Property="Content">
+                                                <Setter.Value>
+                                                    <materialDesign:PackIcon Kind="VolumeOff" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
+                                            <Setter Property="Content">
+                                                <Setter.Value>
+                                                    <materialDesign:PackIcon Kind="VolumeHigh" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+                    <controls:PeakBar
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Margin="8,0,0,0"
+                        MeterMaximum="1.0"
+                        Maximum="1000.0"
+                        Minimum="0.0"
+                        SmallChange="1.0"
+                        LargeChange="10.0"
+                        MeterValue="{Binding PeakValue.Value}"
+                        Value="{Binding MasterVolume.Value, Mode=TwoWay}">
+                        <b:Interaction.Triggers>
+                            <b:EventTrigger EventName="Ready">
+                                <interactivity:InvokeCommandAction
+                                    Command="{Binding PeakBarReadyCommand}" />
+                            </b:EventTrigger>
+                        </b:Interaction.Triggers>
+                    </controls:PeakBar>
+                </DockPanel>
+            </materialDesign:Card>
+        </DataTemplate>
     </UserControl.Resources>
 
     <Grid>
         <DockPanel>
-            <GroupBox DockPanel.Dock="Top"
-                      Header="Devices"
-                      Height="Auto">
+            <GroupBox DockPanel.Dock="Top">
+                <GroupBox.Header>
+                    <TextBlock Text="Devices"
+                               Foreground="{StaticResource PrimaryHueMidForegroundBrush}"
+                               VerticalAlignment="Center" />
+                </GroupBox.Header>
                 <Grid>
                     <ComboBox ItemsSource="{Binding Devices}"
                               SelectedItem="{Binding SelectedDevice.Value, Mode=TwoWay}">
@@ -140,22 +257,88 @@
                         </Style.Triggers>
                     </Style>
                 </DockPanel.Style>
-                <GroupBox Header="Master" DockPanel.Dock="Left">
+                <GroupBox DockPanel.Dock="Left">
+                    <GroupBox.Header>
+                        <TextBlock Text="Master"
+                                   Foreground="{StaticResource PrimaryHueMidForegroundBrush}"
+                                   VerticalAlignment="Center" />
+                    </GroupBox.Header>
                     <ItemsControl ItemsSource="{Binding SelectedDeviceForMaster}"
                                   ItemsPanel="{StaticResource VerticalAudioSessionsPanelTemplate}"
                                   ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}" />
                 </GroupBox>
-                <GroupBox Header="Applications"
-                          DataContext="{Binding SelectedDevice.Value}">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden" Margin="-9">
-                        <Border Padding="9"
-                                BorderThickness="0"
-                                Height="{Binding  ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
-                            <ItemsControl ItemsSource="{Binding Sessions}"
-                                          ItemsPanel="{StaticResource VerticalAudioSessionsPanelTemplate}"
-                                          ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}" />
-                        </Border>
-                    </ScrollViewer>
+                <GroupBox>
+                    <GroupBox.Header>
+                        <DockPanel Margin="-8">
+                            <Border Padding="8">
+                                <TextBlock Text="Applications"
+                                           Foreground="{StaticResource PrimaryHueMidForegroundBrush}"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <Grid DockPanel.Dock="Right">
+                                <Button Style="{StaticResource MaterialDesignIconButton}"
+                                        Command="{Binding OnOrientationChangeCommand}"
+                                        Margin="0,0,9,0"
+                                        HorizontalAlignment="Right"
+                                        Width="28"
+                                        Height="28">
+                                    <materialDesign:PackIcon Kind="ScreenRotation"
+                                                             Foreground="{StaticResource PrimaryHueDarkBrush}" />
+                                </Button>
+                            </Grid>
+                        </DockPanel>
+                    </GroupBox.Header>
+                    <Grid>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden"
+                                      Margin="-8">
+                            <Border Padding="8"
+                                    BorderThickness="0"
+                                    Height="{Binding  ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
+                                <ItemsControl
+                                    DataContext="{Binding SelectedDevice.Value}"
+                                    ItemsSource="{Binding Sessions}"
+                                    ItemsPanel="{StaticResource VerticalAudioSessionsPanelTemplate}"
+                                    ItemTemplate="{StaticResource VerticalAudioSessionDataTemplate}" />
+                            </Border>
+                            <ScrollViewer.Style>
+                                <Style TargetType="ScrollViewer">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Orientation.Value}" Value="Vertical">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Orientation.Value}" Value="Horizontal">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ScrollViewer.Style>
+                        </ScrollViewer>
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto"
+                                      Margin="-8">
+                            <Border Padding="8,4,8,4"
+                                    BorderThickness="0"
+                                    Width="{Binding  ViewportWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
+                                <ItemsControl
+                                    DataContext="{Binding SelectedDevice.Value}"
+                                    ItemsSource="{Binding Sessions}"
+                                    ItemsPanel="{StaticResource HorizontalAudioSessionsPanelTemplate}"
+                                    ItemTemplate="{StaticResource HorizontalAudioSessionDataTemplate}" />
+                            </Border>
+                            <ScrollViewer.Style>
+                                <Style TargetType="ScrollViewer">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Orientation.Value}" Value="Vertical">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Orientation.Value}" Value="Horizontal">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ScrollViewer.Style>
+                        </ScrollViewer>
+                    </Grid>
                 </GroupBox>
             </DockPanel>
         </DockPanel>
