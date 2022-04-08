@@ -13,8 +13,19 @@ namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
 public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<AudioDeviceAccessor>
 {
+    /// <summary>
+    /// いずれかのデバイスが破棄される際に呼び出される
+    /// </summary>
     public event EventHandler<AudioDeviceAccessorEventArgs>? DeviceDisposing;
+
+    /// <summary>
+    /// いずれかのデバイスが破棄された際に呼び出される
+    /// </summary>
     public event EventHandler<AudioDeviceAccessorEventArgs>? DeviceDisposed;
+
+    /// <summary>
+    /// デバイスロールが変更された際に呼び出される
+    /// </summary>
     public event EventHandler<DeviceAccessorRoleHolderChangedEventArgs>? DeviceRoleChanged;
 
     private readonly ILogger _logger;
@@ -35,6 +46,12 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         _clientEventAdapter.DeviceStateChanged += OnDeviceStateChanged;
     }
 
+    /// <summary>
+    /// 引数のデバイスIDとデータフローを持つデバイスが内蔵コレクションにあるかを確認する
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="dataFlowType"></param>
+    /// <returns></returns>
     public bool Contains(string? deviceId, DataFlowType dataFlowType)
     {
         if (deviceId == null)
@@ -48,11 +65,22 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         }
     }
 
+    /// <summary>
+    /// 引数のデバイスが内蔵コレクションにあるかを確認する
+    /// </summary>
+    /// <param name="device"></param>
+    /// <returns></returns>
     public bool Contains(MMDevice device)
     {
         return Contains(device.DeviceID, AccessorHelper.DataFlows[device.DataFlow]);
     }
 
+    /// <summary>
+    /// 引数のデバイスIDとデータフローを持つデバイスを取得する
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="dataFlowType"></param>
+    /// <returns></returns>
     public AudioDeviceAccessor? GetDevice(string? deviceId, DataFlowType dataFlowType)
     {
         if (deviceId == null)
@@ -66,6 +94,13 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         }
     }
 
+    /// <summary>
+    /// 引数のデータフローとロールが割り当てられているデバイスを取得する
+    /// </summary>
+    /// <param name="dataFlowType"></param>
+    /// <param name="roleType"></param>
+    /// <returns></returns>
+    /// <exception cref="ApplicationException"></exception>
     public AudioDeviceAccessor? GetDefaultDevice(DataFlowType dataFlowType, RoleType roleType)
     {
         lock (Gate)
@@ -92,6 +127,10 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         }
     }
 
+    /// <summary>
+    /// CoreAudioAPIから取得したMMDeviceをラッピングし、内蔵コレクションに追加する
+    /// </summary>
+    /// <param name="device"></param>
     public void Add(MMDevice device)
     {
         if (Contains(device))
@@ -106,6 +145,22 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         Add(ax);
     }
 
+    /// <summary>
+    /// デバイスの破棄処理を呼び出し、内蔵コレクションから削除する
+    /// </summary>
+    /// <param name="ax"></param>
+    public new void Remove(AudioDeviceAccessor ax)
+    {
+        // Disposing/DisposedはSessionDisposing/SessionDisposedが通知されてからそれぞれ解除する
+        ax.RoleChanged -= OnDeviceRoleChanged;
+        ax.Dispose();
+        base.Remove(ax);
+    }
+
+    /// <summary>
+    /// 引数のデバイスIDを持つデバイスを全て削除する。
+    /// </summary>
+    /// <param name="deviceId"></param>
     public void Remove(string deviceId)
     {
         lock (Gate)
@@ -116,11 +171,41 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         }
     }
 
+    /// <summary>
+    /// 引数のMMDeviceが持つデバイスIDとDataFlowに一致するものを削除する
+    /// </summary>
+    /// <param name="device"></param>
     public void Remove(MMDevice device)
     {
-        Remove(device.DeviceID);
+        var target = GetDevice(device.DeviceID, AccessorHelper.DataFlows[device.DataFlow]);
+        if (target == null)
+        {
+            return;
+        }
+
+        Remove(target);
     }
 
+    /// <summary>
+    /// 内蔵コレクションをクリアし、かつ実行時点で保持していたセッションを破棄する
+    /// </summary>
+    public new void Clear()
+    {
+        var collections = this.ToList();
+        base.Clear();
+
+        foreach (var ax in collections)
+        {
+            // Disposing/DisposedはSessionDisposing/SessionDisposedが通知されてからそれぞれ解除する
+            ax.RoleChanged -= OnDeviceRoleChanged;
+            ax.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// CoreAudioAPIから使用可能なデバイス一覧を取得し、内蔵コレクションに順次登録していく
+    /// </summary>
+    /// <exception cref="ApplicationException"></exception>
     public void CollectAudioEndpoints()
     {
         lock (Gate)
@@ -156,6 +241,12 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         }
     }
 
+    /// <summary>
+    /// 引数のDataFlowとRoleをもとに、引数のデバイスIDを持つデバイスのロール情報を更新する
+    /// </summary>
+    /// <param name="deviceId"></param>
+    /// <param name="dataFlowType"></param>
+    /// <param name="roleType"></param>
     private void DeviceRoleSync(string deviceId, DataFlowType dataFlowType, RoleType roleType)
     {
         lock (Gate)
@@ -199,6 +290,11 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         }
     }
 
+    /// <summary>
+    /// CoreAudioAPIからデバイスが追加された旨の通知が届いた際に呼び出される
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnDeviceAdded(object? sender, DeviceNotificationEventArgs e)
     {
         if (e.TryGetDevice(out var newDevice) && !Contains(newDevice))
@@ -207,11 +303,21 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         }
     }
 
+    /// <summary>
+    /// CoreAudioAPIからデバイスが削除された旨の通知が届いた際に呼び出される
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnDeviceRemoved(object? sender, DeviceNotificationEventArgs e)
     {
         Remove(e.DeviceId);
     }
 
+    /// <summary>
+    /// CoreAudioAPIからデフォルトのサウンドデバイスが変更された旨の通知が届いた際に呼び出される
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnDefaultDeviceChanged(object? sender, DefaultDeviceChangedEventArgs e)
     {
         var newRoleType = AccessorHelper.Roles[e.Role];
@@ -219,6 +325,11 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         DeviceRoleSync(e.DeviceId, dataFlowType, newRoleType);
     }
 
+    /// <summary>
+    /// CoreAudioAPIからデバイスの状態が変化した旨の通知が届いた際に呼び出される
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnDeviceStateChanged(object? sender, DeviceStateChangedEventArgs e)
     {
         switch (e.DeviceState)
@@ -238,29 +349,48 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         }
     }
 
+    /// <summary>
+    /// 内蔵コレクションに保持しているいずれかのデバイスのロール情報が変更された際に呼び出される
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnDeviceRoleChanged(object? sender, DeviceAccessorRoleHolderChangedEventArgs e)
     {
         DeviceRoleChanged?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// 内蔵コレクションに保持しているデバイスが破棄される際に呼び出される
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnDeviceDisposing(object? sender, EventArgs e)
     {
         if (sender is AudioDeviceAccessor ax)
         {
+            ax.Disposing -= OnDeviceDisposing;
             DeviceDisposing?.Invoke(this, new AudioDeviceAccessorEventArgs(ax));
 
-            ax.RoleChanged -= OnDeviceRoleChanged;
-            ax.Disposing -= OnDeviceDisposing;
-            Remove(ax);
+            if (Contains(ax))
+            {
+                // このクラス内からデバイスを消す際はDispose()を呼んで内蔵コレクションから削除しているが、
+                // 外的要因でDispose()が呼び出された際は内蔵コレクションに残ってしまう。
+                // 上記のケースに対応できるよう、破棄処理の呼び出し時にも内蔵コレクションからの削除処理を置いておく（既にコレクションから消えててもエラーにならないので）
+                Remove(ax);
+            }
         }
     }
 
+    /// <summary>
+    /// 内蔵コレクションに保持しているデバイスが破棄された際に呼び出される
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnDeviceDisposed(object? sender, EventArgs e)
     {
         if (sender is AudioDeviceAccessor ax)
         {
             ax.Disposed -= OnDeviceDisposed;
-
             DeviceDisposed?.Invoke(this, new AudioDeviceAccessorEventArgs(ax));
         }
     }
@@ -274,18 +404,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
         _clientEventAdapter.DefaultDeviceChanged -= OnDefaultDeviceChanged;
         _clientEventAdapter.DeviceStateChanged -= OnDeviceStateChanged;
 
-        lock (Gate)
-        {
-            var disposes = this.ToList();
-            
-            Clear();
-            
-            foreach (var device in disposes)
-            {
-                // AudioDeviceAccessorとこのクラスの結びつきを解除するのはOnDeviceDisposingで
-                device.Dispose();
-            }
-        }
+        Clear();
 
         base.OnDisposing();
     }
