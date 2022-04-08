@@ -29,6 +29,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
         _sessionManager = new AudioSessionManagerAccessor(device, logger);
         _sessionManager.SessionManagerOpened += OnSessionManagerOpened;
         _sessionManager.SessionManagerClosed += OnSessionManagerClosed;
+        _sessionManager.SessionCreated += OnSessionCreated;
     }
     
     /// <summary>
@@ -179,6 +180,23 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     }
     
     /// <summary>
+    /// CoreAudioAPIから新規セッションが作成された旨の通知が届いた際に呼び出される
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private void OnSessionCreated(object? sender, SessionCreatedEventArgs e)
+    {
+        var session2 = e.NewSession.QueryInterface<AudioSessionControl2>();
+        if (Contains(session2?.Process?.Id))
+        {
+            return;
+        }
+        
+        Add(e.NewSession);
+    }
+    
+    /// <summary>
     /// セッションマネージャの取得が完了した際に呼び出される。
     /// </summary>
     /// <param name="sender"></param>
@@ -281,7 +299,8 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     protected override void OnDisposing()
     {
         _logger.LogDebug("disposing...");
-        
+
+        _sessionManager.SessionCreated -= OnSessionCreated;
         _sessionManager.SessionManagerOpened -= OnSessionManagerOpened;
         _sessionManager.SessionManagerClosed -= OnSessionManagerClosed;
 
