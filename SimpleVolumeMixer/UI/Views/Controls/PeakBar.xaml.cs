@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -64,8 +65,15 @@ public partial class PeakBar : UserControl
             typeof(Orientation),
             typeof(PeakBar),
             new PropertyMetadata(Orientation.Vertical));
+    
+    private static readonly DependencyProperty PeakBarHandlerProperty =
+        DependencyProperty.Register(
+            nameof(PeakBarHandler),
+            typeof(IPeakBarHandler),
+            typeof(PeakBar),
+            new PropertyMetadata(null, PeakBarHandlerPropertyChanged));
 
-    private readonly InternalSoundBarHandler _handler;
+    private readonly InternalPeakBarHandler _handler;
     private readonly double _originWidth = 4.0;
     private readonly double _originHeight = 4.0;
 
@@ -73,8 +81,11 @@ public partial class PeakBar : UserControl
     {
         InitializeComponent();
 
-        _handler = new InternalSoundBarHandler();
+        _handler = new InternalPeakBarHandler();
         _handler.NotifiedValue += OnNotifiedValue;
+
+        PeakBarHandler = _handler;
+        
         _handler.NotifyValue(0.0);
     }
 
@@ -125,21 +136,36 @@ public partial class PeakBar : UserControl
         get => (Orientation)GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
     }
-
-    public event EventHandler<SoundBarReadyEventArgs>? Ready
+    
+    public IPeakBarHandler PeakBarHandler
     {
-        add { value?.Invoke(this, new SoundBarReadyEventArgs(_handler)); }
+        get => (IPeakBarHandler)GetValue(PeakBarHandlerProperty);
+        set => SetValue(PeakBarHandlerProperty, value);
+    }
+
+    public event EventHandler<PeakBarReadyEventArgs>? Ready
+    {
+        add { value?.Invoke(this, new PeakBarReadyEventArgs(_handler)); }
         // ReSharper disable once ValueParameterNotUsed
-        remove { }
+        remove{}
     }
 
     private static void MeterMaximumPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var soundBar = (PeakBar)d;
-        soundBar.UpdateMeterArea(soundBar.MeterValue);
+        var peakBar = (PeakBar)d;
+        peakBar.UpdateMeterArea(peakBar.MeterValue);
+    }
+    
+    private static void PeakBarHandlerPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var peakBar = (PeakBar)d;
+        if (!Equals(peakBar.PeakBarHandler, peakBar._handler))
+        {
+            peakBar.PeakBarHandler = peakBar._handler;
+        }
     }
 
-    private void OnNotifiedValue(object? sender, SoundBarNotifyValueEventArgs e)
+    private void OnNotifiedValue(object? sender, PeakBarNotifyValueEventArgs e)
     {
         var value = e.Value;
 
@@ -212,19 +238,19 @@ public partial class PeakBar : UserControl
         }
     }
 
-    private class InternalSoundBarHandler : ISoundBarHandler
+    private class InternalPeakBarHandler : IPeakBarHandler
     {
         public void NotifyValue(double value)
         {
-            NotifiedValue?.Invoke(this, new SoundBarNotifyValueEventArgs(value));
+            NotifiedValue?.Invoke(this, new PeakBarNotifyValueEventArgs(value));
         }
 
-        public event EventHandler<SoundBarNotifyValueEventArgs>? NotifiedValue;
+        public event EventHandler<PeakBarNotifyValueEventArgs>? NotifiedValue;
     }
 
-    private class SoundBarNotifyValueEventArgs : EventArgs
+    private class PeakBarNotifyValueEventArgs : EventArgs
     {
-        public SoundBarNotifyValueEventArgs(double value)
+        public PeakBarNotifyValueEventArgs(double value)
         {
             Value = value;
         }

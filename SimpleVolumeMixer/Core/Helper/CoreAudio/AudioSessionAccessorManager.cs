@@ -188,7 +188,11 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
 
         lock (Gate)
         {
-            foreach (var session in this)
+            var disposes = this.ToList();
+            
+            Clear();
+            
+            foreach (var session in disposes)
             {
                 // AudioSessionAccessorとこのクラスの結びつきを解除するのはOnSessionDisposingで
                 session.Dispose();

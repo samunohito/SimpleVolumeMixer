@@ -142,6 +142,8 @@ public class AudioSessionEventAdapter : DisposableComponent
         _session.GroupingParamChanged -= OnGroupingParamChanged;
         _session.StateChanged -= OnStateChanged;
         _session.SessionDisconnected -= OnSessionDisconnected;
+        
+        _processor.StopRequest();
 
         base.OnDisposing();
     }

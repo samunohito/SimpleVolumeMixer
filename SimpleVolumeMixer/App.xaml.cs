@@ -16,10 +16,14 @@ using SimpleVolumeMixer.Core.Models.Repository;
 using SimpleVolumeMixer.Core.Services;
 using SimpleVolumeMixer.UI.Constants;
 using SimpleVolumeMixer.UI.Contracts.Services;
+using SimpleVolumeMixer.UI.Helpers.Components;
 using SimpleVolumeMixer.UI.Models;
+using SimpleVolumeMixer.UI.Models.UseCase;
 using SimpleVolumeMixer.UI.Services;
 using SimpleVolumeMixer.UI.ViewModels;
 using SimpleVolumeMixer.UI.Views;
+using SimpleVolumeMixer.UI.Views.Controls;
+using Unity;
 
 namespace SimpleVolumeMixer;
 // For more inforation about application lifecyle events see https://docs.microsoft.com/dotnet/framework/wpf/app-development/application-management-overview
@@ -92,13 +96,18 @@ public partial class App : PrismApplication
         containerRegistry.Register<IPersistAndRestoreService, PersistAndRestoreService>();
         containerRegistry.Register<IThemeSelectorService, ThemeSelectorService>();
         containerRegistry.RegisterSingleton<IRightPaneService, RightPaneService>();
+        
+        // UseCases
+        containerRegistry.GetContainer().RegisterType<AudioSessionsPageUseCase>(new DisposableComponentLifetimeManager());
 
         // Views
-        containerRegistry.RegisterForNavigation<SettingsPage, SettingsViewModel>(PageKeys.Settings);
-        containerRegistry.RegisterForNavigation<AudioSessionsPage, AudioSessionsViewModel>(PageKeys.AudioSessions);
-        containerRegistry.RegisterForNavigation<AudioDevicesPage, AudioDevicesViewModel>(PageKeys.AudioDevices);
+        containerRegistry.RegisterForNavigation<SettingsPage, SettingsPageViewModel>(PageKeys.Settings);
+        containerRegistry.RegisterForNavigation<AudioSessionsPage, AudioSessionsPageViewModel>(PageKeys.AudioSessions);
+        containerRegistry.RegisterForNavigation<AudioSessionsSubHorizontalPage, AudioSessionsPageSubViewModel>(PageKeys.AudioSessionsSubHorizontal);
+        containerRegistry.RegisterForNavigation<AudioSessionsSubVerticalPage, AudioSessionsPageSubViewModel>(PageKeys.AudioSessionsSubVertical);
+        containerRegistry.RegisterForNavigation<AudioDevicesPage, AudioDevicesPageViewModel>(PageKeys.AudioDevices);
 
-        containerRegistry.RegisterForNavigation<ShellWindow, ShellViewModel>();
+        containerRegistry.RegisterForNavigation<ShellWindow, ShellWindowViewModel>();
 
         // Configuration
         var configuration = BuildConfiguration();

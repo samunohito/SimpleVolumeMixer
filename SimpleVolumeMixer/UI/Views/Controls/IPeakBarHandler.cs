@@ -1,6 +1,6 @@
 ﻿namespace SimpleVolumeMixer.UI.Views.Controls;
 
-public interface ISoundBarHandler
+public interface IPeakBarHandler
 {
     void NotifyValue(double value);
 }

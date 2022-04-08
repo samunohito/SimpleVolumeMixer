@@ -108,6 +108,8 @@ public class NotificationClientEventAdapter : DisposableComponent
         _client.DevicePropertyChanged -= OnDevicePropertyChanged;
         _client.DeviceStateChanged -= OnDeviceStateChanged;
         _client.DefaultDeviceChanged -= OnDefaultDeviceChanged;
+        
+        _processor.Dispose();
 
         base.OnDisposing();
     }

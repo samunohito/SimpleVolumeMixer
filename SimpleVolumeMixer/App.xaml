@@ -11,11 +11,6 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/UI/Styles/_FontSizes.xaml" />
-                <ResourceDictionary Source="/UI/Styles/_Thickness.xaml" />
-                <ResourceDictionary Source="/UI/Styles/MetroWindow.xaml" />
-                <ResourceDictionary Source="/UI/Styles/TextBlock.xaml" />
-                <ResourceDictionary Source="/UI/Styles/UserControl.xaml" />
                 <!--
                 MahApps.Metro resource dictionaries.
                 Learn more about using MahApps.Metro at https://mahapps.com/
@@ -42,6 +37,13 @@
                     Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Fonts.xaml" />
                 <ResourceDictionary
                     Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Flyout.xaml" />
+                
+                <ResourceDictionary Source="/UI/Styles/_FontSizes.xaml" />
+                <ResourceDictionary Source="/UI/Styles/_Thickness.xaml" />
+                <ResourceDictionary Source="/UI/Styles/MetroWindow.xaml" />
+                <ResourceDictionary Source="/UI/Styles/TextBlock.xaml" />
+                <ResourceDictionary Source="/UI/Styles/UserControl.xaml" />
+                <ResourceDictionary Source="/UI/Styles/AudioSessionTemplate.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="{StaticResource Primary200}" po:Freeze="True" />

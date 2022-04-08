@@ -1,67 +1,64 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
 using Prism.Commands;
-using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 using SimpleVolumeMixer.UI.Views.Controls;
 
 namespace SimpleVolumeMixer.UI.ViewModels.Audio;
 
-public class AudioSessionViewModel : BindableBase, IDisposable, IAudioSessionCard
+public class AudioSessionViewModel : DisposableComponent, IAudioSessionCard
 {
-    private readonly CompositeDisposable _disposable;
-    private ISoundBarHandler? _soundBarHandler;
+    private IPeakBarHandler? _soundBarHandler;
 
     public AudioSessionViewModel(AudioSession session)
     {
-        _disposable = new CompositeDisposable();
         _soundBarHandler = null;
 
         Session = session;
         SessionState = session.SessionState
             .ToReadOnlyReactivePropertySlim()
-            .AddTo(_disposable);
+            .AddTo(Disposable);
         PeakValue = session.PeakValue
             .ToReadOnlyReactivePropertySlim()
-            .AddTo(_disposable);
+            .AddTo(Disposable);
         MeteringChannelCount = session.MeteringChannelCount
             .ToReadOnlyReactivePropertySlim()
-            .AddTo(_disposable);
+            .AddTo(Disposable);
         DisplayName = session.DisplayName
             .Select(x => session.IsSystemSound ? "SystemSound" : x)
             .ToReadOnlyReactivePropertySlim()
-            .AddTo(_disposable);
+            .AddTo(Disposable);
         IconSource = session.IconSource
             .ToReadOnlyReactivePropertySlim()
-            .AddTo(_disposable);
+            .AddTo(Disposable);
         GroupingParam = session.GroupingParam
             .ToReadOnlyReactivePropertySlim()
-            .AddTo(_disposable);
+            .AddTo(Disposable);
         MasterVolume = session.MasterVolume
             .ToReactivePropertyAsSynchronized(
                 x => x.Value,
                 i => i * 1000.0f,
                 i => i / 1000.0f
             )
-            .AddTo(_disposable);
+            .AddTo(Disposable);
         IsMuted = session.IsMuted
             .ToReactivePropertyAsSynchronized(x => x.Value)
-            .AddTo(_disposable);
+            .AddTo(Disposable);
 
         PeakValue
             .Subscribe(x => _soundBarHandler?.NotifyValue(x))
-            .AddTo(_disposable);
+            .AddTo(Disposable);
 
-        PeakBarReadyCommand = new DelegateCommand<SoundBarReadyEventArgs>(OnSoundBarReady);
-        MuteStateChangeCommand = new DelegateCommand(OnOnMuteStateChange);
+        PeakBarReadyCommand = new DelegateCommand<PeakBarReadyEventArgs>(OnPeakBarReady);
+        MuteStateChangeCommand = new DelegateCommand(OnMuteStateChange);
     }
 
     public AudioSession Session { get; }
@@ -79,17 +76,12 @@ public class AudioSessionViewModel : BindableBase, IDisposable, IAudioSessionCar
     public ICommand PeakBarReadyCommand { get; }
     public ICommand MuteStateChangeCommand { get; }
 
-    public void Dispose()
-    {
-        _disposable.Dispose();
-    }
-
-    private void OnSoundBarReady(SoundBarReadyEventArgs e)
+    private void OnPeakBarReady(PeakBarReadyEventArgs e)
     {
         _soundBarHandler = e.Handler;
     }
 
-    private void OnOnMuteStateChange()
+    private void OnMuteStateChange()
     {
         IsMuted.Value = !IsMuted.Value;
     }

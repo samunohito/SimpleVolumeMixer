@@ -15,7 +15,7 @@
     mc:Ignorable="d"
     MinWidth="500"
     MinHeight="350"
-    d:DataContext="{d:DesignInstance Type=viewModels1:ShellViewModel}"
+    d:DataContext="{d:DesignInstance Type=viewModels1:ShellWindowViewModel}"
     Title="{x:Static properties:Resources.AppDisplayName}">
 
     <i:Interaction.Triggers>

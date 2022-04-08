@@ -276,7 +276,11 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
 
         lock (Gate)
         {
-            foreach (var device in this)
+            var disposes = this.ToList();
+            
+            Clear();
+            
+            foreach (var device in disposes)
             {
                 // AudioDeviceAccessorとこのクラスの結びつきを解除するのはOnDeviceDisposingで
                 device.Dispose();

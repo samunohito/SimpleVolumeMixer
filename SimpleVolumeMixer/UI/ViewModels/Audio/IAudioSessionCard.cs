@@ -2,6 +2,7 @@
 using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
 using Reactive.Bindings;
+using SimpleVolumeMixer.UI.Views.Controls;
 
 namespace SimpleVolumeMixer.UI.ViewModels.Audio;
 

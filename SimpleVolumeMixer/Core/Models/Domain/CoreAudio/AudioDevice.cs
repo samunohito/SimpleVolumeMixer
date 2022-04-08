@@ -169,7 +169,7 @@ public class AudioDevice : DisposableComponent
 
     protected override void OnDisposing()
     {
-        base.OnDisposing();
         CloseSession();
+        base.OnDisposing();
     }
 }

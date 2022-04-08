@@ -2,12 +2,12 @@
 
 namespace SimpleVolumeMixer.UI.Views.Controls;
 
-public class SoundBarReadyEventArgs : EventArgs
+public class PeakBarReadyEventArgs : EventArgs
 {
-    public SoundBarReadyEventArgs(ISoundBarHandler handler)
+    public PeakBarReadyEventArgs(IPeakBarHandler handler)
     {
         Handler = handler;
     }
 
-    public ISoundBarHandler Handler { get; }
+    public IPeakBarHandler Handler { get; }
 }

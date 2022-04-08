@@ -10,7 +10,7 @@ using SimpleVolumeMixer.UI.Models;
 namespace SimpleVolumeMixer.UI.ViewModels;
 
 // TODO WTS: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
-public class SettingsViewModel : BindableBase, INavigationAware
+public class SettingsPageViewModel : BindableBase, INavigationAware
 {
     private readonly AppConfig _appConfig;
     private readonly IApplicationInfoService _applicationInfoService;
@@ -21,7 +21,7 @@ public class SettingsViewModel : BindableBase, INavigationAware
     private AppTheme _theme;
     private string _versionDescription;
 
-    public SettingsViewModel(AppConfig appConfig, IThemeSelectorService themeSelectorService,
+    public SettingsPageViewModel(AppConfig appConfig, IThemeSelectorService themeSelectorService,
         ISystemService systemService, IApplicationInfoService applicationInfoService)
     {
         _appConfig = appConfig;

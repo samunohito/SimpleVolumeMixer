@@ -16,7 +16,7 @@ namespace SimpleVolumeMixer.UI.ViewModels;
 // using the NavigationService, RightPaneService and WindowManagerService.
 // Read more about MenuBar project type here:
 // https://github.com/Microsoft/WindowsTemplateStudio/blob/release/docs/WPF/projectTypes/menubar.md
-public class ShellViewModel : BindableBase
+public class ShellWindowViewModel : BindableBase
 {
     private readonly IRegionManager _regionManager;
     private DelegateCommand _goBackCommand;
@@ -28,7 +28,7 @@ public class ShellViewModel : BindableBase
     private HamburgerMenuItem _selectedOptionsMenuItem;
     private ICommand _unloadedCommand;
 
-    public ShellViewModel(IRegionManager regionManager)
+    public ShellWindowViewModel(IRegionManager regionManager)
     {
         _regionManager = regionManager;
     }

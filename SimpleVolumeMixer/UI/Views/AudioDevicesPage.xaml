@@ -10,7 +10,7 @@
              xmlns:controls="clr-namespace:SimpleVolumeMixer.UI.Views.Controls"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:interactivity="http://prismlibrary.com/"
-             d:DataContext="{d:DesignInstance Type=viewModels:AudioDevicesViewModel}"
+             d:DataContext="{d:DesignInstance Type=viewModels:AudioDevicesPageViewModel}"
              Style="{StaticResource BaseUserControlStyle}"
              mc:Ignorable="d"
              d:DesignHeight="450"

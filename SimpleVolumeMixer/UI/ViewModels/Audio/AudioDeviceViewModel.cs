@@ -1,73 +1,66 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
 using Prism.Commands;
-using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
-using SimpleVolumeMixer.Core.Contracts.Services;
+using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
+using SimpleVolumeMixer.UI.ViewModels.Audio.Event;
 using SimpleVolumeMixer.UI.Views.Controls;
 
 namespace SimpleVolumeMixer.UI.ViewModels.Audio;
 
-public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
+public class AudioDeviceViewModel : DisposableComponent, IAudioSessionCard
 {
-    private readonly ICoreAudioService _coreAudioService;
-    private readonly CompositeDisposable _disposable;
-    private ISoundBarHandler? _soundBarHandler;
+    public event EventHandler<DeviceRoleChangeRequestEventArgs>? DeviceChangeRequest;
 
-    public AudioDeviceViewModel(AudioDevice device, ICoreAudioService coreAudioService)
+    private IPeakBarHandler? _soundBarHandler;
+
+    public AudioDeviceViewModel(AudioDevice device)
     {
-        _disposable = new CompositeDisposable();
         _soundBarHandler = null;
-        _coreAudioService = coreAudioService;
         Device = device;
 
-        Sessions = device.Sessions
-            .ToReadOnlyReactiveCollection(x => new AudioSessionViewModel(x))
-            .AddTo(_disposable);
-        DeviceId = device.DeviceId.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
-        FriendlyName = device.FriendlyName.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
-        DevicePath = device.DevicePath.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
-        DataFlow = device.DataFlow.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
-        DeviceState = device.DeviceState.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
-        ChannelCount = device.ChannelCount.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
-        PeakValue = device.PeakValue.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
-        MeteringChannelCount = device.MeteringChannelCount.ToReadOnlyReactivePropertySlim().AddTo(_disposable);
+        DeviceId = device.DeviceId.ToReadOnlyReactivePropertySlim().AddTo(Disposable);
+        FriendlyName = device.FriendlyName.ToReadOnlyReactivePropertySlim().AddTo(Disposable);
+        DevicePath = device.DevicePath.ToReadOnlyReactivePropertySlim().AddTo(Disposable);
+        DataFlow = device.DataFlow.ToReadOnlyReactivePropertySlim().AddTo(Disposable);
+        DeviceState = device.DeviceState.ToReadOnlyReactivePropertySlim().AddTo(Disposable);
+        ChannelCount = device.ChannelCount.ToReadOnlyReactivePropertySlim().AddTo(Disposable);
+        PeakValue = device.PeakValue.ToReadOnlyReactivePropertySlim().AddTo(Disposable);
+        MeteringChannelCount = device.MeteringChannelCount.ToReadOnlyReactivePropertySlim().AddTo(Disposable);
         MasterVolume = device.MasterVolumeLevelScalar
             .ToReactivePropertyAsSynchronized(
                 x => x.Value,
                 i => i * 1000.0f,
                 i => i / 1000.0f
             )
-            .AddTo(_disposable);
+            .AddTo(Disposable);
         IsMuted = device.IsMuted
             .ToReactivePropertyAsSynchronized(x => x.Value)
-            .AddTo(_disposable);
+            .AddTo(Disposable);
 
         PeakValue
             .Subscribe(x => _soundBarHandler?.NotifyValue(x))
-            .AddTo(_disposable);
+            .AddTo(Disposable);
 
-        PeakBarReadyCommand = new DelegateCommand<SoundBarReadyEventArgs>(OnSoundBarReady);
+        PeakBarReadyCommand = new DelegateCommand<PeakBarReadyEventArgs>(OnSoundBarReady);
         MuteStateChangeCommand = new DelegateCommand(OnMuteStateChange);
         CommunicationRoleApplyCommand = new DelegateCommand(OnCommunicationRoleApply);
         MultimediaRoleApplyCommand = new DelegateCommand(OnMultimediaRoleApply);
-        
+
         // for IAudioSessionCard
-        IconSource = new ReactivePropertySlim<ImageSource?>().AddTo(_disposable);
-        DisplayName = new ReactivePropertySlim<string?>("Master").AddTo(_disposable);
+        IconSource = new ReactivePropertySlim<ImageSource?>().AddTo(Disposable);
+        DisplayName = new ReactivePropertySlim<string?>("Master").AddTo(Disposable);
     }
 
     public AudioDevice Device { get; }
-    public ReadOnlyReactiveCollection<AudioSessionViewModel> Sessions { get; }
     public DeviceRole Role => Device.Role;
     public IReadOnlyReactiveProperty<string?> DeviceId { get; }
     public IReadOnlyReactiveProperty<string?> FriendlyName { get; }
@@ -89,17 +82,7 @@ public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
     public ICommand CommunicationRoleApplyCommand { get; }
     public ICommand MultimediaRoleApplyCommand { get; }
 
-    public void Dispose()
-    {
-        foreach (var session in Sessions.ToList())
-        {
-            session.Dispose();
-        }
-
-        _disposable.Dispose();
-    }
-
-    private void OnSoundBarReady(SoundBarReadyEventArgs e)
+    private void OnSoundBarReady(PeakBarReadyEventArgs e)
     {
         _soundBarHandler = e.Handler;
     }
@@ -111,12 +94,18 @@ public class AudioDeviceViewModel : BindableBase, IDisposable, IAudioSessionCard
 
     private void OnCommunicationRoleApply()
     {
-        _coreAudioService.SetDefaultDevice(Device, DataFlowType.Render, RoleType.Communications);
+        DeviceChangeRequest?.Invoke(
+            this,
+            new DeviceRoleChangeRequestEventArgs(this, DataFlowType.Render, RoleType.Communications)
+        );
     }
 
     private void OnMultimediaRoleApply()
     {
-        _coreAudioService.SetDefaultDevice(Device, DataFlowType.Render, RoleType.Multimedia);
+        DeviceChangeRequest?.Invoke(
+            this,
+            new DeviceRoleChangeRequestEventArgs(this, DataFlowType.Render, RoleType.Multimedia)
+        );
     }
 
     public Task OpenSession()

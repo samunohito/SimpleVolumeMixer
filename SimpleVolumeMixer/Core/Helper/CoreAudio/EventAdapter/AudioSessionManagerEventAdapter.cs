@@ -77,6 +77,7 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
         _sessionManager.SessionCreated -= OnSessionCreated;
         _sessionManager.VolumeDuckNotification -= OnVolumeDuckNotification;
         _sessionManager.VolumeUnDuckNotification -= OnVolumeUnDuckNotification;
+        _processor.StopRequest();
 
         base.OnDisposing();
     }
