@@ -37,6 +37,13 @@ jobs:
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: true
 
-    - name: Build
+    - name: build
       shell: pwsh
       run: dotnet build ${Env:GITHUB_WORKSPACE}\${{ env.PATH_APPLICATION_CSPROJ }} --configuration ${{ env.BUILD_CONFIGURATION_NAME }} --no-restore -p:Platform="${{ env.BUILD_PLATFORM_TYPE }}"
+      
+    - name: collect artifacts
+      uses: actions/upload-artifact@v2
+      with: 
+        name: SimpleVolumeMixer
+        path: ${Env:GITHUB_WORKSPACE}\SimpleVolumeMixer\SimpleVolumeMixer\bin\Release
+      
