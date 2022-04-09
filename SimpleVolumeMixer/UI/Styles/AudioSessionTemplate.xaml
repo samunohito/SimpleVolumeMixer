@@ -11,19 +11,17 @@
     </ItemsPanelTemplate>
 
     <DataTemplate x:Key="HorizontalAudioSessionDataTemplate" DataType="audio:IAudioSessionCard">
-        <materialDesign:Card
-            Margin="0,4,0,4"
-            Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
+        <materialDesign:Card Margin="0,4,0,4"
+                             Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
             <DockPanel Margin="8,5,8,7">
                 <DockPanel DockPanel.Dock="Left" Margin="0,0,0,0">
-                    <TextBlock
-                        DockPanel.Dock="Right"
-                        Margin="8, 0, 0, 0"
-                        Width="80"
-                        VerticalAlignment="Center"
-                        TextAlignment="Left"
-                        TextTrimming="CharacterEllipsis"
-                        Text="{Binding DisplayName.Value}" />
+                    <TextBlock DockPanel.Dock="Right"
+                               Margin="8, 0, 0, 0"
+                               Width="80"
+                               VerticalAlignment="Center"
+                               TextAlignment="Left"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding DisplayName.Value}" />
                     <Control
                         Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
                         <Control.Style>
@@ -63,14 +61,11 @@
                     </Control>
                 </DockPanel>
                 <Grid DockPanel.Dock="Right" Margin="12,0,0,0">
-                    <Button
-                        Command="{Binding MuteStateChangeCommand}"
-                        Style="{StaticResource MaterialDesignIconButton}"
-                        Width="32"
-                        Height="32">
-                        <materialDesign:PackIcon
-                            Width="24"
-                            Height="24">
+                    <Button Command="{Binding MuteStateChangeCommand}"
+                            Style="{StaticResource MaterialDesignIconButton}"
+                            Width="32"
+                            Height="32">
+                        <materialDesign:PackIcon>
                             <materialDesign:PackIcon.Style>
                                 <Style TargetType="materialDesign:PackIcon">
                                     <Style.Triggers>
@@ -113,17 +108,15 @@
     </ItemsPanelTemplate>
 
     <DataTemplate x:Key="VerticalAudioSessionDataTemplate" DataType="audio:IAudioSessionCard">
-        <materialDesign:Card
-            Margin="4,0,4,0"
-            Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
+        <materialDesign:Card Margin="4,0,4,0"
+                             Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
             <DockPanel Margin="8,10,8,5" Width="80">
                 <DockPanel DockPanel.Dock="Top" Margin="0,4,0,0">
-                    <TextBlock
-                        DockPanel.Dock="Bottom"
-                        Margin="0, 4, 0, 0"
-                        TextAlignment="Center"
-                        TextTrimming="CharacterEllipsis"
-                        Text="{Binding DisplayName.Value}" />
+                    <TextBlock DockPanel.Dock="Bottom"
+                               Margin="0, 4, 0, 0"
+                               TextAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding DisplayName.Value}" />
                     <Control
                         Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
                         <Control.Style>
@@ -161,14 +154,15 @@
                     </Control>
                 </DockPanel>
                 <Grid DockPanel.Dock="Bottom" Margin="0,4,0,0">
-                    <Button
-                        Command="{Binding MuteStateChangeCommand}"
-                        Width="32"
-                        Height="32"
-                        Style="{StaticResource MaterialDesignIconButton}">
+                    <Button Command="{Binding MuteStateChangeCommand}"
+                            Width="32"
+                            Height="32"
+                            Style="{StaticResource MaterialDesignIconButton}">
                         <materialDesign:PackIcon
                             Width="24"
-                            Height="24">
+                            Height="24"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
                             <materialDesign:PackIcon.Style>
                                 <Style TargetType="materialDesign:PackIcon">
                                     <Style.Triggers>

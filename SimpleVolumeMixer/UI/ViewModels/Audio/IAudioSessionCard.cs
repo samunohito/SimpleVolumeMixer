@@ -8,8 +8,8 @@ namespace SimpleVolumeMixer.UI.ViewModels.Audio;
 
 public interface IAudioSessionCard
 {
-    bool UsePackIcon => false;
-    PackIconKind? PackIconKind => null;
+    bool UsePackIcon { get; }
+    PackIconKind? PackIconKind { get; }
     IReadOnlyReactiveProperty<string?> DisplayName { get; }
     IReadOnlyReactiveProperty<ImageSource?> IconSource { get; }
     IReactiveProperty<float> MasterVolume { get; }
