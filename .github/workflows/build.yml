@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget restore -m $Env:GITHUB_WORKSPACE\SimpleVolumeMixer\SimpleVolumeMixer.csproj
+    - run: nuget restore $Env:GITHUB_WORKSPACE\SimpleVolumeMixer\SimpleVolumeMixer.csproj
     - uses: warrenbuckley/Setup-MSBuild@v1
     - run: MSBuild.exe -p:Configuration=Release -m -t:Build $Env:GITHUB_WORKSPACE\SimpleVolumeMixer\SimpleVolumeMixer.csproj
       timeout-minutes: 5
