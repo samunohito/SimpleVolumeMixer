@@ -45,5 +45,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with: 
         name: SimpleVolumeMixer
-        path: ${Env:GITHUB_WORKSPACE}\SimpleVolumeMixer\SimpleVolumeMixer\bin\Release
+        path: ${{ github.workspace }}\SimpleVolumeMixer\SimpleVolumeMixer\bin\Release
       
