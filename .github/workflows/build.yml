@@ -22,10 +22,10 @@ jobs:
     
     - name: restore dependencies
       shell: pwsh
-      run: dotnet restore ${{ env.PATH_APPLICATION_SLN }}
+      run: dotnet restore $Env:GITHUB_WORKSPACE\${{ env.PATH_APPLICATION_SLN }}
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: true
 
     - name: Build
       shell: pwsh
-      run: dotnet build ${{ env.PATH_APPLICATION_CSPROJ }} --configuration ${{ env.BUILD_CONFIGURATION_NAME }} --no-restore -p:Platform=${{ env.BUILD_PLATFORM_TYPE }}
+      run: dotnet build $Env:GITHUB_WORKSPACE\${{ env.PATH_APPLICATION_CSPROJ }} --configuration ${{ env.BUILD_CONFIGURATION_NAME }} --no-restore -p:Platform=${{ env.BUILD_PLATFORM_TYPE }}
