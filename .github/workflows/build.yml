@@ -4,17 +4,23 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: windows-2019
     env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      PATH_APPLICATION_CSPROJ: $Env:GITHUB_WORKSPACE\SimpleVolumeMixer\SimpleVolumeMixer.csproj
+      BUILD_CONFIGURATION_NAME: Release
+      BUILD_PLATFORM_TYPE: "Any CPU"
 
     steps:
-    - uses: actions/checkout@v1
-    - uses: warrenbuckley/Setup-Nuget@v1
-    - run: (New-Object System.Net.WebClient).DownloadFile('https://go.microsoft.com/fwlink/?linkid=2088517', 'ndp48-devpack-enu.exe')
-    - run: .\ndp48-devpack-enu.exe /passive /norestart
-    - run: nuget restore $Env:GITHUB_WORKSPACE\SimpleVolumeMixer\SimpleVolumeMixer.csproj
-    - uses: warrenbuckley/Setup-MSBuild@v1
-    - run: MSBuild.exe -p:Configuration=Release -m -t:Build $Env:GITHUB_WORKSPACE\SimpleVolumeMixer\SimpleVolumeMixer.csproj
-      timeout-minutes: 5
+    - name: setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: | 
+          4.x
+    
+    - name: restore dependencies
+      shell: pwsh
+      run: dotnet restore $Env:PATH_APPLICATION_CSPROJ
+
+    - name: Build
+      shell: pwsh
+      run: dotnet build $Env:PATH_APPLICATION_CSPROJ --configuration $Env:BUILD_CONFIGURATION_NAME --no-restore -p:Platform=$Env:BUILD_PLATFORM_TYPE
