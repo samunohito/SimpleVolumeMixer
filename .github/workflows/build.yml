@@ -37,4 +37,4 @@ jobs:
 
     - name: Build
       shell: pwsh
-      run: dotnet build ${Env:GITHUB_WORKSPACE}\${{ env.PATH_APPLICATION_CSPROJ }} --configuration ${{ env.BUILD_CONFIGURATION_NAME }} --no-restore -p:Platform=${{ env.BUILD_PLATFORM_TYPE }}
+      run: dotnet build ${Env:GITHUB_WORKSPACE}\${{ env.PATH_APPLICATION_CSPROJ }} --configuration ${{ env.BUILD_CONFIGURATION_NAME }} --no-restore -p:Platform="${{ env.BUILD_PLATFORM_TYPE }}"
