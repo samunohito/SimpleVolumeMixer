@@ -46,11 +46,12 @@ jobs:
       run: |
         dir ${{ github.workspace }}\SimpleVolumeMixer
         dir ${{ github.workspace }}\SimpleVolumeMixer\bin
-        dor ${{ github.workspace }}\SimpleVolumeMixer\bin\Release
+        dir "${{ github.workspace }}\SimpleVolumeMixer\bin\Any CPU"
+        dir "${{ github.workspace }}\SimpleVolumeMixer\bin\Any CPU\Release"
       
     - name: collect artifacts
       uses: actions/upload-artifact@v2
       with: 
         name: SimpleVolumeMixer
-        path: ${{ github.workspace }}\SimpleVolumeMixer\bin\Release
+        path: "${{ github.workspace }}\\SimpleVolumeMixer\\bin\\Any CPU\\Release"
       
