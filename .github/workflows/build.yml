@@ -41,6 +41,13 @@ jobs:
       shell: pwsh
       run: dotnet build ${Env:GITHUB_WORKSPACE}\${{ env.PATH_APPLICATION_CSPROJ }} --configuration ${{ env.BUILD_CONFIGURATION_NAME }} --no-restore -p:Platform="${{ env.BUILD_PLATFORM_TYPE }}"
       
+    - name: dir
+      shell: pwsh
+      run: |
+        dir ${{ github.workspace }}\SimpleVolumeMixer
+        dir ${{ github.workspace }}\SimpleVolumeMixer\bin
+        dor ${{ github.workspace }}\SimpleVolumeMixer\bin\Release
+      
     - name: collect artifacts
       uses: actions/upload-artifact@v2
       with: 
