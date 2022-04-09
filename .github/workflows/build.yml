@@ -6,6 +6,7 @@ jobs:
   build:
     runs-on: windows-2019
     env:
+      PATH_APPLICATION_SLN: $Env:GITHUB_WORKSPACE\SimpleVolumeMixer.sln
       PATH_APPLICATION_CSPROJ: $Env:GITHUB_WORKSPACE\SimpleVolumeMixer\SimpleVolumeMixer.csproj
       BUILD_CONFIGURATION_NAME: Release
       BUILD_PLATFORM_TYPE: "Any CPU"
@@ -21,7 +22,7 @@ jobs:
     
     - name: restore dependencies
       shell: pwsh
-      run: dotnet restore $Env:PATH_APPLICATION_CSPROJ
+      run: dotnet restore $Env:PATH_APPLICATION_SLN
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: true
 
