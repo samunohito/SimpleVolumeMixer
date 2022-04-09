@@ -12,6 +12,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: warrenbuckley/Setup-Nuget@v1
+    - run: (New-Object System.Net.WebClient).DownloadFile('https://go.microsoft.com/fwlink/?linkid=2088517', 'ndp48-devpack-enu.exe')
+    - run: .\ndp48-devpack-enu.exe /passive /norestart
     - run: nuget restore $Env:GITHUB_WORKSPACE\SimpleVolumeMixer\SimpleVolumeMixer.csproj
     - uses: warrenbuckley/Setup-MSBuild@v1
     - run: MSBuild.exe -p:Configuration=Release -m -t:Build $Env:GITHUB_WORKSPACE\SimpleVolumeMixer\SimpleVolumeMixer.csproj
