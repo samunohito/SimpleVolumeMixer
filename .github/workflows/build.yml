@@ -14,7 +14,9 @@ jobs:
 
     steps:
     - name: pwd
-      run: echo ${Env:GITHUB_WORKSPACE}
+      run: |
+        echo ${Env:GITHUB_WORKSPACE}
+        dir
     
     - name: setup dotnet
       uses: actions/setup-dotnet@v1
@@ -23,6 +25,9 @@ jobs:
           3.1.x
           5.x
           6.x
+    
+    - name: checkout this solution
+      uses: actions/checkout@v2
     
     - name: restore dependencies
       shell: pwsh
