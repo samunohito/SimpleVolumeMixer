@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -34,10 +35,6 @@ namespace SimpleVolumeMixer;
 // Tracking issue for improving this is https://github.com/dotnet/wpf/issues/1946
 public partial class App : PrismApplication
 {
-    private const string ToastNotificationActivationArguments = "ToastNotificationActivationArguments";
-
-    private string[] _startUpArgs;
-
     protected override Window CreateShell()
     {
         return Container.Resolve<ShellWindow>();
@@ -50,34 +47,9 @@ public partial class App : PrismApplication
 
         var themeSelectorService = Container.Resolve<IThemeSelectorService>();
         themeSelectorService.InitializeTheme();
-
-        // https://docs.microsoft.com/windows/uwp/design/shell/tiles-and-notifications/send-local-toast?tabs=desktop
-        ToastNotificationManagerCompat.OnActivated += toastArgs =>
-        {
-            Current.Dispatcher.Invoke(async () =>
-            {
-                var config = Container.Resolve<IConfiguration>();
-
-                // Store ToastNotification arguments in configuration, so you can use them from any point in the app
-                config[ToastNotificationActivationArguments] = toastArgs.Argument;
-
-                Current.MainWindow.Show();
-                Current.MainWindow.Activate();
-                if (Current.MainWindow.WindowState == WindowState.Minimized)
-                    Current.MainWindow.WindowState = WindowState.Normal;
-
-                await Task.CompletedTask;
-            });
-        };
-
+        
         base.OnInitialized();
         await Task.CompletedTask;
-    }
-
-    protected override void OnStartup(StartupEventArgs e)
-    {
-        _startUpArgs = e.Args;
-        base.OnStartup(e);
     }
 
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -90,12 +62,10 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<ICoreAudioService, CoreAudioService>();
 
         // App Services
-        containerRegistry.RegisterSingleton<IToastNotificationsService, ToastNotificationsService>();
         containerRegistry.Register<IApplicationInfoService, ApplicationInfoService>();
         containerRegistry.Register<ISystemService, SystemService>();
         containerRegistry.Register<IPersistAndRestoreService, PersistAndRestoreService>();
         containerRegistry.Register<IThemeSelectorService, ThemeSelectorService>();
-        containerRegistry.RegisterSingleton<IRightPaneService, RightPaneService>();
         
         // UseCases
         containerRegistry.GetContainer().RegisterType<AudioSessionsPageUseCase>(new DisposableComponentLifetimeManager());
@@ -128,18 +98,11 @@ public partial class App : PrismApplication
 
     private IConfiguration BuildConfiguration()
     {
-        // TODO: Register arguments you want to use on App initialization
-        var activationArgs = new Dictionary<string, string>
-        {
-            { ToastNotificationActivationArguments, string.Empty }
-        };
-
-        var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        var assembly = Assembly.GetEntryAssembly() ?? throw new InvalidOperationException();
+        var appLocation = Path.GetDirectoryName(assembly.Location);
         return new ConfigurationBuilder()
             .SetBasePath(appLocation)
-            .AddJsonFile("appsettings.json")
-            .AddCommandLine(_startUpArgs)
-            .AddInMemoryCollection(activationArgs)
+            .AddJsonFile(SimpleVolumeMixer.Properties.Resources.AppConfigFileName)
             .Build();
     }
 
@@ -151,7 +114,9 @@ public partial class App : PrismApplication
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        // TODO WTS: Please log and handle the exception as appropriate to your scenario
-        // For more info see https://docs.microsoft.com/dotnet/api/system.windows.application.dispatcherunhandledexception?view=netcore-3.0
+        if (Container.IsRegistered<ILogger>())
+        {
+            Container.Resolve<ILogger>().LogError(e.Exception, "DispatcherUnhandledException");
+        }
     }
 }

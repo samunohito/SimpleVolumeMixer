@@ -1,105 +1,94 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net48</TargetFramework>
-    <RootNamespace>SimpleVolumeMixer</RootNamespace>
-<!--    <UseWPF>true</UseWPF>-->
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <StartupObject>SimpleVolumeMixer.App</StartupObject>
-    <LangVersion>10</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="EmbeddedResources\Material-VolumeHigh.png" />
-    <None Remove="EmbeddedResources\Material-VolumeOff.png" />
-    <None Remove="EmbeddedResources\Microns-Audio.png" />
-    <None Remove="EmbeddedResources\Typicons-DeviceDesktop.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="CSCore" Version="1.2.1.2" />
-    <PackageReference Include="MahApps.Metro" Version="2.4.6" />
-    <PackageReference Include="MaterialDesignThemes" Version="4.4.0" />
-    <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.16" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.16" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.16" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.16" />
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.0.2" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.5.86-alpha">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NLog" Version="5.0.0-rc2" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="5.0.0-rc2" />
-    <PackageReference Include="NLog.Schema" Version="5.0.0-rc2" />
-    <PackageReference Include="Prism.Unity" Version="8.1.97" />
-    <PackageReference Include="ReactiveProperty" Version="7.12.0" />
-  </ItemGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net48</TargetFramework>
+        <RootNamespace>SimpleVolumeMixer</RootNamespace>
+        <UseWpf>true</UseWpf>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <StartupObject>SimpleVolumeMixer.App</StartupObject>
+        <LangVersion>10</LangVersion>
+        <Nullable>enable</Nullable>
+        <ApplicationIcon>favicon.ico</ApplicationIcon>
+        <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Costura.Fody" Version="5.7.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="CSCore" Version="1.2.1.2" />
+        <PackageReference Include="Fody" Version="6.5.5">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="MahApps.Metro" Version="2.4.6" />
+        <PackageReference Include="MaterialDesignThemes" Version="4.4.0" />
+        <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.16" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.16" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.16" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.16" />
+        <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.0.2" />
+        <PackageReference Include="Nerdbank.GitVersioning" Version="3.5.86-alpha">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="NLog" Version="5.0.0-rc2" />
+        <PackageReference Include="NLog.Extensions.Logging" Version="5.0.0-rc2" />
+        <PackageReference Include="NLog.Schema" Version="5.0.0-rc2" />
+        <PackageReference Include="Prism.Unity" Version="8.1.97" />
+        <PackageReference Include="ReactiveProperty" Version="7.12.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Properties\Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Properties\Resources.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <None Update="AppConfig.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Core" />
-  </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Core" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="NLog.config" />
-    <Content Include="NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+    <ItemGroup>
+        <Content Include="NLog.config">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="UI\Views\ShellWindow.xaml" />
-    <Page Include="UI\Views\ShellWindow.xaml" />
-    <None Remove="UI\Views\SettingsPage.xaml" />
-    <Page Include="UI\Views\SettingsPage.xaml" />
-    <None Remove="UI\Views\AudioSessionsPage.xaml" />
-    <Page Include="UI\Views\AudioSessionsPage.xaml" />
-    <None Remove="UI\Views\AudioDevicesPage.xaml" />
-    <Page Include="UI\Views\AudioDevicesPage.xaml" />
-    <None Remove="UI\Views\Controls\PeakBar.xaml" />
-    <Page Include="UI\Views\Controls\PeakBar.xaml" />
-    <None Remove="UI\Views\Controls\AudioSessionsSubVerticalPage.xaml" />
-    <Page Include="UI\Views\Controls\AudioSessionsSubVerticalPage.xaml" />
-    <None Remove="UI\Views\Controls\AudioSessionsSubHorizontalPage.xaml" />
-    <Page Include="UI\Views\Controls\AudioSessionsSubHorizontalPage.xaml" />
-    <None Remove="UI\Styles\AudioSessionTemplate.xaml" />
-    <Page Include="UI\Styles\AudioSessionTemplate.xaml" />
-    <None Remove="UI\Styles\MetroWindow.xaml" />
-    <Page Include="UI\Styles\MetroWindow.xaml" />
-    <None Remove="UI\Styles\TextBlock.xaml" />
-    <Page Include="UI\Styles\TextBlock.xaml" />
-    <None Remove="UI\Styles\UserControl.xaml" />
-    <Page Include="UI\Styles\UserControl.xaml" />
-    <None Remove="UI\Styles\_Thickness.xaml" />
-    <Page Include="UI\Styles\_Thickness.xaml" />
-    <None Remove="UI\Styles\_FontSizes.xaml" />
-    <Page Include="UI\Styles\_FontSizes.xaml" />
-  </ItemGroup>
+    <ItemGroup>
+        <Page Include="UI\Views\ShellWindow.xaml" />
+        <Page Include="UI\Views\SettingsPage.xaml" />
+        <Page Include="UI\Views\AudioSessionsPage.xaml" />
+        <Page Include="UI\Views\AudioDevicesPage.xaml" />
+        <Page Include="UI\Views\Controls\PeakBar.xaml" />
+        <Page Include="UI\Views\Controls\AudioSessionsSubVerticalPage.xaml" />
+        <Page Include="UI\Views\Controls\AudioSessionsSubHorizontalPage.xaml" />
+        <Page Include="UI\Styles\AudioSessionTemplate.xaml" />
+        <Page Include="UI\Styles\MetroWindow.xaml" />
+        <Page Include="UI\Styles\TextBlock.xaml" />
+        <Page Include="UI\Styles\UserControl.xaml" />
+        <Page Include="UI\Styles\_Thickness.xaml" />
+        <Page Include="UI\Styles\_FontSizes.xaml" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="App.xaml" />
-    <ApplicationDefinition Include="App.xaml" />
-  </ItemGroup>
+    <ItemGroup>
+<!--        <ApplicationDefinition Include="App.xaml"/>-->
+    </ItemGroup>
 </Project>

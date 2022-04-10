@@ -1,35 +1,37 @@
-﻿<UserControl x:Class="SimpleVolumeMixer.UI.Views.AudioDevicesPage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:SimpleVolumeMixer.UI.Views"
-             xmlns:viewModels="clr-namespace:SimpleVolumeMixer.UI.ViewModels"
-             xmlns:audio="clr-namespace:SimpleVolumeMixer.UI.ViewModels.Audio"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:controls="clr-namespace:SimpleVolumeMixer.UI.Views.Controls"
-             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:interactivity="http://prismlibrary.com/"
-             d:DataContext="{d:DesignInstance Type=viewModels:AudioDevicesPageViewModel}"
-             Style="{StaticResource BaseUserControlStyle}"
-             mc:Ignorable="d"
-             d:DesignHeight="450"
-             d:DesignWidth="800">
+﻿<UserControl
+    x:Class="SimpleVolumeMixer.UI.Views.AudioDevicesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:viewModels="clr-namespace:SimpleVolumeMixer.UI.ViewModels"
+    xmlns:audio="clr-namespace:SimpleVolumeMixer.UI.ViewModels.Audio"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:controls="clr-namespace:SimpleVolumeMixer.UI.Views.Controls"
+    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:interactivity="http://prismlibrary.com/"
+    d:DataContext="{d:DesignInstance Type=viewModels:AudioDevicesPageViewModel}"
+    Style="{StaticResource BaseUserControlStyle}"
+    mc:Ignorable="d"
+    d:DesignHeight="450"
+    d:DesignWidth="800">
 
     <UserControl.Resources>
         <ItemsPanelTemplate x:Key="VerticalAudioDevicesPanelTemplate">
             <StackPanel Orientation="Horizontal" />
         </ItemsPanelTemplate>
         <DataTemplate x:Key="VerticalAudioDeviceDataTemplate" DataType="audio:AudioDeviceViewModel">
-            <materialDesign:Card Margin="4,0,4,0"
-                                 Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
+            <materialDesign:Card
+                Margin="4,0,4,0"
+                Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
                 <DockPanel Margin="8,10,8,5" Width="80">
                     <DockPanel DockPanel.Dock="Top" Margin="0,4,0,0">
-                        <TextBlock DockPanel.Dock="Bottom"
-                                   Margin="0, 4, 0, 0"
-                                   TextAlignment="Center"
-                                   TextTrimming="CharacterEllipsis"
-                                   Text="{Binding FriendlyName.Value}" />
+                        <TextBlock
+                            DockPanel.Dock="Bottom"
+                            Margin="0, 4, 0, 0"
+                            TextAlignment="Center"
+                            TextTrimming="CharacterEllipsis"
+                            Text="{Binding FriendlyName.Value}" />
                         <Grid
                             Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
                             <materialDesign:PackIcon
@@ -43,15 +45,19 @@
                         <Grid DockPanel.Dock="Top">
                             <ToggleButton Command="{Binding MuteStateChangeCommand}">
                                 <ToggleButton.Style>
-                                    <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignIconButton}">
+                                    <Style
+                                        TargetType="ToggleButton"
+                                        BasedOn="{StaticResource MaterialDesignIconButton}">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
-                                                <Setter Property="Content" 
-                                                        Value="{materialDesign:PackIcon Kind=VolumeOff}" />
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=VolumeOff}" />
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
-                                                <Setter Property="Content"
-                                                        Value="{materialDesign:PackIcon Kind=VolumeHigh}" />
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=VolumeHigh}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -59,41 +65,61 @@
                             </ToggleButton>
                         </Grid>
 
-                        <materialDesign:Card DockPanel.Dock="Bottom" 
-                                             Margin="0,0,0,8">
+                        <materialDesign:Card
+                            DockPanel.Dock="Bottom"
+                            Margin="0,0,0,8">
 
-                            <StackPanel Orientation="Horizontal" 
-                                        HorizontalAlignment="Center">
+                            <StackPanel
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Center">
 
-                                <Button Height="28" Width="28" Margin="4,4,4,4"
-                                              Command="{Binding CommunicationRoleApplyCommand}">
+                                <Button
+                                    Height="28"
+                                    Width="28"
+                                    Margin="4,4,4,4"
+                                    Command="{Binding CommunicationRoleApplyCommand}">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Role.Communications.Value}" Value="True">
-                                                    <Setter Property="Content" 
-                                                            Value="{materialDesign:PackIcon Kind=Phone}" />
+                                                <DataTrigger
+                                                    Binding="{Binding Role.Communications.Value}"
+                                                    Value="True">
+                                                    <Setter
+                                                        Property="Content"
+                                                        Value="{materialDesign:PackIcon Kind=Phone}" />
                                                 </DataTrigger>
-                                                <DataTrigger Binding="{Binding Role.Communications.Value}" Value="False">
-                                                    <Setter Property="Content"
-                                                            Value="{materialDesign:PackIcon Kind=PhoneOff}" />
+                                                <DataTrigger
+                                                    Binding="{Binding Role.Communications.Value}"
+                                                    Value="False">
+                                                    <Setter
+                                                        Property="Content"
+                                                        Value="{materialDesign:PackIcon Kind=PhoneOff}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
                                 </Button>
-                                <Button Height="28" Width="28" Margin="4,4,4,4"
-                                        Command="{Binding MultimediaRoleApplyCommand}">
+                                <Button
+                                    Height="28"
+                                    Width="28"
+                                    Margin="4,4,4,4"
+                                    Command="{Binding MultimediaRoleApplyCommand}">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Role.Multimedia.Value}" Value="True">
-                                                    <Setter Property="Content" 
-                                                            Value="{materialDesign:PackIcon Kind=MusicNote}" />
+                                                <DataTrigger
+                                                    Binding="{Binding Role.Multimedia.Value}"
+                                                    Value="True">
+                                                    <Setter
+                                                        Property="Content"
+                                                        Value="{materialDesign:PackIcon Kind=MusicNote}" />
                                                 </DataTrigger>
-                                                <DataTrigger Binding="{Binding Role.Multimedia.Value}" Value="False">
-                                                    <Setter Property="Content"
-                                                            Value="{materialDesign:PackIcon Kind=MusicNoteOff}" />
+                                                <DataTrigger
+                                                    Binding="{Binding Role.Multimedia.Value}"
+                                                    Value="False">
+                                                    <Setter
+                                                        Property="Content"
+                                                        Value="{materialDesign:PackIcon Kind=MusicNoteOff}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -126,13 +152,15 @@
 
     <Grid>
         <GroupBox Header="Devices">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden" Margin="-9">
-                <Border Padding="9"
-                        BorderThickness="0"
-                        Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
-                    <ItemsControl ItemsSource="{Binding Devices}"
-                                  ItemsPanel="{StaticResource VerticalAudioDevicesPanelTemplate}"
-                                  ItemTemplate="{StaticResource VerticalAudioDeviceDataTemplate}"/>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden" Margin="-8">
+                <Border
+                    Padding="8"
+                    BorderThickness="0"
+                    Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
+                    <ItemsControl
+                        ItemsSource="{Binding Devices}"
+                        ItemsPanel="{StaticResource VerticalAudioDevicesPanelTemplate}"
+                        ItemTemplate="{StaticResource VerticalAudioDeviceDataTemplate}" />
                 </Border>
             </ScrollViewer>
         </GroupBox>

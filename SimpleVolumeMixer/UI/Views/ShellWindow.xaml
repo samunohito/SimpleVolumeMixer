@@ -61,10 +61,10 @@
             IsPaneOpen="False"
             DisplayMode="CompactInline"
             ItemsSource="{Binding MenuItems}"
-            SelectedItem="{Binding SelectedMenuItem}"
+            SelectedItem="{Binding SelectedMenuItem.Value}"
             ItemCommand="{Binding MenuItemInvokedCommand}"
             OptionsItemsSource="{Binding OptionMenuItems}"
-            SelectedOptionsItem="{Binding SelectedOptionsMenuItem}"
+            SelectedOptionsItem="{Binding SelectedOptionsMenuItem.Value}"
             OptionsItemCommand="{Binding OptionsMenuItemInvokedCommand}"
             OptionsItemTemplateSelector="{StaticResource MenuItemTemplateSelector}"
             ItemTemplateSelector="{StaticResource MenuItemTemplateSelector}">

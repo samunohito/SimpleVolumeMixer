@@ -65,7 +65,9 @@
                             Style="{StaticResource MaterialDesignIconButton}"
                             Width="32"
                             Height="32">
-                        <materialDesign:PackIcon>
+                        <materialDesign:PackIcon
+                            Width="24"
+                            Height="24">
                             <materialDesign:PackIcon.Style>
                                 <Style TargetType="materialDesign:PackIcon">
                                     <Style.Triggers>

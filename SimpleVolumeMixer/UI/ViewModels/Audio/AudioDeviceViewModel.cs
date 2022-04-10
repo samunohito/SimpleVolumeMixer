@@ -107,14 +107,4 @@ public class AudioDeviceViewModel : DisposableComponent, IAudioSessionCard
             new DeviceRoleChangeRequestEventArgs(this, DataFlowType.Render, RoleType.Multimedia)
         );
     }
-
-    public Task OpenSession()
-    {
-        return Device.OpenSession();
-    }
-
-    public void CloseSession()
-    {
-        Device.CloseSession();
-    }
 }

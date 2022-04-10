@@ -3,54 +3,49 @@ using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
+using Reactive.Bindings;
 using SimpleVolumeMixer.Properties;
 using SimpleVolumeMixer.UI.Contracts.Services;
 using SimpleVolumeMixer.UI.Models;
 
 namespace SimpleVolumeMixer.UI.ViewModels;
 
-// TODO WTS: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
 public class SettingsPageViewModel : BindableBase, INavigationAware
 {
     private readonly AppConfig _appConfig;
     private readonly IApplicationInfoService _applicationInfoService;
     private readonly ISystemService _systemService;
     private readonly IThemeSelectorService _themeSelectorService;
-    private ICommand _GitHubStatementCommand;
-    private ICommand _setThemeCommand;
-    private AppTheme _theme;
-    private string _versionDescription;
 
-    public SettingsPageViewModel(AppConfig appConfig, IThemeSelectorService themeSelectorService,
-        ISystemService systemService, IApplicationInfoService applicationInfoService)
+    public SettingsPageViewModel(
+        AppConfig appConfig,
+        IThemeSelectorService themeSelectorService,
+        ISystemService systemService,
+        IApplicationInfoService applicationInfoService
+    )
     {
         _appConfig = appConfig;
         _themeSelectorService = themeSelectorService;
         _systemService = systemService;
         _applicationInfoService = applicationInfoService;
+
+        VersionDescription = new ReactivePropertySlim<string?>();
+        Theme = new ReactivePropertySlim<AppTheme?>();
+
+        SetThemeCommand = new DelegateCommand<string>(OnSetTheme);
+        GitHubStatementCommand = new DelegateCommand(OnGitHubStatement);
     }
 
-    public AppTheme Theme
-    {
-        get => _theme;
-        set => SetProperty(ref _theme, value);
-    }
+    public IReactiveProperty<string?> VersionDescription { get; }
+    public IReactiveProperty<AppTheme?> Theme { get; }
 
-    public string VersionDescription
-    {
-        get => _versionDescription;
-        set => SetProperty(ref _versionDescription, value);
-    }
-
-    public ICommand SetThemeCommand => _setThemeCommand ?? (_setThemeCommand = new DelegateCommand<string>(OnSetTheme));
-
-    public ICommand GitHubStatementCommand => _GitHubStatementCommand ??
-                                               (_GitHubStatementCommand = new DelegateCommand(OnGitHubStatement));
+    public ICommand SetThemeCommand { get; }
+    public ICommand GitHubStatementCommand { get; }
 
     public void OnNavigatedTo(NavigationContext navigationContext)
     {
-        VersionDescription = $"{Resources.AppDisplayName} - {_applicationInfoService.GetVersion()}";
-        Theme = _themeSelectorService.GetCurrentTheme();
+        VersionDescription.Value = $"{Resources.AppDisplayName} - {_applicationInfoService.GetVersion()}";
+        Theme.Value = _themeSelectorService.GetCurrentTheme();
     }
 
     public void OnNavigatedFrom(NavigationContext navigationContext)

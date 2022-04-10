@@ -11,13 +11,6 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!--
-                MahApps.Metro resource dictionaries.
-                Learn more about using MahApps.Metro at https://mahapps.com/
-                -->
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-
                 <!-- Accent and AppTheme setting -->
                 <!--MahApps-->
                 <ResourceDictionary
@@ -25,6 +18,15 @@
                 <ResourceDictionary
                     Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Steel.xaml" />
 
+                <!--
+                MahApps.Metro resource dictionaries.
+                Learn more about using MahApps.Metro at https://mahapps.com/
+                -->
+                <ResourceDictionary 
+                    Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary 
+                    Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                
                 <!--Material Design-->
                 <materialDesign:MahAppsBundledTheme BaseTheme="Inherit" PrimaryColor="Grey" SecondaryColor="Lime" />
                 <ResourceDictionary

@@ -61,6 +61,15 @@ namespace SimpleVolumeMixer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AppConfig.json.
+        /// </summary>
+        public static string AppConfigFileName {
+            get {
+                return ResourceManager.GetString("AppConfigFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SimpleVolumeMixer.
         /// </summary>
         public static string AppDisplayName {

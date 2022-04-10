@@ -170,4 +170,7 @@
     <data name="ShellAudioDevicesPage" xml:space="preserve">
         <value>AudioDevices</value>
     </data>
+    <data name="AppConfigFileName" xml:space="preserve">
+        <value>AppConfig.json</value>
+    </data>
 </root>

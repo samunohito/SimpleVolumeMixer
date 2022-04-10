@@ -6,6 +6,16 @@
 
 # Third-party dependency license notation
 
+## Costura.Fody
+- MIT License
+- Copyright (c) 2012 Simon Cropp and contributors
+- https://github.com/Fody/Costura
+
+## Fody
+- MIT License
+- Copyright (c) Simon Cropp
+- https://github.com/Fody/Fody
+
 ## MahApps.Metro
 
 - MIT License
