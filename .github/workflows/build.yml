@@ -1,4 +1,4 @@
-name: build
+name: build-and-test
 
 on: 
   workflow_dispatch:
@@ -7,16 +7,14 @@ jobs:
   build:
     runs-on: windows-2019
     env:
-      PATH_APPLICATION_SLN: SimpleVolumeMixer.sln
-      PATH_APPLICATION_CSPROJ: SimpleVolumeMixer\SimpleVolumeMixer.csproj
-      BUILD_CONFIGURATION_NAME: Release
-      BUILD_PLATFORM_TYPE: "Any CPU"
+      applicationName: SimpleVolumeMixer
+      buildConfigrationName: Release
+      buildPlatformName: Any CPU
+      pathOfSolution: ${{ github.workspace }}\SimpleVolumeMixer.sln
+      pathOfCsproj: ${{ github.workspace }}\SimpleVolumeMixer\SimpleVolumeMixer.csproj
+      pathOfArtifacts: ${{ github.workspace }}\SimpleVolumeMixer\bin\${{ env.buildPlatformName }}\${{ env.buildConfigrationName }}\net48
 
     steps:
-    - name: pwd
-      run: |
-        echo ${Env:GITHUB_WORKSPACE}
-        dir
     
     - name: setup dotnet
       uses: actions/setup-dotnet@v1
@@ -30,28 +28,26 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+        
+    - name: setup versioning
+      id: nbgv
+      uses: dotnet/nbgv@master
+      with:
+        setAllVars: true
     
     - name: restore dependencies
       shell: pwsh
-      run: dotnet restore ${Env:GITHUB_WORKSPACE}\${{ env.PATH_APPLICATION_SLN }}
+      run: dotnet restore ${{ env.pathOfSolution }}
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: true
 
     - name: build
       shell: pwsh
-      run: dotnet build ${Env:GITHUB_WORKSPACE}\${{ env.PATH_APPLICATION_CSPROJ }} --configuration ${{ env.BUILD_CONFIGURATION_NAME }} --no-restore -p:Platform="${{ env.BUILD_PLATFORM_TYPE }}"
-      
-    - name: dir
-      shell: pwsh
-      run: |
-        dir ${{ github.workspace }}\SimpleVolumeMixer
-        dir ${{ github.workspace }}\SimpleVolumeMixer\bin
-        dir "${{ github.workspace }}\SimpleVolumeMixer\bin\Any CPU"
-        dir "${{ github.workspace }}\SimpleVolumeMixer\bin\Any CPU\Release"
+      run: dotnet build ${{ env.pathOfCsproj }} --configuration ${{ env.buildConfigrationName }} --no-restore -p:Platform="${{ env.buildPlatformName }}"
       
     - name: collect artifacts
       uses: actions/upload-artifact@v2
       with: 
-        name: SimpleVolumeMixer
-        path: "${{ github.workspace }}\\SimpleVolumeMixer\\bin\\Any CPU\\Release"
+        name: ${{ applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}
+        path: ${{ env.pathOfArtifacts }}
       
