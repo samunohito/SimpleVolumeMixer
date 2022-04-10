@@ -48,6 +48,6 @@ jobs:
     - name: collect artifacts
       uses: actions/upload-artifact@v2
       with: 
-        name: ${{ applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}
+        name: ${{ env.applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}
         path: ${{ env.pathOfArtifacts }}
       
