@@ -1,0 +1,24 @@
+﻿name: 'collect artifacts'
+description: 'Collect the build artifacts and upload them to GitHub.'
+inputs:
+  applicationName:
+    description: "The name of the artifact. It will also be the name of the archive."
+    required: true
+  applicationVersion:
+    description: "Version information for the built application."
+    required: true
+  buildConfiguration:
+    description: 'The buildConfiguration set when the application was built.'
+    required: true
+  buildPlatform:
+    description: "The buildPlatform set when the application was built."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: collect apps for net48
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ inputs.applicationName }}-${{ inputs.applicationVersion }}-net48
+        path: ${{ github.workspace }}\${{ inputs.applicationName }}\bin\${{ inputs.buildConfiguration }}\${{ inputs.buildPlatform }}\net48

@@ -1,0 +1,43 @@
+name: build-and-test
+
+inputs:
+  solution:
+    description: "Relative path from 'github.workspace' to sln file"
+    required: true
+  buildConfiguration:
+    description: "Build destination settings passed to the --configuration option of the dotnet build command"
+    required: true
+  buildPlatform:
+    description: "Target platform passed to the -p: Platform option of the dotnet build command"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          3.1.x
+          5.x
+          6.x
+
+    - name: checkout this solution
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: restore dependencies
+      shell: pwsh
+      run: dotnet restore ${{ inputs.solution }}
+      env:
+        DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    - name: build
+      shell: pwsh
+      run: dotnet build ${{ inputs.solution }} --configuration ${{ inputs.buildConfiguration }} --no-restore -p:Platform="${{ inputs.buildPlatform }}" -p:TreatWarningsAsErrors=True
+
+    - name: Test
+      shell: pwsh
+      run: dotnet test ${{ inputs.solution }} --configuration ${{ inputs.buildConfiguration }} --no-build --verbosity normal --blame-crash
