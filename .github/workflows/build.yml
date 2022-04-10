@@ -1,6 +1,6 @@
 name: build-and-test
 
-on: 
+on:
   workflow_dispatch:
 
 jobs:
@@ -11,43 +11,39 @@ jobs:
       buildConfigrationName: Release
       buildPlatformName: Any CPU
       pathOfSolution: ${{ github.workspace }}\SimpleVolumeMixer.sln
-      pathOfCsproj: ${{ github.workspace }}\SimpleVolumeMixer\SimpleVolumeMixer.csproj
-      pathOfArtifacts: ${{ github.workspace }}\SimpleVolumeMixer\bin\Release\Any CPU\net48
 
     steps:
-    
-    - name: setup dotnet
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: | 
-          3.1.x
-          5.x
-          6.x
-    
-    - name: checkout this solution
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        
-    - name: setup versioning
-      id: nbgv
-      uses: dotnet/nbgv@master
-      with:
-        setAllVars: true
-    
-    - name: restore dependencies
-      shell: pwsh
-      run: dotnet restore ${{ env.pathOfSolution }}
-      env:
-        DOTNET_CLI_TELEMETRY_OPTOUT: true
 
-    - name: build
-      shell: pwsh
-      run: dotnet build ${{ env.pathOfCsproj }} --configuration ${{ env.buildConfigrationName }} --no-restore -p:Platform="${{ env.buildPlatformName }}"
-      
-    - name: collect artifacts
-      uses: actions/upload-artifact@v2
-      with: 
-        name: ${{ env.applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}
-        path: ${{ env.pathOfArtifacts }}
-      
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: |
+            3.1.x
+            5.x
+            6.x
+    
+      - name: checkout this solution
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: setup versioning
+        id: nbgv
+        uses: dotnet/nbgv@master
+        with:
+          setAllVars: true
+
+      - name: build and test
+        uses: ./.github/actions/build-and-test
+        with:
+          solution: ${{ env.pathOfSolution }}
+          buildConfiguration: ${{ env.buildConfigrationName }}
+          buildPlatform: ${{ env.buildPlatformName }}
+
+      - name: collect artifacts
+        uses: ./.github/actions/collect-artifacts
+        with:
+          applicationName: ${{ env.applicationName }}
+          applicationVersion: ${{ steps.nbgv.outputs.NuGetPackageVersion }}
+          buildConfiguration: ${{ env.buildConfigrationName }}
+          buildPlatform: ${{ env.buildPlatformName }}
