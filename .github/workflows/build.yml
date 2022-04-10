@@ -12,7 +12,7 @@ jobs:
       buildPlatformName: Any CPU
       pathOfSolution: ${{ github.workspace }}\SimpleVolumeMixer.sln
       pathOfCsproj: ${{ github.workspace }}\SimpleVolumeMixer\SimpleVolumeMixer.csproj
-      pathOfArtifacts: ${{ github.workspace }}\SimpleVolumeMixer\bin\${{ env.buildPlatformName }}\${{ env.buildConfigrationName }}\net48
+      pathOfArtifacts: ${{ github.workspace }}\SimpleVolumeMixer\bin\${{ buildPlatformName }}\${{ buildConfigrationName }}\net48
 
     steps:
     
