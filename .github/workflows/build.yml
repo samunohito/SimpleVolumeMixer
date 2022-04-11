@@ -3,16 +3,16 @@ name: build-application
 on:
   workflow_dispatch:
 
-jobs:
-  build:
-    runs-on: windows-2019
-    env:
-      applicationName: SimpleVolumeMixer
-      buildConfigrationName: Release
-      buildPlatformName: Any CPU
-      pathOfSolution: ${{ github.workspace }}\SimpleVolumeMixer.sln
-      pathOfVersioning: ${{ github.workspace }}\SimpleVolumeMixer
+env:
+  applicationName: SimpleVolumeMixer
+  buildConfigrationName: Release
+  buildPlatformName: Any CPU
+  pathOfSolution: ${{ github.workspace }}\SimpleVolumeMixer.sln
+  pathOfVersioning: ${{ github.workspace }}\SimpleVolumeMixer
 
+jobs:
+  build-artifact:
+    runs-on: windows-2019
     steps:
 
       - name: setup dotnet
@@ -22,7 +22,7 @@ jobs:
             3.1.x
             5.x
             6.x
-    
+
       - name: checkout this solution
         uses: actions/checkout@v2
         with:
@@ -49,3 +49,94 @@ jobs:
           applicationVersion: ${{ steps.nbgv.outputs.NuGetPackageVersion }}
           buildConfiguration: ${{ env.buildConfigrationName }}
           buildPlatform: ${{ env.buildPlatformName }}
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs:
+      - build-artifact
+    
+    steps:
+      - name: checkout this solution
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: setup versioning
+        id: nbgv
+        uses: dotnet/nbgv@master
+        with:
+          setAllVars: true
+          path: ${{ env.pathOfVersioning }}
+
+      - name: create release
+        id: create-release
+        if: "!(contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'beta') || contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'alpha'))"
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: Release
+          draft: false
+          prerelease: false
+
+      - name: create release
+        id: create-release
+        if: "(contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'beta') || contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'alpha'))"
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: Release
+          draft: false
+          prerelease: true
+
+      - name: create upload_url.text
+        run: echo '${{ steps.create-release.outputs.upload_url }}' > upload_url.txt
+      - uses: actions/upload-artifact@v2
+        with:
+          name: create-release
+          path: upload_url.txt
+
+  upload-release:
+    runs-on: ubuntu-latest
+    needs: create-release
+    
+    steps:
+      - name: checkout this solution
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: setup versioning
+        id: nbgv
+        uses: dotnet/nbgv@master
+        with:
+          setAllVars: true
+          path: ${{ env.pathOfVersioning }}
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}-net48
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: create-release
+
+      - id: vars
+        run: |
+          echo "::set-output name=upload_url::$(cat upload_url.txt)"
+
+      - name: upload release assets
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.vars.outputs.upload_url }}
+          asset_path: ${{ env.applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}-net48
+          asset_name: ${{ env.applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}-net48
+          asset_content_type: 'application/zip'
