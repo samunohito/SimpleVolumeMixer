@@ -56,17 +56,17 @@ jobs:
       - build-artifact
     
     steps:
-      - name: checkout this solution
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: setup versioning
-        id: nbgv
-        uses: dotnet/nbgv@master
-        with:
-          setAllVars: true
-          path: ${{ env.pathOfVersioning }}
+#      - name: checkout this solution
+#        uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#
+#      - name: setup versioning
+#        id: nbgv
+#        uses: dotnet/nbgv@master
+#        with:
+#          setAllVars: true
+#          path: ${{ env.pathOfVersioning }}
 
 #      - name: create release
 #        id: create-release
