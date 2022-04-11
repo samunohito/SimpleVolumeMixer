@@ -11,6 +11,7 @@ jobs:
       buildConfigrationName: Release
       buildPlatformName: Any CPU
       pathOfSolution: ${{ github.workspace }}\SimpleVolumeMixer.sln
+      pathOfVersioning: ${{ github.workspace }}\SimpleVolumeMixer
 
     steps:
 
@@ -32,6 +33,7 @@ jobs:
         uses: dotnet/nbgv@master
         with:
           setAllVars: true
+          path: ${{ env.pathOfVersioning }}
 
       - name: build and test
         uses: ./.github/actions/build-and-test
