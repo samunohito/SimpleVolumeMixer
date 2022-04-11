@@ -29,7 +29,7 @@ namespace SimpleVolumeMixer.Tests.NUnit
                 mockApplicationInfoService.Object);
             settingsVm.OnNavigatedTo(null);
 
-            Assert.AreEqual(AppTheme.Light, settingsVm.Theme);
+            Assert.AreEqual(AppTheme.Light, settingsVm.Theme.Value);
         }
 
         [Test]
@@ -49,7 +49,7 @@ namespace SimpleVolumeMixer.Tests.NUnit
                 mockApplicationInfoService.Object);
             settingsVm.OnNavigatedTo(null);
 
-            Assert.AreEqual($"SimpleVolumeMixer - {testVersion}", settingsVm.VersionDescription);
+            Assert.AreEqual($"SimpleVolumeMixer - {testVersion}", settingsVm.VersionDescription.Value);
         }
 
         [Test]
