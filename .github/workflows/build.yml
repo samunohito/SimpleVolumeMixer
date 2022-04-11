@@ -68,18 +68,18 @@ jobs:
           setAllVars: true
           path: ${{ env.pathOfVersioning }}
 
-      - name: create release
-        id: create-release
-        if: "!(contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'beta') || contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'alpha'))"
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body: Release
-          draft: false
-          prerelease: false
+#      - name: create release
+#        id: create-release
+#        if: "!(contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'beta') || contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'alpha'))"
+#        uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ github.ref }}
+#          release_name: ${{ github.ref }}
+#          body: Release
+#          draft: false
+#          prerelease: false
 
       - name: create release
         id: create-release
@@ -92,7 +92,7 @@ jobs:
           release_name: ${{ github.ref }}
           body: Release
           draft: false
-          prerelease: true
+          prerelease: "contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'beta') || contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'alpha')"
 
       - name: create upload_url.text
         run: echo '${{ steps.create-release.outputs.upload_url }}' > upload_url.txt
