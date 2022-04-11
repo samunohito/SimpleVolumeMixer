@@ -7,13 +7,12 @@ using NUnit.Framework;
 
 using Prism.Regions;
 
-using SimpleVolumeMixer.Contracts.Services;
 using SimpleVolumeMixer.Core.Contracts.Services;
 using SimpleVolumeMixer.Core.Services;
-using SimpleVolumeMixer.Models;
-using SimpleVolumeMixer.Services;
-using SimpleVolumeMixer.ViewModels;
-
+using SimpleVolumeMixer.UI.Contracts.Services;
+using SimpleVolumeMixer.UI.Models;
+using SimpleVolumeMixer.UI.Services;
+using SimpleVolumeMixer.UI.ViewModels;
 using Unity;
 
 namespace SimpleVolumeMixer.Tests.NUnit
@@ -32,7 +31,6 @@ namespace SimpleVolumeMixer.Tests.NUnit
             _container.RegisterType<IFileService, FileService>();
 
             // App Services
-            _container.RegisterType<IThemeSelectorService, ThemeSelectorService>();
             _container.RegisterType<ISystemService, SystemService>();
             _container.RegisterType<IPersistAndRestoreService, PersistAndRestoreService>();
             _container.RegisterType<IApplicationInfoService, ApplicationInfoService>();
@@ -41,7 +39,7 @@ namespace SimpleVolumeMixer.Tests.NUnit
             var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(appLocation)
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile(SimpleVolumeMixer.Properties.Resources.AppConfigFileName)
                 .Build();
             var appConfig = configuration
                 .GetSection(nameof(AppConfig))
@@ -52,19 +50,31 @@ namespace SimpleVolumeMixer.Tests.NUnit
             _container.RegisterInstance(appConfig);
         }
 
-        // TODO WTS: Add tests for functionality you add to MainViewModel.
         [Test]
-        public void TestMainViewModelCreation()
+        public void TestAudioSessionsPageViewModelCreation()
         {
-            var vm = _container.Resolve<MainViewModel>();
+            var vm = _container.Resolve<AudioSessionsPageViewModel>();
+            Assert.IsNotNull(vm);
+        }
+        
+        [Test]
+        public void TestAudioSessionsPageSubViewModel()
+        {
+            var vm = _container.Resolve<AudioSessionsPageSubViewModel>();
             Assert.IsNotNull(vm);
         }
 
-        // TODO WTS: Add tests for functionality you add to SettingsViewModel.
         [Test]
-        public void TestSettingsViewModelCreation()
+        public void TestAudioDevicesPageViewModelCreation()
         {
-            var vm = _container.Resolve<SettingsViewModel>();
+            var vm = _container.Resolve<AudioDevicesPageViewModel>();
+            Assert.IsNotNull(vm);
+        }
+
+        [Test]
+        public void TestSettingsPageViewModelCreation()
+        {
+            var vm = _container.Resolve<SettingsPageViewModel>();
             Assert.IsNotNull(vm);
         }
     }

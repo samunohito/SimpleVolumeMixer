@@ -1,12 +1,9 @@
 ﻿using System;
-
 using Moq;
-
 using NUnit.Framework;
-
-using SimpleVolumeMixer.Contracts.Services;
-using SimpleVolumeMixer.Models;
-using SimpleVolumeMixer.ViewModels;
+using SimpleVolumeMixer.UI.Contracts.Services;
+using SimpleVolumeMixer.UI.Models;
+using SimpleVolumeMixer.UI.ViewModels;
 
 namespace SimpleVolumeMixer.Tests.NUnit
 {
@@ -25,7 +22,11 @@ namespace SimpleVolumeMixer.Tests.NUnit
             var mockSystemService = new Mock<ISystemService>();
             var mockApplicationInfoService = new Mock<IApplicationInfoService>();
 
-            var settingsVm = new SettingsViewModel(mockAppConfig.Object, mockThemeSelectorService.Object, mockSystemService.Object, mockApplicationInfoService.Object);
+            var settingsVm = new SettingsPageViewModel(
+                mockAppConfig.Object,
+                mockThemeSelectorService.Object,
+                mockSystemService.Object,
+                mockApplicationInfoService.Object);
             settingsVm.OnNavigatedTo(null);
 
             Assert.AreEqual(AppTheme.Light, settingsVm.Theme);
@@ -41,7 +42,11 @@ namespace SimpleVolumeMixer.Tests.NUnit
             var testVersion = new Version(1, 2, 3, 4);
             mockApplicationInfoService.Setup(mock => mock.GetVersion()).Returns(testVersion);
 
-            var settingsVm = new SettingsViewModel(mockAppConfig.Object, mockThemeSelectorService.Object, mockSystemService.Object, mockApplicationInfoService.Object);
+            var settingsVm = new SettingsPageViewModel(
+                mockAppConfig.Object,
+                mockThemeSelectorService.Object,
+                mockSystemService.Object,
+                mockApplicationInfoService.Object);
             settingsVm.OnNavigatedTo(null);
 
             Assert.AreEqual($"SimpleVolumeMixer - {testVersion}", settingsVm.VersionDescription);
@@ -55,7 +60,11 @@ namespace SimpleVolumeMixer.Tests.NUnit
             var mockSystemService = new Mock<ISystemService>();
             var mockApplicationInfoService = new Mock<IApplicationInfoService>();
 
-            var settingsVm = new SettingsViewModel(mockAppConfig.Object, mockThemeSelectorService.Object, mockSystemService.Object, mockApplicationInfoService.Object);
+            var settingsVm = new SettingsPageViewModel(
+                mockAppConfig.Object,
+                mockThemeSelectorService.Object,
+                mockSystemService.Object,
+                mockApplicationInfoService.Object);
             settingsVm.SetThemeCommand.Execute(AppTheme.Light.ToString());
 
             mockThemeSelectorService.Verify(mock => mock.SetTheme(AppTheme.Light));
