@@ -13,6 +13,11 @@ env:
 jobs:
   build-artifact:
     runs-on: windows-2019
+    outputs:
+      artifactName: ${{ steps.vars.outputs.artifactName }}
+      artifactVersion: ${{ steps.vars.outputs.applicationVersion }}
+      prereleaseVersionNoLeadingHyphen: ${{ steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen }}
+    
     steps:
 
       - name: setup dotnet
@@ -35,7 +40,16 @@ jobs:
           setAllVars: true
           path: ${{ env.pathOfVersioning }}
 
+      - name: vars
+        id: vars
+        env:
+          applicationVersion: ${{ steps.nbgv.outputs.NuGetPackageVersion }}
+        run: |
+          echo "::set-output name=applicationVersion::${{ env.applicationVersion }}"
+          echo "::set-output name=artifactName::${{ env.applicationName }}-${{ env.applicationVersion }}-net48"
+
       - name: build and test
+        id: build-and-test
         uses: ./.github/actions/build-and-test
         with:
           solution: ${{ env.pathOfSolution }}
@@ -43,92 +57,67 @@ jobs:
           buildPlatform: ${{ env.buildPlatformName }}
 
       - name: collect artifacts
+        id: collect-artifacts
         uses: ./.github/actions/collect-artifacts
         with:
           applicationName: ${{ env.applicationName }}
-          applicationVersion: ${{ steps.nbgv.outputs.NuGetPackageVersion }}
+          applicationVersion: ${{ steps.vars.outputs.applicationVersion }}
           buildConfiguration: ${{ env.buildConfigrationName }}
           buildPlatform: ${{ env.buildPlatformName }}
+          artifactName: ${{ steps.vars.outputs.artifactName }}
 
   create-release:
     runs-on: ubuntu-latest
-    needs:
-      - build-artifact
+    needs: build-artifact
+    outputs:
+      uploadUrl: ${{ steps.export-upload-url.outputs.uploadUrl }}
     
     steps:
-#      - name: checkout this solution
-#        uses: actions/checkout@v2
-#        with:
-#          fetch-depth: 0
-#
-#      - name: setup versioning
-#        id: nbgv
-#        uses: dotnet/nbgv@master
-#        with:
-#          setAllVars: true
-#          path: ${{ env.pathOfVersioning }}
-
-#      - name: create release
-#        id: create-release
-#        if: "!(contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'beta') || contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'alpha'))"
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          tag_name: ${{ github.ref }}
-#          release_name: ${{ github.ref }}
-#          body: Release
-#          draft: false
-#          prerelease: false
-
-      - name: create release
-        id: create-release
-        if: "(contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'beta') || contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'alpha'))"
+      - id: create-release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: "v${{ needs.build-artifact.outputs.artifactVersion }}"
+          release_name: "v${{ needs.build-artifact.outputs.artifactVersion }}"
           body: Release
           draft: false
-          prerelease: "contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'beta') || contains(steps.nbgv.outputs.PrereleaseVersionNoLeadingHyphen, 'alpha')"
+          prerelease: "contains(needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen, 'beta') || contains(needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen, 'alpha')"
 
-      - name: create upload_url.text
-        run: echo '${{ steps.create-release.outputs.upload_url }}' > upload_url.txt
-      - uses: actions/upload-artifact@v2
-        with:
-          name: create-release
-          path: upload_url.txt
+      - id: export-upload-url
+        run: |
+          echo "::set-output name=uploadUrl::${{ steps.create-release.outputs.upload_url }}"
 
   upload-release:
     runs-on: ubuntu-latest
-    needs: create-release
+    needs: [ create-release, build-artifact ]
+    env:
+      artifactName: ${{ needs.build-artifact.outputs.artifactName }}
+      artifactVersion: ${{ needs.build-artifact.outputs.artifactVersion }}
+      prereleaseVersionNoLeadingHyphen: ${{ needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen }}
+      uploadUrl: ${{ needs.create-release.outputs.uploadUrl }}
     
     steps:
-      - name: checkout this solution
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
-      - name: setup versioning
-        id: nbgv
-        uses: dotnet/nbgv@master
-        with:
-          setAllVars: true
-          path: ${{ env.pathOfVersioning }}
-
-      - uses: actions/download-artifact@v2
-        with:
-          name: ${{ env.applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}-net48
-
-      - uses: actions/download-artifact@v2
-        with:
-          name: create-release
-
-      - id: vars
+      - name: echo
         run: |
-          echo "::set-output name=upload_url::$(cat upload_url.txt)"
+          echo "${{ env.artifactName }}"
+          echo "${{ env.artifactVersion }}"
+          echo "${{ env.prereleaseVersionNoLeadingHyphen }}"
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.artifactName }}
+          path: ./${{ env.artifactName }}
+
+      - name: pwd
+        run: |
+          ls -la
+          ls -la ./${{ env.artifactName }}
+      
+      - name: compress to zip
+        run: |
+          zip -r ${{ env.artifactName }}.zip ./${{ env.artifactName }}
 
       - name: upload release assets
         id: upload-release-asset
@@ -136,7 +125,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.vars.outputs.upload_url }}
-          asset_path: ${{ env.applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}-net48
-          asset_name: ${{ env.applicationName }}-${{ steps.nbgv.outputs.NuGetPackageVersion }}-net48
+          upload_url: ${{ env.uploadUrl }}
+          asset_path: ./${{ env.artifactName }}.zip
+          asset_name: ${{ env.artifactName }}.zip
           asset_content_type: 'application/zip'

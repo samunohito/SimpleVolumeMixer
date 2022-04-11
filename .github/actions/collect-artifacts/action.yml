@@ -13,6 +13,9 @@ inputs:
   buildPlatform:
     description: "The buildPlatform set when the application was built."
     required: true
+  artifactName:
+    description: "Sets the name of the collected artifact."
+    required: true
 
 runs:
   using: "composite"
@@ -20,5 +23,5 @@ runs:
     - name: collect apps for net48
       uses: actions/upload-artifact@v2
       with:
-        name: ${{ inputs.applicationName }}-${{ inputs.applicationVersion }}-net48
+        name: ${{ inputs.artifactName }}
         path: ${{ github.workspace }}\${{ inputs.applicationName }}\bin\${{ inputs.buildConfiguration }}\net48
