@@ -39,8 +39,8 @@ namespace SimpleVolumeMixer.Tests.NUnit
             var mockAppConfig = new Mock<AppConfig>();
             var mockSystemService = new Mock<ISystemService>();
             var mockApplicationInfoService = new Mock<IApplicationInfoService>();
-            var testVersion = new Version(1, 2, 3, 4);
-            mockApplicationInfoService.Setup(mock => mock.GetVersion()).Returns(testVersion);
+            var testVersion = "1.2.3.4";
+            mockApplicationInfoService.Setup(mock => mock.GetAssemblyProductVersion()).Returns(testVersion);
 
             var settingsVm = new SettingsPageViewModel(
                 mockAppConfig.Object,
