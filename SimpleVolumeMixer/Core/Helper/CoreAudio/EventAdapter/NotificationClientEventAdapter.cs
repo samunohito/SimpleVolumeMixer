@@ -102,13 +102,13 @@ public class NotificationClientEventAdapter : DisposableComponent
     protected override void OnDisposing()
     {
         _logger.LogDebug("disposing...");
-        
+
         _client.DeviceAdded -= OnDeviceAdded;
         _client.DeviceRemoved -= OnDeviceRemoved;
         _client.DevicePropertyChanged -= OnDevicePropertyChanged;
         _client.DeviceStateChanged -= OnDeviceStateChanged;
         _client.DefaultDeviceChanged -= OnDefaultDeviceChanged;
-        
+
         _processor.Dispose();
 
         base.OnDisposing();

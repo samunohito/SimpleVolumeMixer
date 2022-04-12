@@ -22,16 +22,16 @@
                 MahApps.Metro resource dictionaries.
                 Learn more about using MahApps.Metro at https://mahapps.com/
                 -->
-                <ResourceDictionary 
+                <ResourceDictionary
                     Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-                <ResourceDictionary 
+                <ResourceDictionary
                     Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                
+
                 <!--Material Design-->
                 <materialDesign:MahAppsBundledTheme BaseTheme="Inherit" PrimaryColor="Grey" SecondaryColor="Lime" />
                 <ResourceDictionary
                     Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-                <ResourceDictionary 
+                <ResourceDictionary
                     Source="pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.Grey.Primary.xaml" />
 
                 <!--Material Design: MahApps統合設定 -->
@@ -39,7 +39,7 @@
                     Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Fonts.xaml" />
                 <ResourceDictionary
                     Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Flyout.xaml" />
-                
+
                 <ResourceDictionary Source="/UI/Styles/_FontSizes.xaml" />
                 <ResourceDictionary Source="/UI/Styles/_Thickness.xaml" />
                 <ResourceDictionary Source="/UI/Styles/MetroWindow.xaml" />
@@ -49,11 +49,14 @@
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="{StaticResource Primary200}" po:Freeze="True" />
-            <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="{StaticResource Primary200Foreground}" po:Freeze="True" />
+            <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="{StaticResource Primary200Foreground}"
+                             po:Freeze="True" />
             <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="{StaticResource Primary500}" po:Freeze="True" />
-            <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="{StaticResource Primary500Foreground}" po:Freeze="True" />
+            <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="{StaticResource Primary500Foreground}"
+                             po:Freeze="True" />
             <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="{StaticResource Primary700}" po:Freeze="True" />
-            <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="{StaticResource Primary700Foreground}" po:Freeze="True" />
+            <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="{StaticResource Primary700Foreground}"
+                             po:Freeze="True" />
         </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>

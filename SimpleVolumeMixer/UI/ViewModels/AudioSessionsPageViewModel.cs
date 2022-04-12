@@ -62,7 +62,7 @@ public class AudioSessionsPageViewModel : DisposableComponent, INavigationAware
                 SelectedDeviceForPanel.Clear();
                 if (x != null)
                 {
-                     SelectedDeviceForPanel.Add(x);
+                    SelectedDeviceForPanel.Add(x);
                 }
             })
             .AddTo(Disposable);
@@ -84,7 +84,7 @@ public class AudioSessionsPageViewModel : DisposableComponent, INavigationAware
     /// この選択値はUseCaseを通じて子ページ側のセッション一覧にも影響する.
     /// </summary>
     public IReactiveProperty<AudioDeviceViewModel?> SelectedDevice { get; }
-    
+
     /// <summary>
     /// 現在、メインの表示対象として設定されているデバイス.
     /// 内容はSelectedDeviceの値が1つだけで、複数入ることはない.

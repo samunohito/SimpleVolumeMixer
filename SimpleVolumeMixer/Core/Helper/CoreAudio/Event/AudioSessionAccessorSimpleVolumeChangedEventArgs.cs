@@ -2,7 +2,8 @@
 
 public class AudioSessionAccessorSimpleVolumeChangedEventArgs : AudioSessionAccessorEventArgs
 {
-    public AudioSessionAccessorSimpleVolumeChangedEventArgs(AudioSessionAccessor session, float newVolume, bool isMuted) :
+    public AudioSessionAccessorSimpleVolumeChangedEventArgs(AudioSessionAccessor session, float newVolume, bool isMuted)
+        :
         base(session)
     {
         NewVolume = newVolume;

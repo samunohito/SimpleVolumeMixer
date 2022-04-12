@@ -6,7 +6,6 @@ using Reactive.Bindings.Extensions;
 
 namespace SimpleVolumeMixer.Core.Helper.Component;
 
-
 public class QueueProcessor<TP, TR> : DisposableComponent
 {
     private readonly BlockingCollection<QueueProcessorHandle<TP, TR>> _handles;
@@ -45,7 +44,7 @@ public class QueueProcessor<TP, TR> : DisposableComponent
                 handle.Executed = true;
                 continue;
             }
-            
+
             handle.Result = handle.Function(handle.Argument);
             handle.Executed = true;
         }
