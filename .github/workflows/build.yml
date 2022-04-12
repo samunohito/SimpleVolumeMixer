@@ -83,7 +83,6 @@ jobs:
         with:
           tag_name: "v${{ needs.build-artifact.outputs.artifactVersion }}"
           release_name: "v${{ needs.build-artifact.outputs.artifactVersion }}"
-          body: Release
           draft: false
           prerelease: "contains(needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen, 'beta') || contains(needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen, 'alpha')"
 
