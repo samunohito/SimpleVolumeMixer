@@ -39,7 +39,7 @@ public class KeyValueInstanceManager<TK, TV> : DisposableComponent where TK : ID
         {
             return;
         }
-        
+
         lock (_gate)
         {
             var key = (TK)sender;

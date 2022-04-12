@@ -53,7 +53,7 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
         {
             // 古いインスタンスがある場合は破棄
             CloseSessionManager();
-            
+
             // 個別で破棄するのでDisposableには入れない
             _sessionManager = sessionManager;
             _eventAdapter = new AudioSessionManagerEventAdapter(sessionManager, _logger);
@@ -92,7 +92,7 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
             {
                 return null;
             }
-            
+
             return _sessionManager.GetSessionEnumerator();
         }
     }

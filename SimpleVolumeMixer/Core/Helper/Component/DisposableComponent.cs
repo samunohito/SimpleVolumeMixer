@@ -58,7 +58,7 @@ public abstract class DisposableComponent : IDisposableComponent
         {
             return;
         }
-        
+
         OnDisposing();
         _disposable.Dispose();
         OnDisposed();

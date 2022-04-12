@@ -13,11 +13,11 @@ public class MenuItemTemplateSelector : DataTemplateSelector
         ImageDataTemplate = null;
         PackIconTemplate = null;
     }
-    
+
     public DataTemplate? GlyphDataTemplate { get; set; }
 
     public DataTemplate? ImageDataTemplate { get; set; }
-    
+
     public DataTemplate? PackIconTemplate { get; set; }
 
     public override DataTemplate? SelectTemplate(object item, DependencyObject container)

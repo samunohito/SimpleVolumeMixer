@@ -4,7 +4,8 @@ namespace SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 
 public class DeviceAccessorRoleHolderChangedEventArgs : AudioDeviceAccessorEventArgs
 {
-    internal DeviceAccessorRoleHolderChangedEventArgs(AudioDeviceAccessor device, RoleType role, bool oldState, bool newState) :
+    internal DeviceAccessorRoleHolderChangedEventArgs(AudioDeviceAccessor device, RoleType role, bool oldState,
+        bool newState) :
         base(device)
     {
         Role = role;

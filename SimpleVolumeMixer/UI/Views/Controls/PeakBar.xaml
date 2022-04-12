@@ -233,7 +233,7 @@
             </Grid.Style>
         </Grid>
 
-        <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}" 
+        <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
               Height="Auto">
 
             <Slider Name="HorizontalValueSlider"

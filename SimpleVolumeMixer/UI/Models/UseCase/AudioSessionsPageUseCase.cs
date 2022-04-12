@@ -19,12 +19,12 @@ public class AudioSessionsPageUseCase : DisposableComponent
         Devices = coreAudioService.Devices
             .ToReadOnlyReactiveCollection(disposeElement: false)
             .AddTo(Disposable);
- 
+
         // マルチメディアロールのデバイスを初期表示にしたい.
         SelectedDevice = coreAudioService.MultimediaRoleDevice
             .ToReactiveProperty()
             .AddTo(Disposable);
-        
+
         // デバイスの選択変更時にセッションの開け締めを行うため通知を購読する.
         // 前回値が出来るまで待ち合わせるので、下記の購読開始処理を実行しただけでは動作しない.
         SelectedDevice

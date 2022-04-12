@@ -37,13 +37,13 @@
                             <ColumnDefinition Width="48" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <materialDesign:PackIcon 
-                            Grid.Column="0" 
+                        <materialDesign:PackIcon
+                            Grid.Column="0"
                             Width="24"
                             Height="24"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Kind="{Binding Kind}"/>
+                            Kind="{Binding Kind}" />
                         <TextBlock
                             Grid.Column="1"
                             VerticalAlignment="Center"
@@ -73,5 +73,5 @@
             </controls:HamburgerMenu.Content>
         </controls:HamburgerMenu>
     </controls:MetroWindow.Content>
-    
+
 </controls:MetroWindow>

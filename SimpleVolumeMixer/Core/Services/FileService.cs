@@ -34,7 +34,7 @@ public class FileService : IFileService
         {
             throw new ArgumentNullException(nameof(fileName));
         }
-        
+
         if (File.Exists(Path.Combine(folderPath, fileName)))
         {
             File.Delete(Path.Combine(folderPath, fileName));

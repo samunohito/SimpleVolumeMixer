@@ -47,7 +47,7 @@ public partial class App : PrismApplication
 
         var themeSelectorService = Container.Resolve<IThemeSelectorService>();
         themeSelectorService.InitializeTheme();
-        
+
         base.OnInitialized();
         await Task.CompletedTask;
     }
@@ -66,15 +66,18 @@ public partial class App : PrismApplication
         containerRegistry.Register<ISystemService, SystemService>();
         containerRegistry.Register<IPersistAndRestoreService, PersistAndRestoreService>();
         containerRegistry.Register<IThemeSelectorService, ThemeSelectorService>();
-        
+
         // UseCases
-        containerRegistry.GetContainer().RegisterType<AudioSessionsPageUseCase>(new DisposableComponentLifetimeManager());
+        containerRegistry.GetContainer()
+            .RegisterType<AudioSessionsPageUseCase>(new DisposableComponentLifetimeManager());
 
         // Views
         containerRegistry.RegisterForNavigation<SettingsPage, SettingsPageViewModel>(PageKeys.Settings);
         containerRegistry.RegisterForNavigation<AudioSessionsPage, AudioSessionsPageViewModel>(PageKeys.AudioSessions);
-        containerRegistry.RegisterForNavigation<AudioSessionsSubHorizontalPage, AudioSessionsPageSubViewModel>(PageKeys.AudioSessionsSubHorizontal);
-        containerRegistry.RegisterForNavigation<AudioSessionsSubVerticalPage, AudioSessionsPageSubViewModel>(PageKeys.AudioSessionsSubVertical);
+        containerRegistry.RegisterForNavigation<AudioSessionsSubHorizontalPage, AudioSessionsPageSubViewModel>(
+            PageKeys.AudioSessionsSubHorizontal);
+        containerRegistry.RegisterForNavigation<AudioSessionsSubVerticalPage, AudioSessionsPageSubViewModel>(
+            PageKeys.AudioSessionsSubVertical);
         containerRegistry.RegisterForNavigation<AudioDevicesPage, AudioDevicesPageViewModel>(PageKeys.AudioDevices);
 
         containerRegistry.RegisterForNavigation<ShellWindow, ShellWindowViewModel>();

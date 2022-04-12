@@ -8,6 +8,6 @@ public class AudioDeviceAccessorEventArgs : EventArgs
     {
         Device = device;
     }
-    
+
     public AudioDeviceAccessor Device { get; }
 }

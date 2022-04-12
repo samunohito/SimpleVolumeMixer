@@ -44,7 +44,8 @@ public class SettingsPageViewModel : BindableBase, INavigationAware
 
     public void OnNavigatedTo(NavigationContext navigationContext)
     {
-        VersionDescription.Value = $"{Resources.AppDisplayName} - {_applicationInfoService.GetAssemblyProductVersion()}";
+        VersionDescription.Value =
+            $"{Resources.AppDisplayName} - {_applicationInfoService.GetAssemblyProductVersion()}";
         Theme.Value = _themeSelectorService.GetCurrentTheme();
     }
 

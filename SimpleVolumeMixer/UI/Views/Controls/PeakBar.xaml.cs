@@ -58,14 +58,14 @@ public partial class PeakBar : UserControl
             typeof(double),
             typeof(PeakBar),
             new PropertyMetadata(10.0));
-    
+
     private static readonly DependencyProperty OrientationProperty =
         DependencyProperty.Register(
             nameof(Orientation),
             typeof(Orientation),
             typeof(PeakBar),
             new PropertyMetadata(Orientation.Vertical));
-    
+
     private static readonly DependencyProperty PeakBarHandlerProperty =
         DependencyProperty.Register(
             nameof(PeakBarHandler),
@@ -85,7 +85,7 @@ public partial class PeakBar : UserControl
         _handler.NotifiedValue += OnNotifiedValue;
 
         PeakBarHandler = _handler;
-        
+
         _handler.NotifyValue(0.0);
     }
 
@@ -130,13 +130,13 @@ public partial class PeakBar : UserControl
         get => (double)GetValue(LargeChangeProperty);
         set => SetValue(LargeChangeProperty, value);
     }
-    
+
     public Orientation Orientation
     {
         get => (Orientation)GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
     }
-    
+
     public IPeakBarHandler PeakBarHandler
     {
         get => (IPeakBarHandler)GetValue(PeakBarHandlerProperty);
@@ -147,7 +147,7 @@ public partial class PeakBar : UserControl
     {
         add { value?.Invoke(this, new PeakBarReadyEventArgs(_handler)); }
         // ReSharper disable once ValueParameterNotUsed
-        remove{}
+        remove { }
     }
 
     private static void MeterMaximumPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -155,7 +155,7 @@ public partial class PeakBar : UserControl
         var peakBar = (PeakBar)d;
         peakBar.UpdateMeterArea(peakBar.MeterValue);
     }
-    
+
     private static void PeakBarHandlerPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var peakBar = (PeakBar)d;
@@ -225,6 +225,7 @@ public partial class PeakBar : UserControl
                     GrayArea.Height = _originHeight;
                     GreenArea.Height = _originHeight;
                 }
+
                 break;
             case Orientation.Vertical:
                 GrayArea.Height = newMeterValue;
@@ -234,6 +235,7 @@ public partial class PeakBar : UserControl
                     GrayArea.Width = _originWidth;
                     GreenArea.Width = _originWidth;
                 }
+
                 break;
         }
     }

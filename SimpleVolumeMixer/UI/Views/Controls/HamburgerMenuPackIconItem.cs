@@ -7,9 +7,9 @@ namespace SimpleVolumeMixer.UI.Views.Controls;
 public class HamburgerMenuPackIconItem : HamburgerMenuItem
 {
     public static readonly DependencyProperty KindProperty = DependencyProperty.Register(
-        nameof(Kind), 
-        typeof(PackIconKind), 
-        typeof(HamburgerMenuPackIconItem), 
+        nameof(Kind),
+        typeof(PackIconKind),
+        typeof(HamburgerMenuPackIconItem),
         new PropertyMetadata(default(PackIconKind)));
 
     public PackIconKind Kind
@@ -17,7 +17,7 @@ public class HamburgerMenuPackIconItem : HamburgerMenuItem
         get => (PackIconKind)GetValue(KindProperty);
         set => SetValue(KindProperty, value);
     }
-    
+
     protected override Freezable CreateInstanceCore()
     {
         return new HamburgerMenuPackIconItem();

@@ -140,7 +140,7 @@ public class AudioDevice : DisposableComponent
     {
         Dispose();
     }
-    
+
     public AudioDeviceAccessor Device { get; }
 
     public ReadOnlyReactiveCollection<AudioSession> Sessions { get; }

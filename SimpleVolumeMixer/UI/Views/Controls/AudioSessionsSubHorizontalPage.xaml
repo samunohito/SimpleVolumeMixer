@@ -10,7 +10,7 @@
 
     <Grid>
         <ScrollViewer
-            HorizontalScrollBarVisibility="Hidden" 
+            HorizontalScrollBarVisibility="Hidden"
             VerticalScrollBarVisibility="Auto"
             Margin="-8">
             <Border

@@ -15,6 +15,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     /// いずれかのセッションが破棄される際に呼び出される
     /// </summary>
     public event EventHandler<AudioSessionAccessorEventArgs>? SessionDisposing;
+
     /// <summary>
     /// いずれかのセッションが破棄された際に呼び出される
     /// </summary>
@@ -31,7 +32,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
         _sessionManager.SessionManagerClosed += OnSessionManagerClosed;
         _sessionManager.SessionCreated += OnSessionCreated;
     }
-    
+
     /// <summary>
     /// 引数のPIDを持つセッションが内蔵コレクションにあるかを確認する
     /// </summary>
@@ -178,7 +179,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     {
         _sessionManager.CloseSessionManager();
     }
-    
+
     /// <summary>
     /// CoreAudioAPIから新規セッションが作成された旨の通知が届いた際に呼び出される
     /// </summary>
@@ -192,10 +193,10 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
         {
             return;
         }
-        
+
         Add(e.NewSession);
     }
-    
+
     /// <summary>
     /// セッションマネージャの取得が完了した際に呼び出される。
     /// </summary>
