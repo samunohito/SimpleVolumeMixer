@@ -1,7 +1,10 @@
 name: build-application
 
 on:
-  workflow_dispatch:
+  pull_request:
+    types: [ closed ]
+    branches:
+      - develop
 
 env:
   applicationName: SimpleVolumeMixer
@@ -114,7 +117,7 @@ jobs:
         run: |
           ls -la
           ls -la ./${{ env.artifactName }}
-      
+
       - name: compress to zip
         run: |
           zip -r ${{ env.artifactName }}.zip ./${{ env.artifactName }}
