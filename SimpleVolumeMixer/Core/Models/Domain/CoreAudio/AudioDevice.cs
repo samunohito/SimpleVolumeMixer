@@ -12,17 +12,17 @@ namespace SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 public class AudioDevice : DisposableComponent
 {
-    private readonly PropertyMonitor<string?> _deviceId;
-    private readonly PropertyMonitor<string?> _friendlyName;
-    private readonly PropertyMonitor<string?> _devicePath;
-    private readonly PropertyMonitor<DeviceStateType> _deviceState;
-    private readonly PropertyMonitor<DataFlowType> _dataFlow;
-    private readonly PropertyMonitor<int> _channelCount;
-    private readonly PropertyMonitor<float> _peakValue;
-    private readonly PropertyMonitor<int> _meteringChannelCount;
-    private readonly PropertyMonitor<float> _masterVolumeLevel;
-    private readonly PropertyMonitor<float> _masterVolumeLevelScalar;
-    private readonly PropertyMonitor<bool> _isMuted;
+    private readonly PollingMonitor<string?> _deviceId;
+    private readonly PollingMonitor<string?> _friendlyName;
+    private readonly PollingMonitor<string?> _devicePath;
+    private readonly PollingMonitor<DeviceStateType> _deviceState;
+    private readonly PollingMonitor<DataFlowType> _dataFlow;
+    private readonly PollingMonitor<int> _channelCount;
+    private readonly PollingMonitor<float> _peakValue;
+    private readonly PollingMonitor<int> _meteringChannelCount;
+    private readonly PollingMonitor<float> _masterVolumeLevel;
+    private readonly PollingMonitor<float> _masterVolumeLevelScalar;
+    private readonly PollingMonitor<bool> _isMuted;
 
     internal AudioDevice(AudioDeviceAccessor ax)
     {
@@ -32,57 +32,57 @@ public class AudioDevice : DisposableComponent
             .ToReadOnlyReactiveCollection(x => new AudioSession(x))
             .AddTo(Disposable);
 
-        _deviceId = new PropertyMonitor<string?>(
-            PropertyMonitorIntervalType.Manual,
+        _deviceId = new PollingMonitor<string?>(
+            PollingMonitorIntervalType.Manual,
             () => ax.DeviceId
         );
-        _friendlyName = new PropertyMonitor<string?>(
-            PropertyMonitorIntervalType.Manual,
+        _friendlyName = new PollingMonitor<string?>(
+            PollingMonitorIntervalType.Manual,
             () => ax.FriendlyName
         );
-        _devicePath = new PropertyMonitor<string?>(
-            PropertyMonitorIntervalType.Manual,
+        _devicePath = new PollingMonitor<string?>(
+            PollingMonitorIntervalType.Manual,
             () => ax.DevicePath
         );
-        _deviceState = new PropertyMonitor<DeviceStateType>(
-            PropertyMonitorIntervalType.Normal,
+        _deviceState = new PollingMonitor<DeviceStateType>(
+            PollingMonitorIntervalType.Normal,
             () => ax.DeviceState
         );
-        _dataFlow = new PropertyMonitor<DataFlowType>(
-            PropertyMonitorIntervalType.Manual,
+        _dataFlow = new PollingMonitor<DataFlowType>(
+            PollingMonitorIntervalType.Manual,
             () => ax.DataFlow
         );
-        _channelCount = new PropertyMonitor<int>(
-            PropertyMonitorIntervalType.Manual,
+        _channelCount = new PollingMonitor<int>(
+            PollingMonitorIntervalType.Manual,
             () => ax.ChannelCount,
-            comparer: PropertyMonitor.IntComparer
+            comparer: PollingMonitor.IntComparer
         );
-        _peakValue = new PropertyMonitor<float>(
-            PropertyMonitorIntervalType.High,
+        _peakValue = new PollingMonitor<float>(
+            PollingMonitorIntervalType.High,
             () => ax.PeakValue,
-            comparer: PropertyMonitor.FloatComparer
+            comparer: PollingMonitor.FloatComparer
         );
-        _meteringChannelCount = new PropertyMonitor<int>(
-            PropertyMonitorIntervalType.Low,
+        _meteringChannelCount = new PollingMonitor<int>(
+            PollingMonitorIntervalType.Low,
             () => ax.MeteringChannelCount
         );
-        _masterVolumeLevel = new PropertyMonitor<float>(
-            PropertyMonitorIntervalType.Manual,
+        _masterVolumeLevel = new PollingMonitor<float>(
+            PollingMonitorIntervalType.Manual,
             () => ax.MasterVolumeLevel,
             (x) => ax.MasterVolumeLevel = x,
-            PropertyMonitor.FloatComparer
+            PollingMonitor.FloatComparer
         );
-        _masterVolumeLevelScalar = new PropertyMonitor<float>(
-            PropertyMonitorIntervalType.Normal,
+        _masterVolumeLevelScalar = new PollingMonitor<float>(
+            PollingMonitorIntervalType.Normal,
             () => ax.MasterVolumeLevelScalar,
             (x) => ax.MasterVolumeLevelScalar = x,
-            PropertyMonitor.FloatComparer
+            PollingMonitor.FloatComparer
         );
-        _isMuted = new PropertyMonitor<bool>(
-            PropertyMonitorIntervalType.Normal,
+        _isMuted = new PollingMonitor<bool>(
+            PollingMonitorIntervalType.Normal,
             () => ax.IsMuted,
             (x) => ax.IsMuted = x,
-            PropertyMonitor.BoolComparer
+            PollingMonitor.BoolComparer
         );
 
         Role = new DeviceRole(this, ax.Role).AddTo(Disposable);
