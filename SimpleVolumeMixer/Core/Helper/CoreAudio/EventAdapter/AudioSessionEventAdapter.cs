@@ -30,7 +30,7 @@ public class AudioSessionEventAdapter : DisposableComponent
         _session.StateChanged += OnStateChanged;
         _session.SessionDisconnected += OnSessionDisconnected;
         _logger = logger;
-        _processor = new QueueProcessor<object?, object?>(int.MaxValue);
+        _processor = new QueueProcessor<object?, object?>();
         _processor.StartRequest();
     }
 
@@ -128,7 +128,7 @@ public class AudioSessionEventAdapter : DisposableComponent
 
     private void Push(Action action)
     {
-        _processor.Push(QueueProcessorHandle.OfAction(action));
+        _processor.Push(QueueProcessorItem.OfAction(action));
     }
 
     protected override void OnDisposing()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -38,7 +39,7 @@ public class CoreAudioAccessor : SafetyAccessorComponent
         _deviceManager.CollectAudioEndpoints();
     }
 
-    public ReadOnlyReactiveCollection<AudioDeviceAccessor> AudioDevices => _deviceManager.ReadOnlyCollection;
+    public ReadOnlyObservableCollection<AudioDeviceAccessor> AudioDevices => _deviceManager.ReadOnlyCollection;
 
     public AudioDeviceAccessor? GetDefaultDevice(DataFlowType dataFlowType, RoleType roleType)
     {

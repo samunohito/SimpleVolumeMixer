@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CSCore.CoreAudioAPI;
 using Microsoft.Extensions.Logging;
@@ -36,7 +37,7 @@ public class AudioDeviceAccessor : SafetyAccessorComponent
 
     public MMDevice Device { get; }
     public DeviceRoleHolder Role { get; }
-    public ReadOnlyReactiveCollection<AudioSessionAccessor> Sessions => _accessorManager.ReadOnlyCollection;
+    public ReadOnlyObservableCollection<AudioSessionAccessor> Sessions => _accessorManager.ReadOnlyCollection;
     public string? DeviceId => SafeRead(() => Device.DeviceID, null);
     public string? FriendlyName => SafeRead(() => Device.FriendlyName, null);
     public string? DevicePath => SafeRead(() => Device.DevicePath, null);

@@ -96,7 +96,7 @@ public class NotificationClientEventAdapter : DisposableComponent
 
     private void Push(Action action)
     {
-        _processor.Push(QueueProcessorHandle.OfAction(action));
+        _processor.Push(QueueProcessorItem.OfAction(action));
     }
 
     protected override void OnDisposing()

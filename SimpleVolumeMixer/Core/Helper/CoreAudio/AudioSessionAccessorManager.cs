@@ -9,7 +9,7 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
-public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper<AudioSessionAccessor>
+public class AudioSessionAccessorManager : SynchronizedObservableCollectionWrapper<AudioSessionAccessor>
 {
     /// <summary>
     /// いずれかのセッションが破棄される際に呼び出される

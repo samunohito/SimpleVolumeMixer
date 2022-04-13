@@ -11,7 +11,7 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
-public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<AudioDeviceAccessor>
+public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrapper<AudioDeviceAccessor>
 {
     /// <summary>
     /// いずれかのデバイスが破棄される際に呼び出される

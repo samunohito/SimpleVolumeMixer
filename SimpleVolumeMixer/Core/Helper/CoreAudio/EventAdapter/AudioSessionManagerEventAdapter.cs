@@ -22,7 +22,7 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
         _sessionManager.VolumeDuckNotification += OnVolumeDuckNotification;
         _sessionManager.VolumeUnDuckNotification += OnVolumeUnDuckNotification;
         _logger = logger;
-        _processor = new QueueProcessor<object?, object?>(int.MaxValue);
+        _processor = new QueueProcessor<object?, object?>();
         _processor.StartRequest();
     }
 
@@ -67,7 +67,7 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
 
     private void Push(Action action)
     {
-        _processor.Push(QueueProcessorHandle.OfAction(action));
+        _processor.Push(QueueProcessorItem.OfAction(action));
     }
 
     protected override void OnDisposing()
