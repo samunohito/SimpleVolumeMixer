@@ -7,7 +7,7 @@ namespace SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 public class DeviceRole : DisposableComponent
 {
-    public DeviceRole(AudioDevice device, DeviceRoleHolder holder)
+    public DeviceRole(AudioDevice device, AudioDeviceRole holder)
     {
         Device = device;
         Multimedia = holder.ToReactivePropertySlimAsSynchronized(x => x.Multimedia).AddTo(Disposable);

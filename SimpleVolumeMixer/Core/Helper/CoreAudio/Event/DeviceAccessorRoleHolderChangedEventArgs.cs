@@ -4,7 +4,7 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 
 /// <summary>
-/// <see cref="EventArgs"/> fired when the state of <see cref="DeviceRoleHolder"/> held by <see cref="AudioDeviceAccessor"/> changes.
+/// <see cref="EventArgs"/> fired when the state of <see cref="AudioDeviceRole"/> held by <see cref="AudioDeviceAccessor"/> changes.
 /// </summary>
 public class DeviceAccessorRoleHolderChangedEventArgs : AudioDeviceAccessorEventArgs
 {
