@@ -10,6 +10,11 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
+/// <summary>
+/// <see cref="AudioDeviceAccessor"/>を監視し、値の変更があったら<see cref="ReactiveProperty"/>経由で通知及び最新値の配信を行う。
+/// <see cref="AudioDeviceAccessor"/>の存在が前提となるため、<see cref="DisposableComponent"/>の仕組みを利用して破棄されたことを検知し、
+/// それに合わせて監視の終了やこのクラスの破棄を行う仕組みも実装する。
+/// </summary>
 public class AudioDevice : DisposableComponent
 {
     private readonly PollingMonitor<string?> _deviceId;

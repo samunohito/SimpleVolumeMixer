@@ -16,6 +16,11 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
+/// <summary>
+/// <see cref="AudioSessionAccessor"/>を監視し、値の変更があったら<see cref="ReactiveProperty"/>経由で通知及び最新値の配信を行う。
+/// <see cref="AudioSessionAccessor"/>の存在が前提となるため、<see cref="DisposableComponent"/>の仕組みを利用して破棄されたことを検知し、
+/// それに合わせて監視の終了やこのクラスの破棄を行う仕組みも実装する。
+/// </summary>
 public class AudioSession : DisposableComponent
 {
     private static readonly HashSet<string> ImageTypeExt = new(new[] { ".png", ".jpg", ".bmp" });
@@ -158,6 +163,11 @@ public class AudioSession : DisposableComponent
         _groupingParam.Refresh();
     }
 
+    /// <summary>
+    /// CoreAudioAPIからセッションの表示名を取れないことがあるので、
+    /// プロセスのタイトルバー → プロセス名 → プロセスの実行ファイル名 とフォールバックして表示名の取得を試みる
+    /// </summary>
+    /// <returns>取得結果。フォールバックしても取得できなければnull</returns>
     private string? ResolveDisplayName()
     {
         if (IsSystemSound)
@@ -201,6 +211,11 @@ public class AudioSession : DisposableComponent
         return null;
     }
 
+    /// <summary>
+    /// CoreAudioAPIからセッションのアイコン取得する機能があるが、実際はほとんど取得できないので
+    /// セッションの実行ファイルから抽出を試みる。
+    /// </summary>
+    /// <returns>取得結果。フォールバックしても取得できなければnull</returns>
     private ImageSource? ResolveIcon()
     {
         if (IsSystemSound)

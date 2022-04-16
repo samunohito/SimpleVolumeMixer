@@ -27,6 +27,10 @@ public class CoreAudioRepository : ICoreAudioRepository
     private readonly IReactiveProperty<AudioDeviceAccessor?> _communicationRoleDevice;
     private readonly IReactiveProperty<AudioDeviceAccessor?> _multimediaRoleDevice;
 
+    /// <summary>
+    /// ctor
+    /// </summary>
+    /// <param name="logger"></param>
     public CoreAudioRepository(ILogger logger)
     {
         _logger = logger;
