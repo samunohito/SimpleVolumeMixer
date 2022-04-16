@@ -9,7 +9,7 @@ on:
       - develop
 
 env:
-  pathOfVersioning: ${{ github.workspace }}\SimpleVolumeMixer
+  pathOfVersioning: ${{ github.workspace }}/SimpleVolumeMixer
 
 jobs:
   create-release-pr:
@@ -21,12 +21,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: setup versioning
-        id: nbgv
-        uses: dotnet/nbgv@master
-        with:
-          setAllVars: true
-          path: ${{ env.pathOfVersioning }}
+      - id: nbgv
+        run: |
+          VERSION=`nbgv get-version -p ${{ env.pathOfVersioning }} -v NuGetPackageVersion`
+          echo "::set-output name=version::$VERSION"
 
       - name: create a release pull request
         uses: bakunyo/git-pr-release-action@master
@@ -35,5 +33,5 @@ jobs:
           GIT_PR_RELEASE_BRANCH_PRODUCTION: master
           GIT_PR_RELEASE_BRANCH_STAGING: develop
           GIT_PR_RELEASE_LABELS: release
-          APP_VERSION: v${{ steps.nbgv.outputs.NuGetPackageVersion }}
+          APP_VERSION: v${{ steps.nbgv.outputs.version }}
           GIT_PR_RELEASE_TEMPLATE: .git-pr-release-template
