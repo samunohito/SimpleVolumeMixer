@@ -11,14 +11,56 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
+/// <summary>
+/// <see cref="AudioSessionControl"/>と及び周辺インターフェース・関連情報を総括するラッパーオブジェクト。
+/// </summary>
+/// <seealso cref="AudioSessionControl"/>
+/// <seealso cref="AudioSessionControl2"/>
+/// <seealso cref="AudioMeterInformation"/>
+/// <seealso cref="SimpleAudioVolume"/>
+/// <seealso cref="AudioSessionEventAdapter"/>
 public class AudioSessionAccessor : SafetyAccessorComponent
 {
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.DisplayNameChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorDisplayNameChangedEventArgs>? DisplayNameChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.IconPathChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorIconPathChangedEventArgs>? IconPathChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.SimpleVolumeChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorSimpleVolumeChangedEventArgs>? SimpleVolumeChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.ChannelVolumeChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorChannelVolumeChangedEventArgs>? ChannelVolumeChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.GroupingParamChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorGroupingParamChangedEventArgs>? GroupingParamChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.StateChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorStateChangedEventArgs>? StateChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.SessionDisconnected"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorDisconnectedEventArgs>? SessionDisconnected;
 
     private readonly ILogger _logger;
@@ -28,7 +70,7 @@ public class AudioSessionAccessor : SafetyAccessorComponent
     private readonly SimpleAudioVolume _audioVolume;
     private readonly AudioSessionEventAdapter _eventAdapter;
 
-    internal AudioSessionAccessor(AudioSessionControl audioSessionControl, ILogger logger)
+    public AudioSessionAccessor(AudioSessionControl audioSessionControl, ILogger logger)
     {
         _logger = logger;
         _session = audioSessionControl.AddTo(Disposable);

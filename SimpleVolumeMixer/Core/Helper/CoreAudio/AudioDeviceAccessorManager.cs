@@ -11,21 +11,33 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
-public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<AudioDeviceAccessor>
+/// <summary>
+/// 複数の<see cref="AudioDeviceAccessor"/>を管理するためのオブジェクト。
+/// 各<see cref="AudioDeviceAccessor"/>の生成・破棄を担うほか、
+/// ユーザ操作由来での機能実行及び、CoreAudioAPIからの通知を受けての機能実行を行う。
+/// </summary>
+public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrapper<AudioDeviceAccessor>
 {
     /// <summary>
-    /// いずれかのデバイスが破棄される際に呼び出される
+    /// このオブジェクトに登録されているいずれかの<see cref="AudioDeviceAccessor"/>が
+    /// <see cref="AudioDeviceAccessor.Disposing"/>イベントを発動させた時に連動して発動する。
     /// </summary>
+    /// <seealso cref="DisposableComponent.Disposing"/>
     public event EventHandler<AudioDeviceAccessorEventArgs>? DeviceDisposing;
 
     /// <summary>
-    /// いずれかのデバイスが破棄された際に呼び出される
+    /// このオブジェクトに登録されているいずれかの<see cref="AudioDeviceAccessor"/>が
+    /// <see cref="AudioDeviceAccessor.Disposed"/>イベントを発動させた時に連動して発動する。
     /// </summary>
+    /// <seealso cref="DisposableComponent.Disposed"/>
     public event EventHandler<AudioDeviceAccessorEventArgs>? DeviceDisposed;
 
     /// <summary>
-    /// デバイスロールが変更された際に呼び出される
+    /// このオブジェクトに登録されているいずれかの<see cref="AudioDeviceAccessor"/>が
+    /// <see cref="AudioDeviceAccessor.RoleChanged"/>イベントを発動させた時に連動して発動する。
     /// </summary>
+    /// <seealso cref="AudioDeviceRole.RoleChanged"/>
+    /// <seealso cref="AudioDeviceAccessor.RoleChanged"/>
     public event EventHandler<DeviceAccessorRoleHolderChangedEventArgs>? DeviceRoleChanged;
 
     private readonly ILogger _logger;
@@ -33,6 +45,10 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     private readonly MMNotificationClient _notificationClient;
     private readonly NotificationClientEventAdapter _clientEventAdapter;
 
+    /// <summary>
+    /// ctor
+    /// </summary>
+    /// <param name="logger"></param>
     public AudioDeviceAccessorManager(ILogger logger)
     {
         _logger = logger;
@@ -47,7 +63,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// 引数のデバイスIDとデータフローを持つデバイスが内蔵コレクションにあるかを確認する
+    /// 引数のデバイスIDとデータフローを持つデバイスがコレクションにあるかを確認する
     /// </summary>
     /// <param name="deviceId"></param>
     /// <param name="dataFlowType"></param>
@@ -66,7 +82,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// 引数のデバイスが内蔵コレクションにあるかを確認する
+    /// 引数のデバイスがコレクションにあるかを確認する
     /// </summary>
     /// <param name="device"></param>
     /// <returns></returns>
@@ -95,7 +111,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// 引数のデータフローとロールが割り当てられているデバイスを取得する
+    /// 引数の<see cref="DataFlowType"/>と<see cref="RoleType"/>が割り当てられているデバイスを取得する
     /// </summary>
     /// <param name="dataFlowType"></param>
     /// <param name="roleType"></param>
@@ -128,7 +144,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// CoreAudioAPIから取得したMMDeviceをラッピングし、内蔵コレクションに追加する
+    /// CoreAudioAPIから取得したMMDeviceをラッピングし、コレクションに追加する
     /// </summary>
     /// <param name="device"></param>
     public void Add(MMDevice device)
@@ -146,7 +162,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// デバイスの破棄処理を呼び出し、内蔵コレクションから削除する
+    /// デバイスの破棄処理を呼び出し、コレクションから削除する
     /// </summary>
     /// <param name="ax"></param>
     public new void Remove(AudioDeviceAccessor ax)
@@ -172,7 +188,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// 引数のMMDeviceが持つデバイスIDとDataFlowに一致するものを削除する
+    /// 引数の<see cref="MMDevice"/>が持つデバイスIDと<see cref="DataFlowType"/>に一致するものを削除する
     /// </summary>
     /// <param name="device"></param>
     public void Remove(MMDevice device)
@@ -187,7 +203,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// 内蔵コレクションをクリアし、かつ実行時点で保持していたセッションを破棄する
+    /// コレクションをクリアし、かつ実行時点で保持していたデバイスをすべて破棄する
     /// </summary>
     public new void Clear()
     {
@@ -203,9 +219,8 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// CoreAudioAPIから使用可能なデバイス一覧を取得し、内蔵コレクションに順次登録していく
+    /// CoreAudioAPIから使用可能なデバイス一覧を取得し、コレクションに順次登録する。
     /// </summary>
-    /// <exception cref="ApplicationException"></exception>
     public void CollectAudioEndpoints()
     {
         lock (Gate)
@@ -213,7 +228,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
             using var devices = _deviceEnumerator.EnumAudioEndpoints(DataFlow.Render, DeviceState.Active);
             if (devices == null)
             {
-                throw new ApplicationException("Failed to acquire DeviceCollection.");
+                throw new InvalidOperationException("通常はありえない");
             }
 
             foreach (var device in devices)
@@ -350,7 +365,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// 内蔵コレクションに保持しているいずれかのデバイスのロール情報が変更された際に呼び出される
+    /// コレクションに保持しているいずれかのデバイスのロール情報が変更された際に呼び出される
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
@@ -360,7 +375,7 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
     }
 
     /// <summary>
-    /// 内蔵コレクションに保持しているデバイスが破棄される際に呼び出される
+    /// コレクションに保持しているデバイスが破棄される際に呼び出される
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
@@ -373,16 +388,16 @@ public class AudioDeviceAccessorManager : SynchronizedReactiveCollectionWrapper<
 
             if (Contains(ax))
             {
-                // このクラス内からデバイスを消す際はDispose()を呼んで内蔵コレクションから削除しているが、
-                // 外的要因でDispose()が呼び出された際は内蔵コレクションに残ってしまう。
-                // 上記のケースに対応できるよう、破棄処理の呼び出し時にも内蔵コレクションからの削除処理を置いておく（既にコレクションから消えててもエラーにならないので）
+                // このクラス内からデバイスを消す際はDispose()を呼んでコレクションから削除しているが、
+                // 外的要因でデバイスのDispose()が呼び出された際は破棄された状態でコレクションに残ってしまう。
+                // 上記のケースに対応できるよう、破棄処理の呼び出し時にもコレクションからの削除処理を置いておく。
                 Remove(ax);
             }
         }
     }
 
     /// <summary>
-    /// 内蔵コレクションに保持しているデバイスが破棄された際に呼び出される
+    /// コレクションに保持しているデバイスが破棄された際に呼び出される
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>

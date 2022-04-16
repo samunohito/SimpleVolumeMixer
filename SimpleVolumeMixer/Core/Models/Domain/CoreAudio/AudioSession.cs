@@ -16,19 +16,24 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
+/// <summary>
+/// <see cref="AudioSessionAccessor"/>を監視し、値の変更があったら<see cref="ReactiveProperty"/>経由で通知及び最新値の配信を行う。
+/// <see cref="AudioSessionAccessor"/>の存在が前提となるため、<see cref="DisposableComponent"/>の仕組みを利用して破棄されたことを検知し、
+/// それに合わせて監視の終了やこのクラスの破棄を行う仕組みも実装する。
+/// </summary>
 public class AudioSession : DisposableComponent
 {
     private static readonly HashSet<string> ImageTypeExt = new(new[] { ".png", ".jpg", ".bmp" });
     private readonly AudioSessionAccessor _accessor;
 
-    private readonly PropertyMonitor<AudioSessionStateType> _sessionState;
-    private readonly PropertyMonitor<float> _peakValue;
-    private readonly PropertyMonitor<int> _meteringChannelCount;
-    private readonly PropertyMonitor<string?> _displayName;
-    private readonly PropertyMonitor<ImageSource?> _iconSource;
-    private readonly PropertyMonitor<Guid> _groupingParam;
-    private readonly PropertyMonitor<float> _masterVolume;
-    private readonly PropertyMonitor<bool> _isMuted;
+    private readonly PollingMonitor<AudioSessionStateType> _sessionState;
+    private readonly PollingMonitor<float> _peakValue;
+    private readonly PollingMonitor<int> _meteringChannelCount;
+    private readonly PollingMonitor<string?> _displayName;
+    private readonly PollingMonitor<ImageSource?> _iconSource;
+    private readonly PollingMonitor<Guid> _groupingParam;
+    private readonly PollingMonitor<float> _masterVolume;
+    private readonly PollingMonitor<bool> _isMuted;
 
     internal AudioSession(AudioSessionAccessor ax)
     {
@@ -36,43 +41,43 @@ public class AudioSession : DisposableComponent
 
         IsSystemSound = _accessor.IsSystemSoundSession;
 
-        _sessionState = new PropertyMonitor<AudioSessionStateType>(
-            PropertyMonitorIntervalType.Normal,
+        _sessionState = new PollingMonitor<AudioSessionStateType>(
+            PollingMonitorIntervalType.Normal,
             () => ax.SessionState
         );
-        _peakValue = new PropertyMonitor<float>(
-            PropertyMonitorIntervalType.High,
+        _peakValue = new PollingMonitor<float>(
+            PollingMonitorIntervalType.High,
             () => ax.PeakValue,
-            comparer: PropertyMonitor.FloatComparer
+            comparer: PollingMonitor.FloatComparer
         );
-        _meteringChannelCount = new PropertyMonitor<int>(
-            PropertyMonitorIntervalType.Low,
+        _meteringChannelCount = new PollingMonitor<int>(
+            PollingMonitorIntervalType.Low,
             () => ax.MeteringChannelCount,
-            comparer: PropertyMonitor.IntComparer
+            comparer: PollingMonitor.IntComparer
         );
-        _displayName = new PropertyMonitor<string?>(
-            PropertyMonitorIntervalType.Manual,
+        _displayName = new PollingMonitor<string?>(
+            PollingMonitorIntervalType.Manual,
             ResolveDisplayName
         );
-        _iconSource = new PropertyMonitor<ImageSource?>(
-            PropertyMonitorIntervalType.Manual,
+        _iconSource = new PollingMonitor<ImageSource?>(
+            PollingMonitorIntervalType.Manual,
             ResolveIcon
         );
-        _groupingParam = new PropertyMonitor<Guid>(
-            PropertyMonitorIntervalType.Manual,
+        _groupingParam = new PollingMonitor<Guid>(
+            PollingMonitorIntervalType.Manual,
             () => ax.GroupingParam
         );
-        _masterVolume = new PropertyMonitor<float>(
-            PropertyMonitorIntervalType.Manual,
+        _masterVolume = new PollingMonitor<float>(
+            PollingMonitorIntervalType.Manual,
             () => ax.MasterVolume,
             (x) => ax.MasterVolume = x,
-            PropertyMonitor.FloatComparer
+            PollingMonitor.FloatComparer
         );
-        _isMuted = new PropertyMonitor<bool>(
-            PropertyMonitorIntervalType.Manual,
+        _isMuted = new PollingMonitor<bool>(
+            PollingMonitorIntervalType.Manual,
             () => ax.IsMuted,
             (x) => ax.IsMuted = x,
-            PropertyMonitor.BoolComparer
+            PollingMonitor.BoolComparer
         );
 
         SessionState = _sessionState.ToReactivePropertySlimAsSynchronized(x => x.Value);
@@ -158,6 +163,11 @@ public class AudioSession : DisposableComponent
         _groupingParam.Refresh();
     }
 
+    /// <summary>
+    /// CoreAudioAPIからセッションの表示名を取れないことがあるので、
+    /// プロセスのタイトルバー → プロセス名 → プロセスの実行ファイル名 とフォールバックして表示名の取得を試みる
+    /// </summary>
+    /// <returns>取得結果。フォールバックしても取得できなければnull</returns>
     private string? ResolveDisplayName()
     {
         if (IsSystemSound)
@@ -201,6 +211,11 @@ public class AudioSession : DisposableComponent
         return null;
     }
 
+    /// <summary>
+    /// CoreAudioAPIからセッションのアイコン取得する機能があるが、実際はほとんど取得できないので
+    /// セッションの実行ファイルから抽出を試みる。
+    /// </summary>
+    /// <returns>取得結果。フォールバックしても取得できなければnull</returns>
     private ImageSource? ResolveIcon()
     {
         if (IsSystemSound)
@@ -256,7 +271,7 @@ public class AudioSession : DisposableComponent
 
     protected override void OnDisposing()
     {
-        var monitors = new IPropertyMonitor[]
+        var monitors = new IPollingMonitor[]
         {
             _sessionState,
             _peakValue,
