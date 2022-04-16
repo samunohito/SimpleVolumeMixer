@@ -6,15 +6,18 @@
                     xmlns:interactivity="http://prismlibrary.com/"
                     xmlns:audio="clr-namespace:SimpleVolumeMixer.UI.ViewModels.Audio">
 
+    <!-- 横向きパネル -->
     <ItemsPanelTemplate x:Key="HorizontalAudioSessionsPanelTemplate">
         <StackPanel Orientation="Vertical" />
     </ItemsPanelTemplate>
 
+    <!-- 横向きパネルに表示するカード -->
     <DataTemplate x:Key="HorizontalAudioSessionDataTemplate" DataType="audio:IAudioSessionCard">
         <materialDesign:Card Margin="0,4,0,4"
                              Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
             <DockPanel Margin="8,5,8,7">
                 <DockPanel DockPanel.Dock="Left" Margin="0,0,0,0">
+                    <!-- カードの表示名 -->
                     <TextBlock DockPanel.Dock="Right"
                                Margin="8, 0, 0, 0"
                                Width="80"
@@ -22,6 +25,7 @@
                                TextAlignment="Left"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding DisplayName.Value}" />
+                    <!-- アイコン部分。PackIconを使うかどうかで使用する部品を切り替える -->
                     <Control
                         Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
                         <Control.Style>
@@ -60,6 +64,7 @@
                         </Control.Style>
                     </Control>
                 </DockPanel>
+                <!-- ミュートボタン -->
                 <Grid DockPanel.Dock="Right" Margin="12,0,0,0">
                     <Button Command="{Binding MuteStateChangeCommand}"
                             Style="{StaticResource MaterialDesignIconButton}"
@@ -83,6 +88,7 @@
                         </materialDesign:PackIcon>
                     </Button>
                 </Grid>
+                <!-- ハンドル付きピークバー -->
                 <controls:PeakBar
                     VerticalAlignment="Center"
                     Orientation="Horizontal"
@@ -105,20 +111,24 @@
         </materialDesign:Card>
     </DataTemplate>
 
+    <!-- 縦向きパネル -->
     <ItemsPanelTemplate x:Key="VerticalAudioSessionsPanelTemplate">
         <StackPanel Orientation="Horizontal" />
     </ItemsPanelTemplate>
 
+    <!-- 縦向きパネルに表示するカード -->
     <DataTemplate x:Key="VerticalAudioSessionDataTemplate" DataType="audio:IAudioSessionCard">
         <materialDesign:Card Margin="4,0,4,0"
                              Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
             <DockPanel Margin="8,10,8,5" Width="80">
                 <DockPanel DockPanel.Dock="Top" Margin="0,4,0,0">
+                    <!-- カードの表示名 -->
                     <TextBlock DockPanel.Dock="Bottom"
                                Margin="0, 4, 0, 0"
                                TextAlignment="Center"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding DisplayName.Value}" />
+                    <!-- アイコン部分。PackIconを使うかどうかで使用する部品を切り替える -->
                     <Control
                         Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
                         <Control.Style>
@@ -155,6 +165,7 @@
                         </Control.Style>
                     </Control>
                 </DockPanel>
+                <!-- ミュートボタン -->
                 <Grid DockPanel.Dock="Bottom" Margin="0,4,0,0">
                     <Button Command="{Binding MuteStateChangeCommand}"
                             Width="32"
@@ -180,6 +191,7 @@
                         </materialDesign:PackIcon>
                     </Button>
                 </Grid>
+                <!-- ハンドル付きピークバー -->
                 <controls:PeakBar
                     HorizontalAlignment="Center"
                     Margin="0,16,0,0"

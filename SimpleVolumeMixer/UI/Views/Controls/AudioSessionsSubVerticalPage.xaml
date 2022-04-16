@@ -9,6 +9,8 @@
              d:DesignHeight="300" d:DesignWidth="300">
 
     <Grid>
+        <!-- ここで行っているMarginとPaddingの設定は、ItemsControlで表示するカードにかかっている影効果などが途切れて見えてしまう現象の対策。 -->
+        <!-- もっとも外側でNegativeMarginを設定＋あらためてBorderでPaddingを設定することで、GroupBoxの見た目を保ちつつ影効果の表示領域も確保できる。 -->
         <ScrollViewer
             HorizontalScrollBarVisibility="Auto"
             VerticalScrollBarVisibility="Hidden"

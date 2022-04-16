@@ -36,7 +36,7 @@ public abstract class DisposableComponent : IDisposableComponent
     public bool IsDisposed => _disposable.IsDisposed;
 
     /// <summary>
-    /// Called before the object is destroyed by a call to <code>Dispose()</code>.
+    /// Called before the object is destroyed by a call to <see cref="Dispose()"/>.
     /// </summary>
     protected virtual void OnDisposing()
     {
@@ -44,7 +44,7 @@ public abstract class DisposableComponent : IDisposableComponent
     }
 
     /// <summary>
-    /// Called after an object has been destroyed by a call to <code>Dispose()</code>.
+    /// Called after an object has been destroyed by a call to <see cref="Dispose()"/>.
     /// </summary>
     protected virtual void OnDisposed()
     {

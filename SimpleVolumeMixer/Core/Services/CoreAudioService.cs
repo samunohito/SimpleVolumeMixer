@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Reactive.Bindings;
@@ -18,23 +16,26 @@ public class CoreAudioService : IDisposable, ICoreAudioService
 {
     private readonly CompositeDisposable _disposable;
     private readonly ICoreAudioRepository _coreAudioRepository;
-    private readonly KeyValueInstanceManager<AudioDeviceAccessor, AudioDevice> _instanceManager;
 
     public CoreAudioService(ICoreAudioRepository coreAudioRepository)
     {
         _disposable = new CompositeDisposable();
-        _instanceManager = new KeyValueInstanceManager<AudioDeviceAccessor, AudioDevice>(x => new AudioDevice(x));
         _coreAudioRepository = coreAudioRepository;
-
+        
+        // AudioDeviceAccessorに対し1-1でAudioDeviceのインスタンスを結びつけたい
+        var instanceManager = new KeyValueInstanceManager<AudioDeviceAccessor, AudioDevice>(x => new AudioDevice(x));
+        
         Devices = _coreAudioRepository.AudioDevices
-            .ToReadOnlyReactiveCollection(x => _instanceManager.Obtain(x))
+            .ToReadOnlyReactiveCollection(x => instanceManager.Obtain(x))
             .AddTo(_disposable);
+        
+        // Repositoryにあわせて、各ロールのデバイスはDevicesにも登録されているものであるようにする
         CommunicationRoleDevice = _coreAudioRepository.CommunicationRoleDevice
-            .Select(x => x != null ? _instanceManager.Obtain(x) : null)
+            .Select(x => x != null ? instanceManager.Obtain(x) : null)
             .ToReadOnlyReactivePropertySlim()
             .AddTo(_disposable);
         MultimediaRoleDevice = _coreAudioRepository.MultimediaRoleDevice
-            .Select(x => x != null ? _instanceManager.Obtain(x) : null)
+            .Select(x => x != null ? instanceManager.Obtain(x) : null)
             .ToReadOnlyReactivePropertySlim()
             .AddTo(_disposable);
     }

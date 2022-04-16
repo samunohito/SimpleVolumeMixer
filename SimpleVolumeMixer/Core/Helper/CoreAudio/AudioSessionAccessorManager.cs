@@ -9,21 +9,35 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
-public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper<AudioSessionAccessor>
+/// <summary>
+/// 複数の<see cref="AudioSessionAccessor"/>を管理するためのオブジェクト。
+/// 各<see cref="AudioSessionAccessor"/>の生成・破棄を担うほか、
+/// ユーザ操作由来での機能実行及び、CoreAudioAPIからの通知を受けての機能実行を行う。
+/// </summary>
+public class AudioSessionAccessorManager : SynchronizedObservableCollectionWrapper<AudioSessionAccessor>
 {
     /// <summary>
-    /// いずれかのセッションが破棄される際に呼び出される
+    /// このオブジェクトに登録されているいずれかの<see cref="AudioSessionAccessor"/>が
+    /// <see cref="AudioSessionAccessor.Disposing"/>イベントを発動させた時に連動して発動する。
     /// </summary>
+    /// <seealso cref="DisposableComponent.Disposing"/>
     public event EventHandler<AudioSessionAccessorEventArgs>? SessionDisposing;
 
     /// <summary>
-    /// いずれかのセッションが破棄された際に呼び出される
+    /// このオブジェクトに登録されているいずれかの<see cref="AudioSessionAccessor"/>が
+    /// <see cref="AudioSessionAccessor.Disposed"/>イベントを発動させた時に連動して発動する。
     /// </summary>
+    /// <seealso cref="DisposableComponent.Disposed"/>
     public event EventHandler<AudioSessionAccessorEventArgs>? SessionDisposed;
 
     private readonly ILogger _logger;
     private readonly AudioSessionManagerAccessor _sessionManager;
 
+    /// <summary>
+    /// ctor
+    /// </summary>
+    /// <param name="device"></param>
+    /// <param name="logger"></param>
     public AudioSessionAccessorManager(AudioDeviceAccessor device, ILogger logger)
     {
         _logger = logger;
@@ -34,7 +48,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     }
 
     /// <summary>
-    /// 引数のPIDを持つセッションが内蔵コレクションにあるかを確認する
+    /// 引数のPIDを持つセッションがコレクションにあるかを確認する
     /// </summary>
     /// <param name="procId"></param>
     /// <returns></returns>
@@ -70,7 +84,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     }
 
     /// <summary>
-    /// CoreAudioAPIから取得したAudioSessionControlをラッピングし、内蔵コレクションに追加する
+    /// CoreAudioAPIから取得したAudioSessionControlをラッピングし、コレクションに追加する
     /// </summary>
     /// <param name="session"></param>
     public void Add(AudioSessionControl session)
@@ -99,7 +113,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     }
 
     /// <summary>
-    /// セッションの破棄処理を呼び出し、内蔵コレクションから削除する
+    /// セッションの破棄処理を呼び出し、コレクションから削除する
     /// </summary>
     /// <param name="ax"></param>
     public new void Remove(AudioSessionAccessor ax)
@@ -112,7 +126,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     }
 
     /// <summary>
-    /// 引数のPIDを持つセッションを全て削除する。
+    /// 引数のPIDを持つセッションを全て破棄し、削除する。
     /// </summary>
     /// <param name="procId"></param>
     public void Remove(int? procId)
@@ -131,7 +145,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     }
 
     /// <summary>
-    /// 引数のAudioSessionControlを持つセッションを全て削除する。
+    /// 引数の<see cref="AudioSessionControl"/>を持つセッションを破棄し、全て削除する。
     /// </summary>
     /// <param name="session"></param>
     public void Remove(AudioSessionControl session)
@@ -147,7 +161,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     }
 
     /// <summary>
-    /// 内蔵コレクションをクリアし、かつ実行時点で保持していたセッションを破棄する
+    /// コレクションをクリアし、かつ実行時点で保持していたセッションを破棄する
     /// </summary>
     public new void Clear()
     {
@@ -164,7 +178,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     }
 
     /// <summary>
-    /// セッションマネージャを取得し、使用可能な状態にする
+    /// セッションマネージャをCoreAudioAPIから取得・セットアップし、使用可能な状態にする
     /// </summary>
     /// <returns></returns>
     public Task OpenSession()
@@ -173,7 +187,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     }
 
     /// <summary>
-    /// セッションマネージャを破棄し、使用できない状態にする
+    /// セッションマネージャを破棄し、使用を終了する
     /// </summary>
     public void CloseSession()
     {
@@ -210,7 +224,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
             return;
         }
 
-        // セッションマネージャからデバイスに紐づくセッション一覧をすべて抜き出し、内蔵コレクションに追加していく
+        // セッションマネージャからデバイスに紐づくセッション一覧をすべて抜き出し、コレクションに追加していく
         foreach (var session in enumerator)
         {
             Add(session);
@@ -224,7 +238,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     /// <param name="e"></param>
     private void OnSessionManagerClosed(object? sender, EventArgs e)
     {
-        // 全セッションの破棄処理を起動したのち内蔵コレクションからも全削除し、セッションを使用できないようにする
+        // 全セッションの破棄処理を起動したのちコレクションからも全削除し、セッションを使用できないようにする
         Clear();
     }
 
@@ -237,7 +251,7 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
     {
         if (!Contains(e.Session))
         {
-            // 以降、切断されたセッションを使用しないよう破棄し、内蔵コレクションからも削除する
+            // 以降、切断されたセッションを使用しないよう破棄し、コレクションからも削除する
             Remove(e.Session);
         }
     }
@@ -253,16 +267,18 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
         {
             case AudioSessionStateType.AudioSessionStateActive:
             case AudioSessionStateType.AudioSessionStateInactive:
+                // 音の出力を終了するとInactiveになるアプリもあるため（SystemSoundが筆頭）、
+                // Inactiveとなっても削除しない
                 break;
             case AudioSessionStateType.AudioSessionStateExpired:
-                // 期限切れとなったセッションは使用不可能であるため破棄し、内蔵コレクションからも削除する
+                // 期限切れとなったセッションは使用不可能であるため破棄し、コレクションからも削除する
                 Remove(e.Session);
                 break;
         }
     }
 
     /// <summary>
-    /// 内蔵コレクションに保持しているセッションが破棄される際に呼び出される
+    /// コレクションに保持しているセッションが破棄される際に呼び出される
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
@@ -275,16 +291,16 @@ public class AudioSessionAccessorManager : SynchronizedReactiveCollectionWrapper
 
             if (Contains(ax))
             {
-                // このクラス内からセッションを消す際はDispose()を呼んで内蔵コレクションから削除しているが、
-                // 外的要因でDispose()が呼び出された際は内蔵コレクションに残ってしまう。
-                // 上記のケースに対応できるよう、破棄処理の呼び出し時にも内蔵コレクションからの削除処理を置いておく（既にコレクションから消えててもエラーにならないので）
+                // このクラス内からセッションを消す際はDispose()を呼んでコレクションから削除しているが、
+                // 外的要因でDispose()が呼び出された際は破棄された状態でコレクションに残ってしまう。
+                // 上記のケースに対応できるよう、破棄処理の呼び出し時にもコレクションからの削除処理を置いておく。
                 Remove(ax);
             }
         }
     }
 
     /// <summary>
-    /// 内蔵コレクションに保持しているセッションが破棄されたら呼び出される
+    /// コレクションに保持しているセッションが破棄されたら呼び出される
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>

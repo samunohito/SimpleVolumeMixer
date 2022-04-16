@@ -5,20 +5,63 @@ using SimpleVolumeMixer.Core.Helper.Component;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
 
+/// <summary>
+/// Notification of session-related events such as volume level changes, display names, session status, etc.
+/// Since we do not want to block CoreAudioAPI in the app-side processing,
+/// notifications from CoreAudioAPI are stored once in <see cref="QueueProcessor{TP,TR}"/> and are notified to the app side asynchronously and sequentially.
+/// </summary>
+/// <remarks>
+/// We use information from MSDN and CSCore functions, so please refer to their documentation as well.
+/// The document text for some functions is taken from MSDN.
+/// <see cref="AudioSessionEvents"/>
+/// https://docs.microsoft.com/ja-jp/windows/win32/api/audiopolicy/nn-audiopolicy-iaudiosessionevents?redirectedfrom=MSDN
+/// </remarks>
 public class AudioSessionEventAdapter : DisposableComponent
 {
+    /// <summary>
+    /// The OnDisplayNameChanged method notifies the client that the display name for the session has changed.
+    /// </summary>
     public event EventHandler<AudioSessionDisplayNameChangedEventArgs>? DisplayNameChanged;
+
+    /// <summary>
+    /// The OnIconPathChanged method notifies the client that the display icon for the session has changed.
+    /// </summary>
     public event EventHandler<AudioSessionIconPathChangedEventArgs>? IconPathChanged;
+
+    /// <summary>
+    /// The OnSimpleVolumeChanged method notifies the client that the volume level or muting state of the audio session has changed.
+    /// </summary>
     public event EventHandler<AudioSessionSimpleVolumeChangedEventArgs>? SimpleVolumeChanged;
+
+    /// <summary>
+    /// The OnChannelVolumeChanged method notifies the client that the volume level of an audio channel in the session submix has changed.
+    /// </summary>
     public event EventHandler<AudioSessionChannelVolumeChangedEventArgs>? ChannelVolumeChanged;
+
+    /// <summary>
+    /// The OnGroupingParamChanged method notifies the client that the grouping parameter for the session has changed.
+    /// </summary>
     public event EventHandler<AudioSessionGroupingParamChangedEventArgs>? GroupingParamChanged;
+
+    /// <summary>
+    /// The OnStateChanged method notifies the client that the stream-activity state of the session has changed.
+    /// </summary>
     public event EventHandler<AudioSessionStateChangedEventArgs>? StateChanged;
+
+    /// <summary>
+    /// The OnSessionDisconnected method notifies the client that the audio session has been disconnected.
+    /// </summary>
     public event EventHandler<AudioSessionDisconnectedEventArgs>? SessionDisconnected;
 
     private readonly AudioSessionControl _session;
     private readonly ILogger _logger;
     private readonly QueueProcessor<object?, object?> _processor;
 
+    /// <summary>
+    /// ctor
+    /// </summary>
+    /// <param name="session">Object to subscribe to events from CoreAudioAPI</param>
+    /// <param name="logger">Used to log event details from CoreAudioAPI</param>
     public AudioSessionEventAdapter(AudioSessionControl session, ILogger logger)
     {
         _session = session;
@@ -30,7 +73,7 @@ public class AudioSessionEventAdapter : DisposableComponent
         _session.StateChanged += OnStateChanged;
         _session.SessionDisconnected += OnSessionDisconnected;
         _logger = logger;
-        _processor = new QueueProcessor<object?, object?>(int.MaxValue);
+        _processor = new QueueProcessor<object?, object?>();
         _processor.StartRequest();
     }
 
@@ -128,7 +171,7 @@ public class AudioSessionEventAdapter : DisposableComponent
 
     private void Push(Action action)
     {
-        _processor.Push(QueueProcessorHandle.OfAction(action));
+        _processor.Push(QueueProcessorItem.OfAction(action));
     }
 
     protected override void OnDisposing()

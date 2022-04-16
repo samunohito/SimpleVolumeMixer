@@ -43,6 +43,8 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
             {
                 tcs.SetResult(AudioSessionManager2.FromMMDevice(device));
             }
+
+            throw new InvalidOperationException("MMDevice以外が渡されてくるのは実装上あり得ない");
         });
         thread.SetApartmentState(ApartmentState.MTA);
         thread.Start(_device.Device);
