@@ -1,10 +1,10 @@
-name: build-application
+name: release-application
 
 on:
   pull_request:
     types: [ closed ]
     branches:
-      - develop
+      - master
 
 env:
   applicationName: SimpleVolumeMixer
@@ -76,6 +76,15 @@ jobs:
       uploadUrl: ${{ steps.export-upload-url.outputs.uploadUrl }}
     
     steps:
+      - id: vars
+        shell: bash
+        run: |
+          if [[ "${{ needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen }}" = "beta" -o "${{ needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen }}" = "alpha" ]]; then
+            echo "::set-output name=isPrerelease::true";
+          else
+            echo "::set-output name=isPrerelease::false";
+          fi;
+        
       - id: create-release
         uses: actions/create-release@v1
         env:
@@ -84,7 +93,7 @@ jobs:
           tag_name: "v${{ needs.build-artifact.outputs.artifactVersion }}"
           release_name: "v${{ needs.build-artifact.outputs.artifactVersion }}"
           draft: false
-          prerelease: "contains(needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen, 'beta') || contains(needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen, 'alpha')"
+          prerelease: ${{ steps.vars.outputs.isPrerelease }}
 
       - id: export-upload-url
         run: |
