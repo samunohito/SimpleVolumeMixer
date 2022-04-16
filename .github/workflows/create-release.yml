@@ -1,6 +1,8 @@
 ﻿name: create a release pull request
 
 on:
+  workflow_call: 
+    
   pull_request:
     types: [ closed ]
     branches:
