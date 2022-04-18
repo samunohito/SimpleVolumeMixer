@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CSCore.CoreAudioAPI;
 using Microsoft.Extensions.Logging;
+using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
@@ -41,7 +42,7 @@ public class AudioSessionAccessorManager : SynchronizedObservableCollectionWrapp
     public AudioSessionAccessorManager(AudioDeviceAccessor device, ILogger logger)
     {
         _logger = logger;
-        _sessionManager = new AudioSessionManagerAccessor(device, logger);
+        _sessionManager = new AudioSessionManagerAccessor(device, logger).AddTo(Disposable);
         _sessionManager.SessionManagerOpened += OnSessionManagerOpened;
         _sessionManager.SessionManagerClosed += OnSessionManagerClosed;
         _sessionManager.SessionCreated += OnSessionCreated;
