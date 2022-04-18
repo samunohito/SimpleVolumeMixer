@@ -25,11 +25,6 @@ jobs:
         run: |
           VERSION=`nbgv get-version -p ${{ env.pathOfVersioning }} -v NuGetPackageVersion`
           echo "::set-output name=version::$VERSION"
-      
-      - name: run git config
-        shell: bash
-        run: |
-          git config --global --add safe.directory $(pwd)
 
       - name: create a release pull request
         uses: bakunyo/git-pr-release-action@281e1fe424fac01f3992542266805e4202a22fe0
