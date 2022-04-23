@@ -1,5 +1,6 @@
 ﻿using System;
 using CSCore.CoreAudioAPI;
+using DisposableComponents;
 using Microsoft.Extensions.Logging;
 using SimpleVolumeMixer.Core.Helper.Component;
 
@@ -62,17 +63,16 @@ public class NotificationClientEventAdapter : DisposableComponent
         _client.DeviceStateChanged += OnDeviceStateChanged;
         _client.DefaultDeviceChanged += OnDefaultDeviceChanged;
         _logger = logger;
-        _processor = new QueueProcessor<object?, object?>(int.MaxValue);
-        _processor.StartRequest();
+        _processor = new QueueProcessor<object?, object?>(nameof(NotificationClientEventAdapter), logger, int.MaxValue);
     }
 
     private void OnDeviceAdded(object? sender, DeviceNotificationEventArgs e)
     {
         _logger.LogDebug(
             "sender:{sender}, " +
-            "args:[ deviceId:{deviceId} ]",
+            "args:[ device:{device} ]",
             sender,
-            e.DeviceId
+            GetDeviceName(e)
         );
 
         Push(() => DeviceAdded?.Invoke(this, e));
@@ -82,9 +82,9 @@ public class NotificationClientEventAdapter : DisposableComponent
     {
         _logger.LogDebug(
             "sender:{sender}, " +
-            "args:[ deviceId:{deviceId} ]",
+            "args:[ device:{device} ]",
             sender,
-            e.DeviceId
+            GetDeviceName(e)
         );
 
         Push(() => DeviceRemoved?.Invoke(this, e));
@@ -94,9 +94,9 @@ public class NotificationClientEventAdapter : DisposableComponent
     {
         _logger.LogDebug(
             "sender:{sender}, " +
-            "args:[ deviceId:{deviceId}, propertyKey:{key} ]",
+            "args:[ device:{device}, propertyKey:{key} ]",
             sender,
-            e.DeviceId,
+            GetDeviceName(e),
             e.PropertyKey
         );
 
@@ -107,9 +107,9 @@ public class NotificationClientEventAdapter : DisposableComponent
     {
         _logger.LogDebug(
             "sender:{sender}, " +
-            "args:[ deviceId:{deviceId}, state:{state} ]",
+            "args:[ device:{device}, state:{state} ]",
             sender,
-            e.DeviceId,
+            GetDeviceName(e),
             e.DeviceState
         );
 
@@ -120,9 +120,9 @@ public class NotificationClientEventAdapter : DisposableComponent
     {
         _logger.LogDebug(
             "sender:{sender}, " +
-            "args:[ deviceId:{deviceId}, dataFlow:{dataFlow}, role:{role} ]",
+            "args:[ device:{device}, dataFlow:{dataFlow}, role:{role} ]",
             sender,
-            e.DeviceId,
+            GetDeviceName(e),
             e.DataFlow,
             e.Role
         );
@@ -135,9 +135,16 @@ public class NotificationClientEventAdapter : DisposableComponent
         _processor.Push(QueueProcessorItem.OfAction(action));
     }
 
+    private string? GetDeviceName(DeviceNotificationEventArgs e)
+    {
+        return e.TryGetDevice(out var device)
+            ? device.FriendlyName
+            : e.DeviceId;
+    }
+
     protected override void OnDisposing()
     {
-        _logger.LogDebug("disposing...");
+        _logger.LogInformation($"disposing... {_client}");
 
         _client.DeviceAdded -= OnDeviceAdded;
         _client.DeviceRemoved -= OnDeviceRemoved;

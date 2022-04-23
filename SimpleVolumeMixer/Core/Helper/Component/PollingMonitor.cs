@@ -161,8 +161,8 @@ public class PollingMonitor<T> : NotifyPropertyChangedBase, IDisposable, IPollin
     /// <inheritdoc cref="IDisposable.Dispose"/>
     public void Dispose()
     {
-        _timer.Stop();
         _timer.Elapsed -= TimerOnElapsed;
+        _timer.Stop();
 
         _disposable.Dispose();
     }

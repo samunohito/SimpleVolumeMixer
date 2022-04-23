@@ -1,4 +1,5 @@
-﻿using Reactive.Bindings;
+﻿using DisposableComponents;
+using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio;

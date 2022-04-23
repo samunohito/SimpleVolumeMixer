@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using DisposableComponents;
 using Microsoft.Extensions.Logging;
-using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
-using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
-public class CoreAudioAccessor : SafetyAccessorComponent
+public class CoreAudioAccessor : DisposableComponent
 {
     /// <summary>
     /// CoreAudioAPIからデバイスの破棄通知があり、<see cref="AudioDeviceAccessorManager"/>がそれを受けてデバイスの破棄を開始した時に呼び出される。

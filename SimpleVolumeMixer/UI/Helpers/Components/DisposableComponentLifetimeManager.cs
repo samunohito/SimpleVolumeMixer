@@ -1,4 +1,5 @@
 ﻿using System;
+using DisposableComponents;
 using SimpleVolumeMixer.Core.Helper.Component;
 using Unity.Lifetime;
 

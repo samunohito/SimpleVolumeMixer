@@ -2,6 +2,7 @@
 using System.Reactive.Disposables;
 using System.Windows.Controls;
 using System.Windows.Input;
+using DisposableComponents;
 using Prism.Commands;
 using Prism.Regions;
 using Reactive.Bindings;
