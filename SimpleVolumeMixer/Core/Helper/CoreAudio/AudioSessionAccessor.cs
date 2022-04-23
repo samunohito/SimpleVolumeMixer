@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using CSCore.CoreAudioAPI;
+using DisposableComponents;
 using Microsoft.Extensions.Logging;
 using Reactive.Bindings.Extensions;
-using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Internal;
@@ -11,14 +11,56 @@ using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
-public class AudioSessionAccessor : SafetyAccessorComponent
+/// <summary>
+/// <see cref="AudioSessionControl"/>と及び周辺インターフェース・関連情報を総括するラッパーオブジェクト。
+/// </summary>
+/// <seealso cref="AudioSessionControl"/>
+/// <seealso cref="AudioSessionControl2"/>
+/// <seealso cref="AudioMeterInformation"/>
+/// <seealso cref="SimpleAudioVolume"/>
+/// <seealso cref="AudioSessionEventAdapter"/>
+public class AudioSessionAccessor : SafetyAccessComponent
 {
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.DisplayNameChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorDisplayNameChangedEventArgs>? DisplayNameChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.IconPathChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorIconPathChangedEventArgs>? IconPathChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.SimpleVolumeChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorSimpleVolumeChangedEventArgs>? SimpleVolumeChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.ChannelVolumeChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorChannelVolumeChangedEventArgs>? ChannelVolumeChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.GroupingParamChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorGroupingParamChangedEventArgs>? GroupingParamChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.StateChanged"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorStateChangedEventArgs>? StateChanged;
+
+    /// <summary>
+    /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
+    /// CoreAudioAPIから<see cref="AudioSessionEventAdapter.SessionDisconnected"/>経由で通知があった際に発動する。
+    /// </summary>
     public event EventHandler<AudioSessionAccessorDisconnectedEventArgs>? SessionDisconnected;
 
     private readonly ILogger _logger;
@@ -28,7 +70,7 @@ public class AudioSessionAccessor : SafetyAccessorComponent
     private readonly SimpleAudioVolume _audioVolume;
     private readonly AudioSessionEventAdapter _eventAdapter;
 
-    internal AudioSessionAccessor(AudioSessionControl audioSessionControl, ILogger logger)
+    public AudioSessionAccessor(AudioSessionControl audioSessionControl, ILogger logger)
     {
         _logger = logger;
         _session = audioSessionControl.AddTo(Disposable);
@@ -55,11 +97,22 @@ public class AudioSessionAccessor : SafetyAccessorComponent
     public bool IsSystemSoundSession => SafeRead(() => _sessionControl2.IsSystemSoundSession, false);
 
     public AudioSessionStateType SessionState => SafeRead(
-        () => AccessorHelper.SessionStates[_session.SessionState],
+        () => _session.GetStateNative(out var value) >= 0
+            ? AccessorHelper.SessionStates[value]
+            : AudioSessionStateType.Unknown,
         AudioSessionStateType.Unknown);
 
-    public float PeakValue => SafeRead(_meterInformation.GetPeakValue, 0.0f);
-    public int MeteringChannelCount => SafeRead(_meterInformation.GetMeteringChannelCount, 0);
+    public float PeakValue => SafeRead(
+        () => _meterInformation.GetPeakValueNative(out var value) >= 0
+            ? value
+            : 0.0f,
+        0.0f);
+
+    public int MeteringChannelCount => SafeRead(
+        () => _meterInformation.GetMeteringChannelCountNative(out var value) >= 0
+            ? value
+            : 0,
+        0);
 
     public string? DisplayName
     {

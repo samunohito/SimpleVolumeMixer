@@ -1,0 +1,37 @@
+﻿name: create a release pull request
+
+on:
+  workflow_dispatch:  
+    
+  pull_request:
+    types: [ closed ]
+    branches:
+      - develop
+
+env:
+  pathOfVersioning: ${{ github.workspace }}/SimpleVolumeMixer
+
+jobs:
+  create-release-pr:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: checkout this solution
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - id: nbgv
+        run: |
+          VERSION=`nbgv get-version -p ${{ env.pathOfVersioning }} -v NuGetPackageVersion`
+          echo "::set-output name=version::$VERSION"
+
+      - name: create a release pull request
+        uses: bakunyo/git-pr-release-action@281e1fe424fac01f3992542266805e4202a22fe0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_PR_RELEASE_BRANCH_PRODUCTION: master
+          GIT_PR_RELEASE_BRANCH_STAGING: develop
+          GIT_PR_RELEASE_LABELS: release
+          APP_VERSION: v${{ steps.nbgv.outputs.version }}
+          GIT_PR_RELEASE_TEMPLATE: .git-pr-release-template

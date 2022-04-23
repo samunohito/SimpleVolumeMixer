@@ -15,6 +15,7 @@ env:
 
 jobs:
   build-artifact:
+    if: github.event.pull_request.merged == true
     runs-on: windows-2019
     outputs:
       artifactName: ${{ steps.vars.outputs.artifactName }}
@@ -79,10 +80,10 @@ jobs:
       - id: vars
         shell: bash
         run: |
-          if [[ "${{ needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen }}" = "beta" -o "${{ needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen }}" = "alpha" ]]; then
-            echo "::set-output name=isPrerelease::true";
+          if [ "${{ needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen }}" = "beta" ] || [ "${{ needs.build-artifact.outputs.prereleaseVersionNoLeadingHyphen }}" = "alpha" ]; then
+            echo "::set-output name=isPrerelease::true"
           else
-            echo "::set-output name=isPrerelease::false";
+            echo "::set-output name=isPrerelease::false"
           fi;
         
       - id: create-release
@@ -98,6 +99,7 @@ jobs:
       - id: export-upload-url
         run: |
           echo "::set-output name=uploadUrl::${{ steps.create-release.outputs.upload_url }}"
+
 
   upload-release:
     runs-on: ubuntu-latest

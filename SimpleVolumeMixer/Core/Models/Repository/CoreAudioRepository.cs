@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
 using Microsoft.Extensions.Logging;
 using Reactive.Bindings;
@@ -26,6 +27,10 @@ public class CoreAudioRepository : ICoreAudioRepository
     private readonly IReactiveProperty<AudioDeviceAccessor?> _communicationRoleDevice;
     private readonly IReactiveProperty<AudioDeviceAccessor?> _multimediaRoleDevice;
 
+    /// <summary>
+    /// ctor
+    /// </summary>
+    /// <param name="logger"></param>
     public CoreAudioRepository(ILogger logger)
     {
         _logger = logger;
@@ -46,7 +51,7 @@ public class CoreAudioRepository : ICoreAudioRepository
             .AddTo(_disposable);
     }
 
-    public ReadOnlyReactiveCollection<AudioDeviceAccessor> AudioDevices => _accessor.AudioDevices;
+    public ReadOnlyObservableCollection<AudioDeviceAccessor> AudioDevices => _accessor.AudioDevices;
     public IReadOnlyReactiveProperty<AudioDeviceAccessor?> CommunicationRoleDevice => _communicationRoleDevice;
     public IReadOnlyReactiveProperty<AudioDeviceAccessor?> MultimediaRoleDevice => _multimediaRoleDevice;
 

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+using DisposableComponents;
 using MaterialDesignThemes.Wpf;
 using Prism.Commands;
 using Reactive.Bindings;

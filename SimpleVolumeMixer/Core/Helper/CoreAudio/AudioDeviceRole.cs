@@ -1,25 +1,41 @@
 ﻿using System;
+using CSCore.CoreAudioAPI;
 using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
-public class DeviceRoleHolder : NotifyPropertyChangedBase
+/// <summary>
+/// <see cref="AudioDeviceAccessor"/>が参照する<see cref="MMDevice"/>に割り当てられたロールを保持する。
+/// <see cref="MMDevice"/>からはロールを直接取得することは出来ず、各デバイスに割り当てられたロールを同時に全て知ることが難しくなっている。
+/// よって、このオブジェクトに<see cref="MMDevice"/>が持つロールの情報を集約して管理し、デバイスが持つロールの情報にアクセスしやすくする。
+/// </summary>
+public class AudioDeviceRole : NotifyPropertyChangedBase
 {
-    internal event EventHandler<DeviceAccessorRoleHolderChangedEventArgs>? RoleChanged;
+    /// <summary>
+    /// ロールの状態が変化した際に発動するイベントハンドラ
+    /// </summary>
+    public event EventHandler<DeviceAccessorRoleHolderChangedEventArgs>? RoleChanged;
 
     private readonly AudioDeviceAccessor _device;
     private bool _multimedia;
     private bool _communications;
 
-    internal DeviceRoleHolder(AudioDeviceAccessor device)
+    /// <summary>
+    /// ctor
+    /// </summary>
+    /// <param name="device"></param>
+    public AudioDeviceRole(AudioDeviceAccessor device)
     {
         _device = device;
         _multimedia = false;
         _communications = false;
     }
 
+    /// <summary>
+    /// デバイスが<see cref="RoleType.Multimedia"/>のロールを持っているかを取得・設定する。
+    /// </summary>
     public bool Multimedia
     {
         get => _multimedia;
@@ -34,6 +50,9 @@ public class DeviceRoleHolder : NotifyPropertyChangedBase
         }
     }
 
+    /// <summary>
+    /// デバイスが<see cref="RoleType.Communications"/>のロールを持っているかを取得・設定する。
+    /// </summary>
     public bool Communications
     {
         get => _communications;
