@@ -1,6 +1,8 @@
 ﻿using System;
 using CSCore.CoreAudioAPI;
+using DisposableComponents;
 using Microsoft.Extensions.Logging;
+using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
@@ -51,8 +53,7 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
         _sessionManager.VolumeDuckNotification += OnVolumeDuckNotification;
         _sessionManager.VolumeUnDuckNotification += OnVolumeUnDuckNotification;
         _logger = logger;
-        _processor = new QueueProcessor<object?, object?>();
-        _processor.StartRequest();
+        _processor = new QueueProcessor<object?, object?>(nameof(AudioSessionManagerEventAdapter), logger).AddTo(Disposable);
     }
 
     private void OnSessionCreated(object? sender, SessionCreatedEventArgs e)
@@ -101,12 +102,11 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
 
     protected override void OnDisposing()
     {
-        _logger.LogDebug("disposing...");
+        _logger.LogInformation($"disposing... {_sessionManager}");
 
         _sessionManager.SessionCreated -= OnSessionCreated;
         _sessionManager.VolumeDuckNotification -= OnVolumeDuckNotification;
         _sessionManager.VolumeUnDuckNotification -= OnVolumeUnDuckNotification;
-        _processor.StopRequest();
 
         base.OnDisposing();
     }

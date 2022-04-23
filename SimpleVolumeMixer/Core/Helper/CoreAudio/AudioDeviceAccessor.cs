@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 using CSCore.CoreAudioAPI;
+using DisposableComponents;
 using Microsoft.Extensions.Logging;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
@@ -19,7 +21,7 @@ namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 /// <seealso cref="AudioEndpointVolume"/>
 /// <seealso cref="AudioMeterInformation"/>
 /// <seealso cref="AudioSessionAccessorManager"/>
-public class AudioDeviceAccessor : SafetyAccessorComponent
+public class AudioDeviceAccessor : SafetyAccessComponent
 {
     /// <summary>
     /// デバイスが持つロールに変化が発生した際に発動するイベントハンドラ。
@@ -35,6 +37,7 @@ public class AudioDeviceAccessor : SafetyAccessorComponent
         remove => Role.RoleChanged -= value;
     }
 
+    private readonly ILogger _logger;
     private readonly AudioEndpointVolume _endpointVolume;
     private readonly AudioMeterInformation _meterInformation;
     private readonly AudioSessionAccessorManager _accessorManager;
@@ -48,6 +51,7 @@ public class AudioDeviceAccessor : SafetyAccessorComponent
     {
         Device = device.AddTo(Disposable);
 
+        _logger = logger;
         _endpointVolume = AudioEndpointVolume.FromDevice(Device).AddTo(Disposable);
         _meterInformation = AudioMeterInformation.FromDevice(Device).AddTo(Disposable);
         _accessorManager = new AudioSessionAccessorManager(this, logger);
@@ -78,16 +82,42 @@ public class AudioDeviceAccessor : SafetyAccessorComponent
     public string? DevicePath => SafeRead(() => Device.DevicePath, null);
 
     public DeviceStateType DeviceState => SafeRead(
-        () => AccessorHelper.DeviceStates[Device.DeviceState],
-        DeviceStateType.Unknown);
+        () => Device.GetStateNative(out var value) >= 0
+            ? AccessorHelper.DeviceStates[value]
+            : DeviceStateType.Unknown,
+        DeviceStateType.Unknown
+    );
 
     public DataFlowType DataFlow => SafeRead(
         () => AccessorHelper.DataFlows[Device.DataFlow],
         DataFlowType.Unknown);
 
     public int ChannelCount => SafeRead(_endpointVolume.GetChannelCount, 0);
-    public float PeakValue => SafeRead(_meterInformation.GetPeakValue, 0.0f);
-    public float[]? ChannelsPeakValues => SafeRead(_meterInformation.GetChannelsPeakValues, null);
+
+    public float PeakValue => SafeRead(() => _meterInformation.GetPeakValueNative(out var value) >= 0
+            ? value
+            : 0.0f,
+        0.0f
+    );
+
+    public float[]? ChannelsPeakValues
+    {
+        get
+        {
+            if (_meterInformation.GetMeteringChannelCountNative(out var count) < 0)
+            {
+                return null;
+            }
+
+            if (_meterInformation.GetChannelsPeakValuesNative(count, out var result) < 0)
+            {
+                return null;
+            }
+
+            return result;
+        }
+    }
+
     public int MeteringChannelCount => SafeRead(_meterInformation.GetMeteringChannelCount, 0);
 
     public float MasterVolumeLevel
@@ -98,28 +128,41 @@ public class AudioDeviceAccessor : SafetyAccessorComponent
 
     public float MasterVolumeLevelScalar
     {
-        get => SafeRead(_endpointVolume.GetMasterVolumeLevelScalar, 0.0f);
+        get => SafeRead(
+            () => _endpointVolume.GetMasterVolumeLevelScalarNative(out var value) >= 0
+                ? value
+                : 0.0f,
+            0.0f
+        );
         set => SafeWrite(v => _endpointVolume.MasterVolumeLevelScalar = v, value);
     }
 
     public bool IsMuted
     {
-        get => SafeRead(_endpointVolume.GetMute, false);
+        get
+        {
+            TrySafeRead(_endpointVolume.GetMute, false, out var result);
+            return result;
+        }
         set => SafeWrite(v => _endpointVolume.IsMuted = v, value);
     }
 
     public Task OpenSession()
     {
+        _logger.LogInformation("open session in {}", FriendlyName);
         return _accessorManager.OpenSession();
     }
 
     public void CloseSession()
     {
+        _logger.LogInformation("close session in {}", FriendlyName);
         _accessorManager.CloseSession();
     }
 
     protected override void OnDisposing()
     {
+        _logger.LogInformation("disposing device... {}", FriendlyName);
+
         CloseSession();
         base.OnDisposing();
     }

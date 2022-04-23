@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using DisposableComponents;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Contracts.Services;
@@ -22,6 +23,7 @@ public class AudioSessionsPageUseCase : DisposableComponent
 
         // マルチメディアロールのデバイスを初期表示にしたい.
         SelectedDevice = coreAudioService.MultimediaRoleDevice
+            .ObserveOnUIDispatcher()
             .ToReactiveProperty()
             .AddTo(Disposable);
 
@@ -29,6 +31,7 @@ public class AudioSessionsPageUseCase : DisposableComponent
         // 前回値が出来るまで待ち合わせるので、下記の購読開始処理を実行しただけでは動作しない.
         SelectedDevice
             .Zip(SelectedDevice.Skip(1), (x, y) => new { OldValue = x, NewValue = y })
+            .ObserveOnUIDispatcher()
             .Subscribe(x => OnSelectedDeviceChanged(x.OldValue, x.NewValue))
             .AddTo(Disposable);
 
