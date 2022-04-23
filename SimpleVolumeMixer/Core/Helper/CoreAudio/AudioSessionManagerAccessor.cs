@@ -2,13 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using CSCore.CoreAudioAPI;
+using DisposableComponents;
 using Microsoft.Extensions.Logging;
-using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 
-public class AudioSessionManagerAccessor : SafetyAccessorComponent
+public class AudioSessionManagerAccessor : DisposableComponent
 {
     public event EventHandler<EventArgs>? SessionManagerOpened;
     public event EventHandler<EventArgs>? SessionManagerClosed;
@@ -35,6 +35,11 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
 
     public async Task OpenSessionManager()
     {
+        // 古いインスタンスがある場合は破棄
+        CloseSessionManager();
+        
+        _logger.LogInformation("open sessionManager...");
+
         // AudioSessionManager2はMTAスレッドでしか取得できないので、別スレッドを起動する（WPFはSTAスレッド）
         var tcs = new TaskCompletionSource<AudioSessionManager2>();
         var thread = new Thread((args) =>
@@ -42,8 +47,9 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
             if (args is MMDevice device)
             {
                 tcs.SetResult(AudioSessionManager2.FromMMDevice(device));
+                return;
             }
-
+        
             throw new InvalidOperationException("MMDevice以外が渡されてくるのは実装上あり得ない");
         });
         thread.SetApartmentState(ApartmentState.MTA);
@@ -53,9 +59,6 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
 
         lock (_gate)
         {
-            // 古いインスタンスがある場合は破棄
-            CloseSessionManager();
-
             // 個別で破棄するのでDisposableには入れない
             _sessionManager = sessionManager;
             _eventAdapter = new AudioSessionManagerEventAdapter(sessionManager, _logger);
@@ -67,21 +70,30 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
 
     public void CloseSessionManager()
     {
+        _logger.LogInformation("close sessionManager...");
+
+        var sessionManager = _sessionManager;
+        var eventAdapter = _eventAdapter;
+
         lock (_gate)
         {
             if (_sessionManager == null || _eventAdapter == null)
             {
-                _logger.LogInformation("sessionManger is not allocated.");
+                _logger.LogInformation("sessionManger is not allocated");
                 return;
             }
 
-            _sessionManager.Dispose();
             _sessionManager = null;
 
             _eventAdapter.SessionCreated -= OnSessionCreated;
-            _eventAdapter.Dispose();
             _eventAdapter = null;
         }
+
+        // 破棄処理は排他する必要なく単独で動かしてもいいのでlockの外でやる
+        sessionManager?.Dispose();
+        eventAdapter?.Dispose();
+
+        _logger.LogInformation("closed sessionManager : {}", sessionManager);
 
         SessionManagerClosed?.Invoke(this, EventArgs.Empty);
     }
@@ -101,6 +113,8 @@ public class AudioSessionManagerAccessor : SafetyAccessorComponent
 
     protected override void OnDisposing()
     {
+        _logger.LogInformation("disposing ...");
+
         CloseSessionManager();
         base.OnDisposing();
     }

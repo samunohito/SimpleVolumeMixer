@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using DisposableComponents;
+using Microsoft.Extensions.Logging;
 using Reactive.Bindings.Extensions;
 
 namespace SimpleVolumeMixer.Core.Helper.Component;
@@ -13,6 +15,8 @@ namespace SimpleVolumeMixer.Core.Helper.Component;
 /// <typeparam name="TR">Type of object returned as the return value of Func</typeparam>
 public class QueueProcessor<TP, TR> : DisposableComponent
 {
+    private readonly string _name;
+    private readonly ILogger _logger;
     private readonly BlockingCollection<QueueProcessorItem<TP, TR>> _items;
     private readonly Task _loopTask;
     private readonly CancellationTokenSource _cancellation;
@@ -20,30 +24,17 @@ public class QueueProcessor<TP, TR> : DisposableComponent
     /// <summary>
     /// ctor
     /// </summary>
+    /// <param name="name"></param>
+    /// <param name="logger"></param>
     /// <param name="capacity">Maximum number of queues registered</param>
-    public QueueProcessor(int capacity = 4096)
+    public QueueProcessor(string name, ILogger logger, int capacity = 4096)
     {
+        _name = name;
+        _logger = logger;
         _items = new BlockingCollection<QueueProcessorItem<TP, TR>>(capacity).AddTo(Disposable);
-        _loopTask = new Task(() => DoProcess()).AddTo(Disposable);
         _cancellation = new CancellationTokenSource().AddTo(Disposable);
-    }
-
-    /// <summary>
-    /// Starts a worker thread that executes the Func registered in the Queue.
-    /// The thread that invokes this method will not be blocked.
-    /// </summary>
-    public void StartRequest()
-    {
+        _loopTask = new Task(() => DoProcess(), _cancellation.Token).AddTo(Disposable);
         _loopTask.Start();
-    }
-
-    /// <summary>
-    /// Sends a stop request to the worker thread.
-    /// Note that this method call does not necessarily stop the worker thread immediately.
-    /// </summary>
-    public void StopRequest()
-    {
-        _cancellation.Cancel(false);
     }
 
     /// <summary>
@@ -54,6 +45,11 @@ public class QueueProcessor<TP, TR> : DisposableComponent
     /// <param name="item"></param>
     public void Push(QueueProcessorItem<TP, TR> item)
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+        
         _items.Add(item);
     }
 
@@ -62,24 +58,55 @@ public class QueueProcessor<TP, TR> : DisposableComponent
     /// </summary>
     private void DoProcess()
     {
+        _logger.LogInformation("[{}] start looping...", _name);
+        
         while (!_cancellation.IsCancellationRequested)
         {
-            var item = _items.Take();
-            if (item.CancelRequest)
+            try
             {
-                item.Executed = true;
-                continue;
-            }
+                var item = _items.Take(_cancellation.Token);
+                if (item.CancelRequest)
+                {
+                    item.Executed = true;
+                    continue;
+                }
 
-            item.Result = item.Function(item.Argument);
-            item.Executed = true;
+                item.Result = item.Function(item.Argument);
+                item.Executed = true;
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogError(ex, "[{}] canceled", _name);
+            }
         }
+        
+        _logger.LogInformation("[{}] finish looping...", _name);
     }
 
     /// <inheritdoc cref="DisposableComponent.OnDisposing"/>
     protected override void OnDisposing()
     {
-        StopRequest();
+        _logger.LogInformation("[{}] disposing...", _name);
+        
+        _cancellation.Cancel(false);
+
+        switch (_loopTask.Status)
+        {
+            case TaskStatus.Canceled:
+            case TaskStatus.Faulted:
+            case TaskStatus.RanToCompletion:
+                break;
+            default:
+                _loopTask.Wait();
+                break;
+        }
+
         base.OnDisposing();
+    }
+
+    protected override void OnDisposed()
+    {
+        _logger.LogInformation("[{}] disposed...", _name);
+        base.OnDisposed();
     }
 }

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CSCore.CoreAudioAPI;
+using DisposableComponents;
 using Microsoft.Extensions.Logging;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;

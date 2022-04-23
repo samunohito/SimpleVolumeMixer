@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Linq;
+using DisposableComponents;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
@@ -14,7 +15,7 @@ public class AudioSessionsPageSubViewModel : DisposableComponent
         // 現在選択されているデバイスを監視し、そのデバイスが持っているセッション一覧を参照する.
         // デバイスが変更された場合、変更後のデバイスが持っているセッションを見るようにプロパティの中身を切り替えるようにしておく
         Sessions = useCase.SelectedDevice
-            .Select(x => x?.Sessions.ToReadOnlyReactiveCollection(i => new AudioSessionViewModel(i)))
+            .Select(x => x?.Sessions.ToReadOnlyReactiveCollection(i => new AudioSessionViewModel(i), UIDispatcherScheduler.Default))
             .ToReadOnlyReactivePropertySlim()
             .AddTo(Disposable);
     }

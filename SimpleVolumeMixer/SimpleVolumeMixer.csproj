@@ -17,6 +17,7 @@
             <IncludeAssets>runtime; compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="CSCore" Version="1.2.1.2" />
+        <PackageReference Include="DisposableComponents" Version="1.3.3" />
         <PackageReference Include="Fody" Version="6.5.5">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

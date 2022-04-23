@@ -1,6 +1,8 @@
 ﻿using System;
 using CSCore.CoreAudioAPI;
+using DisposableComponents;
 using Microsoft.Extensions.Logging;
+using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
@@ -73,15 +75,14 @@ public class AudioSessionEventAdapter : DisposableComponent
         _session.StateChanged += OnStateChanged;
         _session.SessionDisconnected += OnSessionDisconnected;
         _logger = logger;
-        _processor = new QueueProcessor<object?, object?>();
-        _processor.StartRequest();
+        _processor = new QueueProcessor<object?, object?>(nameof(AudioSessionEventAdapter), logger).AddTo(Disposable);
     }
 
     private void OnDisplayNameChanged(object? sender, AudioSessionDisplayNameChangedEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ ctx:{ctx}, newDisplayName:{newDisplayName} ]",
+            "sender:{Sender}, " +
+            "args:[ ctx:{Ctx}, newDisplayName:{NewDisplayName} ]",
             sender,
             e.EventContext,
             e.NewDisplayName
@@ -93,8 +94,8 @@ public class AudioSessionEventAdapter : DisposableComponent
     private void OnIconPathChanged(object? sender, AudioSessionIconPathChangedEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ ctx:{ctx}, newIconPath:{newIconPath} ]",
+            "sender:{Sender}, " +
+            "args:[ ctx:{Ctx}, newIconPath:{NewIconPath} ]",
             sender,
             e.EventContext,
             e.NewIconPath
@@ -106,8 +107,8 @@ public class AudioSessionEventAdapter : DisposableComponent
     private void OnSimpleVolumeChanged(object? sender, AudioSessionSimpleVolumeChangedEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ ctx:{ctx}, newVolume:{newIconPath}, isMuted:{isMuted} ]",
+            "sender:{Sender}, " +
+            "args:[ ctx:{Ctx}, newVolume:{NewIconPath}, isMuted:{IsMuted} ]",
             sender,
             e.EventContext,
             e.NewVolume,
@@ -120,8 +121,8 @@ public class AudioSessionEventAdapter : DisposableComponent
     private void OnChannelVolumeChanged(object? sender, AudioSessionChannelVolumeChangedEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ ctx:{ctx}, changedChannel:{changedChannel}, channelCount:{channelCount}, channelVolumes:{channelVolumes} ]",
+            "sender:{Sender}, " +
+            "args:[ ctx:{Ctx}, changedChannel:{ChangedChannel}, channelCount:{ChannelCount}, channelVolumes:{ChannelVolumes} ]",
             sender,
             e.EventContext,
             e.ChangedChannel,
@@ -135,8 +136,8 @@ public class AudioSessionEventAdapter : DisposableComponent
     private void OnGroupingParamChanged(object? sender, AudioSessionGroupingParamChangedEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ ctx:{ctx}, newGroupingParam:{newGroupingParam} ]",
+            "sender:{Sender}, " +
+            "args:[ ctx:{Ctx}, newGroupingParam:{NewGroupingParam} ]",
             sender,
             e.EventContext,
             e.NewGroupingParam
@@ -148,8 +149,8 @@ public class AudioSessionEventAdapter : DisposableComponent
     private void OnStateChanged(object? sender, AudioSessionStateChangedEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ newState:{newState} ]",
+            "sender:{Sender}, " +
+            "args:[ newState:{NewState} ]",
             sender,
             e.NewState
         );
@@ -160,8 +161,8 @@ public class AudioSessionEventAdapter : DisposableComponent
     private void OnSessionDisconnected(object? sender, AudioSessionDisconnectedEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ disconnectReason:{disconnectReason} ]",
+            "sender:{Sender}, " +
+            "args:[ disconnectReason:{DisconnectReason} ]",
             sender,
             e.DisconnectReason
         );
@@ -176,7 +177,7 @@ public class AudioSessionEventAdapter : DisposableComponent
 
     protected override void OnDisposing()
     {
-        _logger.LogDebug("disposing...");
+        _logger.LogInformation("disposing... {}", _session);
 
         _session.DisplayNameChanged -= OnDisplayNameChanged;
         _session.IconPathChanged -= OnIconPathChanged;
@@ -185,8 +186,6 @@ public class AudioSessionEventAdapter : DisposableComponent
         _session.GroupingParamChanged -= OnGroupingParamChanged;
         _session.StateChanged -= OnStateChanged;
         _session.SessionDisconnected -= OnSessionDisconnected;
-
-        _processor.StopRequest();
 
         base.OnDisposing();
     }

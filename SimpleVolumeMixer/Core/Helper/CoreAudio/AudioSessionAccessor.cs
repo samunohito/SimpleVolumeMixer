@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using CSCore.CoreAudioAPI;
+using DisposableComponents;
 using Microsoft.Extensions.Logging;
 using Reactive.Bindings.Extensions;
-using SimpleVolumeMixer.Core.Helper.Component;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Event;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
 using SimpleVolumeMixer.Core.Helper.CoreAudio.Internal;
@@ -19,7 +19,7 @@ namespace SimpleVolumeMixer.Core.Helper.CoreAudio;
 /// <seealso cref="AudioMeterInformation"/>
 /// <seealso cref="SimpleAudioVolume"/>
 /// <seealso cref="AudioSessionEventAdapter"/>
-public class AudioSessionAccessor : SafetyAccessorComponent
+public class AudioSessionAccessor : SafetyAccessComponent
 {
     /// <summary>
     /// セッションが持つ値に変化が生じた際に発生するイベントハンドラ。
@@ -97,11 +97,22 @@ public class AudioSessionAccessor : SafetyAccessorComponent
     public bool IsSystemSoundSession => SafeRead(() => _sessionControl2.IsSystemSoundSession, false);
 
     public AudioSessionStateType SessionState => SafeRead(
-        () => AccessorHelper.SessionStates[_session.SessionState],
+        () => _session.GetStateNative(out var value) >= 0
+            ? AccessorHelper.SessionStates[value]
+            : AudioSessionStateType.Unknown,
         AudioSessionStateType.Unknown);
 
-    public float PeakValue => SafeRead(_meterInformation.GetPeakValue, 0.0f);
-    public int MeteringChannelCount => SafeRead(_meterInformation.GetMeteringChannelCount, 0);
+    public float PeakValue => SafeRead(
+        () => _meterInformation.GetPeakValueNative(out var value) >= 0
+            ? value
+            : 0.0f,
+        0.0f);
+
+    public int MeteringChannelCount => SafeRead(
+        () => _meterInformation.GetMeteringChannelCountNative(out var value) >= 0
+            ? value
+            : 0,
+        0);
 
     public string? DisplayName
     {
