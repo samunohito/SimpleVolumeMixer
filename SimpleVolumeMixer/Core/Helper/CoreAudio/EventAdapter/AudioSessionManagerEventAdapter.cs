@@ -2,7 +2,9 @@
 using CSCore.CoreAudioAPI;
 using DisposableComponents;
 using Microsoft.Extensions.Logging;
+using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using SimpleComponents.ProducerConsumer;
 using SimpleVolumeMixer.Core.Helper.Component;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
@@ -10,7 +12,7 @@ namespace SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
 /// <summary>
 /// Notify of audio session creation, system ducking, and system undocking events.
 /// Since we do not want to block CoreAudioAPI in the app-side processing,
-/// notifications from CoreAudioAPI are stored once in <see cref="QueueProcessor{TP,TR}"/> and are notified to the app side asynchronously and sequentially.
+/// notifications from CoreAudioAPI are stored once in <see cref="ProducerConsumerWorker"/> and are notified to the app side asynchronously and sequentially.
 /// </summary>
 /// <remarks>
 /// We use information from MSDN and CSCore functions, so please refer to their documentation as well.
@@ -39,7 +41,7 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
 
     private readonly AudioSessionManager2 _sessionManager;
     private readonly ILogger _logger;
-    private readonly QueueProcessor<object?, object?> _processor;
+    private readonly ProducerConsumerWorkerEx _processor;
 
     /// <summary>
     /// ctor
@@ -53,14 +55,14 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
         _sessionManager.VolumeDuckNotification += OnVolumeDuckNotification;
         _sessionManager.VolumeUnDuckNotification += OnVolumeUnDuckNotification;
         _logger = logger;
-        _processor = new QueueProcessor<object?, object?>(nameof(AudioSessionManagerEventAdapter), logger).AddTo(Disposable);
+        _processor = new ProducerConsumerWorkerEx(UIDispatcherScheduler.Default).AddTo(Disposable);
     }
 
     private void OnSessionCreated(object? sender, SessionCreatedEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ {session} ]",
+            "sender:{Sender}, " +
+            "args:[ {@Session} ]",
             sender,
             e.NewSession
         );
@@ -72,8 +74,8 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
     private void OnVolumeDuckNotification(object? sender, VolumeDuckNotificationEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ countCommunicationSessions:{countCommunicationSessions}, sessionId:{sessionId} ]",
+            "sender:{Sender}, " +
+            "args:[ countCommunicationSessions:{CountCommunicationSessions}, sessionId:{SessionId} ]",
             sender,
             e.CountCommunicationSessions,
             e.SessionID
@@ -85,8 +87,8 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
     private void OnVolumeUnDuckNotification(object? sender, VolumeDuckNotificationEventArgs e)
     {
         _logger.LogDebug(
-            "sender:{sender}, " +
-            "args:[ countCommunicationSessions:{countCommunicationSessions}, sessionId:{sessionId} ]",
+            "sender:{Sender}, " +
+            "args:[ countCommunicationSessions:{CountCommunicationSessions}, sessionId:{SessionId} ]",
             sender,
             e.CountCommunicationSessions,
             e.SessionID
@@ -97,12 +99,12 @@ public class AudioSessionManagerEventAdapter : DisposableComponent
 
     private void Push(Action action)
     {
-        _processor.Push(QueueProcessorItem.OfAction(action));
+        _processor.Push(ProducerConsumerWorkerItem.Create(action));
     }
 
     protected override void OnDisposing()
     {
-        _logger.LogInformation($"disposing... {_sessionManager}");
+        _logger.LogInformation("disposing... {}", _sessionManager);
 
         _sessionManager.SessionCreated -= OnSessionCreated;
         _sessionManager.VolumeDuckNotification -= OnVolumeDuckNotification;
