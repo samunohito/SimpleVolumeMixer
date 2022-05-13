@@ -2,7 +2,9 @@
 using CSCore.CoreAudioAPI;
 using DisposableComponents;
 using Microsoft.Extensions.Logging;
+using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using SimpleComponents.ProducerConsumer;
 using SimpleVolumeMixer.Core.Helper.Component;
 
 namespace SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
@@ -10,7 +12,7 @@ namespace SimpleVolumeMixer.Core.Helper.CoreAudio.EventAdapter;
 /// <summary>
 /// Notification of session-related events such as volume level changes, display names, session status, etc.
 /// Since we do not want to block CoreAudioAPI in the app-side processing,
-/// notifications from CoreAudioAPI are stored once in <see cref="QueueProcessor{TP,TR}"/> and are notified to the app side asynchronously and sequentially.
+/// notifications from CoreAudioAPI are stored once in <see cref="ProducerConsumerWorker"/> and are notified to the app side asynchronously and sequentially.
 /// </summary>
 /// <remarks>
 /// We use information from MSDN and CSCore functions, so please refer to their documentation as well.
@@ -57,7 +59,7 @@ public class AudioSessionEventAdapter : DisposableComponent
 
     private readonly AudioSessionControl _session;
     private readonly ILogger _logger;
-    private readonly QueueProcessor<object?, object?> _processor;
+    private readonly ProducerConsumerWorkerEx _processor;
 
     /// <summary>
     /// ctor
@@ -75,7 +77,7 @@ public class AudioSessionEventAdapter : DisposableComponent
         _session.StateChanged += OnStateChanged;
         _session.SessionDisconnected += OnSessionDisconnected;
         _logger = logger;
-        _processor = new QueueProcessor<object?, object?>(nameof(AudioSessionEventAdapter), logger).AddTo(Disposable);
+        _processor = new ProducerConsumerWorkerEx(UIDispatcherScheduler.Default).AddTo(Disposable);
     }
 
     private void OnDisplayNameChanged(object? sender, AudioSessionDisplayNameChangedEventArgs e)
@@ -172,7 +174,7 @@ public class AudioSessionEventAdapter : DisposableComponent
 
     private void Push(Action action)
     {
-        _processor.Push(QueueProcessorItem.OfAction(action));
+        _processor.Push(ProducerConsumerWorkerItem.Create(action));
     }
 
     protected override void OnDisposing()

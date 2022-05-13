@@ -22,7 +22,7 @@ public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent, I
     {
         _collection = new ReactiveCollection<T>().AddTo(Disposable);
         ReadOnlyCollection = _collection
-            .ToReadOnlyReactiveCollection(UIDispatcherScheduler.Default, false)
+            .ToReadOnlyReactiveCollection(disposeElement: false)
             .AddTo(Disposable);
     }
 
