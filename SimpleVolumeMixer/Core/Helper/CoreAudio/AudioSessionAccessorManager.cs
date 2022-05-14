@@ -63,7 +63,7 @@ public class AudioSessionAccessorManager : SynchronizedObservableCollectionWrapp
 
         lock (Gate)
         {
-            return this.Any(x => x.Process?.Id == procId);
+            return Collection.Any(x => x.Process?.Id == procId);
         }
     }
 
@@ -81,7 +81,7 @@ public class AudioSessionAccessorManager : SynchronizedObservableCollectionWrapp
 
         lock (Gate)
         {
-            return this.FirstOrDefault(x => x.Process?.Id == procId);
+            return Collection.FirstOrDefault(x => x.Process?.Id == procId);
         }
     }
 
@@ -140,7 +140,7 @@ public class AudioSessionAccessorManager : SynchronizedObservableCollectionWrapp
 
         lock (Gate)
         {
-            this.Where(x => x.Process?.Id == procId)
+            Collection.Where(x => x.Process?.Id == procId)
                 .ToList()
                 .ForEach(x => Remove(x));
         }
@@ -167,7 +167,7 @@ public class AudioSessionAccessorManager : SynchronizedObservableCollectionWrapp
     /// </summary>
     public new void Clear()
     {
-        var collections = this.ToList();
+        var collections = Collection.ToList();
         base.Clear();
 
         foreach (var ax in collections)
