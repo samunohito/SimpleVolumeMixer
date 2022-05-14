@@ -78,7 +78,7 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
 
         lock (Gate)
         {
-            return this.Any(x => x.DeviceId == deviceId && x.DataFlow == dataFlowType);
+            return Collection.Any(x => x.DeviceId == deviceId && x.DataFlow == dataFlowType);
         }
     }
 
@@ -107,7 +107,7 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
 
         lock (Gate)
         {
-            return this.FirstOrDefault(x => x.DeviceId == deviceId && x.DataFlow == dataFlowType);
+            return Collection.FirstOrDefault(x => x.DeviceId == deviceId && x.DataFlow == dataFlowType);
         }
     }
 
@@ -182,7 +182,7 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
     {
         lock (Gate)
         {
-            this.Where(x => x.DeviceId == deviceId)
+            Collection.Where(x => x.DeviceId == deviceId)
                 .ToList()
                 .ForEach(x => Remove(x));
         }
@@ -208,7 +208,7 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
     /// </summary>
     public new void Clear()
     {
-        var collections = this.ToList();
+        var collections = Collection.ToList();
         base.Clear();
 
         foreach (var ax in collections)
@@ -237,7 +237,7 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
                 Add(device);
             }
 
-            if (this.Any(x => x.DataFlow == DataFlowType.Render))
+            if (Collection.Any(x => x.DataFlow == DataFlowType.Render))
             {
                 // deviceが1つもない状態でGetDefaultAudioEndpointを呼ぶとエラー落ちする
                 using var mulDevice = _deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
@@ -246,7 +246,7 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
                 DeviceRoleSync(comDevice.DeviceID, DataFlowType.Render, RoleType.Communications);
             }
 
-            if (this.Any(x => x.DataFlow == DataFlowType.Capture))
+            if (Collection.Any(x => x.DataFlow == DataFlowType.Capture))
             {
                 // deviceが1つもない状態でGetDefaultAudioEndpointを呼ぶとエラー落ちする
                 using var mulDevice = _deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
@@ -271,14 +271,14 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
             switch (roleType)
             {
                 case RoleType.Communications:
-                    foreach (var device in this)
+                    foreach (var device in Collection)
                     {
                         device.Role.Communications = false;
                     }
 
                     break;
                 case RoleType.Multimedia:
-                    foreach (var device in this)
+                    foreach (var device in Collection)
                     {
                         device.Role.Multimedia = false;
                     }

@@ -13,22 +13,25 @@ namespace SimpleVolumeMixer.Core.Helper.Component;
 /// Wrapper for exclusive handling of <see cref="ObservableCollection{T}"/>.
 /// </summary>
 /// <typeparam name="T">element type</typeparam>
-public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent, ICollection<T> where T : class
+public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent where T : class
 {
     private readonly object _gate = new();
-    private readonly ObservableCollection<T> _collection;
 
     public SynchronizedObservableCollectionWrapper()
     {
-        _collection = new ReactiveCollection<T>().AddTo(Disposable);
-        ReadOnlyCollection = _collection
+        Collection = new ReactiveCollection<T>().AddTo(Disposable);
+        ReadOnlyCollection = Collection
             .ToReadOnlyReactiveCollection(disposeElement: false)
             .AddTo(Disposable);
     }
+    
+    /// <summary>
+    /// Managed ObservableCollection
+    /// </summary>
+    protected ObservableCollection<T> Collection { get; }
 
     /// <summary>
     /// This is a read-only collection, linked to the update of the wrapped <see cref="ObservableCollection{T}"/>.
-    /// Change notifications are sent to the UI thread.
     /// </summary>
     public ReadOnlyObservableCollection<T> ReadOnlyCollection { get; }
 
@@ -37,25 +40,11 @@ public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent, I
     /// </summary>
     protected object Gate => _gate;
 
-    public IEnumerator<T> GetEnumerator()
-    {
-        lock (_gate)
-        {
-            return _collection.GetEnumerator();
-        }
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-
-
     public void Add(T item)
     {
         lock (_gate)
         {
-            _collection.Add(item);
+            Collection.Add(item);
         }
     }
 
@@ -63,7 +52,7 @@ public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent, I
     {
         lock (_gate)
         {
-            _collection.Insert(idx, item);
+            Collection.Insert(idx, item);
         }
     }
 
@@ -71,7 +60,7 @@ public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent, I
     {
         lock (_gate)
         {
-            _collection.Clear();
+            Collection.Clear();
         }
     }
 
@@ -79,7 +68,7 @@ public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent, I
     {
         lock (_gate)
         {
-            return _collection.Contains(item);
+            return Collection.Contains(item);
         }
     }
 
@@ -87,7 +76,7 @@ public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent, I
     {
         lock (_gate)
         {
-            _collection.CopyTo(array, arrayIndex);
+            Collection.CopyTo(array, arrayIndex);
         }
     }
 
@@ -95,7 +84,7 @@ public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent, I
     {
         lock (_gate)
         {
-            return _collection.Remove(item);
+            return Collection.Remove(item);
         }
     }
 
@@ -105,7 +94,7 @@ public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent, I
         {
             lock (_gate)
             {
-                return _collection.Count;
+                return Collection.Count;
             }
         }
     }
