@@ -26,6 +26,7 @@
                         VerticalAlignment="Center"
                         TextAlignment="Left"
                         TextTrimming="CharacterEllipsis"
+                        ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text}"
                         Text="{Binding DisplayName.Value}" />
                     <!-- アイコン部分。PackIconを使うかどうかで使用する部品を切り替える -->
                     <Control
@@ -131,6 +132,7 @@
                         Margin="0, 4, 0, 0"
                         TextAlignment="Center"
                         TextTrimming="CharacterEllipsis"
+                        ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text}"
                         Text="{Binding DisplayName.Value}" />
                     <!-- アイコン部分。PackIconを使うかどうかで使用する部品を切り替える -->
                     <Control
