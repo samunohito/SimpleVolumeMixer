@@ -46,6 +46,7 @@
                 <ResourceDictionary Source="/UI/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/UI/Styles/UserControl.xaml" />
                 <ResourceDictionary Source="/UI/Styles/AudioSessionTemplate.xaml" />
+                <ResourceDictionary Source="/UI/Styles/AudioDeviceTemplate.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="{StaticResource Primary200}" po:Freeze="True" />

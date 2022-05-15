@@ -5,164 +5,51 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:viewModels="clr-namespace:SimpleVolumeMixer.UI.ViewModels"
-    xmlns:audio="clr-namespace:SimpleVolumeMixer.UI.ViewModels.Audio"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-    xmlns:controls="clr-namespace:SimpleVolumeMixer.UI.Views.Controls"
-    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:interactivity="http://prismlibrary.com/"
+    xmlns:constants="clr-namespace:SimpleVolumeMixer.UI.Constants"
+    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
     d:DataContext="{d:DesignInstance Type=viewModels:AudioDevicesPageViewModel}"
     Style="{StaticResource BaseUserControlStyle}"
     mc:Ignorable="d"
     d:DesignHeight="450"
     d:DesignWidth="800">
-
-    <UserControl.Resources>
-        <ItemsPanelTemplate x:Key="VerticalAudioDevicesPanelTemplate">
-            <StackPanel Orientation="Horizontal" />
-        </ItemsPanelTemplate>
-        <DataTemplate x:Key="VerticalAudioDeviceDataTemplate" DataType="audio:AudioDeviceViewModel">
-            <materialDesign:Card
-                Margin="4,0,4,0"
-                Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
-                <DockPanel Margin="8,10,8,5" Width="80">
-                    <DockPanel DockPanel.Dock="Top" Margin="0,4,0,0">
-                        <TextBlock
-                            DockPanel.Dock="Bottom"
-                            Margin="0, 4, 0, 0"
-                            TextAlignment="Center"
-                            TextTrimming="CharacterEllipsis"
-                            Text="{Binding FriendlyName.Value}" />
-                        <Grid
-                            Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
-                            <materialDesign:PackIcon
-                                HorizontalAlignment="Center"
-                                Kind="SpeakerMultiple"
-                                Width="32"
-                                Height="32" />
-                        </Grid>
-                    </DockPanel>
-                    <DockPanel DockPanel.Dock="Bottom" Margin="0,4,0,0">
-                        <Grid DockPanel.Dock="Top">
-                            <ToggleButton Command="{Binding MuteStateChangeCommand}">
-                                <ToggleButton.Style>
-                                    <Style
-                                        TargetType="ToggleButton"
-                                        BasedOn="{StaticResource MaterialDesignIconButton}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
-                                                <Setter
-                                                    Property="Content"
-                                                    Value="{materialDesign:PackIcon Kind=VolumeOff}" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
-                                                <Setter
-                                                    Property="Content"
-                                                    Value="{materialDesign:PackIcon Kind=VolumeHigh}" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ToggleButton.Style>
-                            </ToggleButton>
-                        </Grid>
-
-                        <materialDesign:Card
-                            DockPanel.Dock="Bottom"
-                            Margin="0,0,0,8">
-
-                            <StackPanel
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Center">
-
-                                <Button
-                                    Height="28"
-                                    Width="28"
-                                    Margin="4,4,4,4"
-                                    Command="{Binding CommunicationRoleApplyCommand}">
-                                    <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
-                                            <Style.Triggers>
-                                                <DataTrigger
-                                                    Binding="{Binding Role.Communications.Value}"
-                                                    Value="True">
-                                                    <Setter
-                                                        Property="Content"
-                                                        Value="{materialDesign:PackIcon Kind=Phone}" />
-                                                </DataTrigger>
-                                                <DataTrigger
-                                                    Binding="{Binding Role.Communications.Value}"
-                                                    Value="False">
-                                                    <Setter
-                                                        Property="Content"
-                                                        Value="{materialDesign:PackIcon Kind=PhoneOff}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                                <Button
-                                    Height="28"
-                                    Width="28"
-                                    Margin="4,4,4,4"
-                                    Command="{Binding MultimediaRoleApplyCommand}">
-                                    <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
-                                            <Style.Triggers>
-                                                <DataTrigger
-                                                    Binding="{Binding Role.Multimedia.Value}"
-                                                    Value="True">
-                                                    <Setter
-                                                        Property="Content"
-                                                        Value="{materialDesign:PackIcon Kind=MusicNote}" />
-                                                </DataTrigger>
-                                                <DataTrigger
-                                                    Binding="{Binding Role.Multimedia.Value}"
-                                                    Value="False">
-                                                    <Setter
-                                                        Property="Content"
-                                                        Value="{materialDesign:PackIcon Kind=MusicNoteOff}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </StackPanel>
-                        </materialDesign:Card>
-                    </DockPanel>
-                    <controls:PeakBar
-                        HorizontalAlignment="Center"
-                        Margin="0,16,0,0"
-                        MeterMaximum="1.0"
-                        Maximum="1000.0"
-                        Minimum="0.0"
-                        SmallChange="1.0"
-                        LargeChange="10.0"
-                        MeterValue="{Binding PeakValue.Value}"
-                        Value="{Binding MasterVolume.Value, Mode=TwoWay}">
-                        <b:Interaction.Triggers>
-                            <b:EventTrigger EventName="Ready">
-                                <interactivity:InvokeCommandAction
-                                    Command="{Binding PeakBarReadyCommand}" />
-                            </b:EventTrigger>
-                        </b:Interaction.Triggers>
-                    </controls:PeakBar>
-                </DockPanel>
-            </materialDesign:Card>
-        </DataTemplate>
-    </UserControl.Resources>
+    
+    <b:Interaction.Triggers>
+        <b:EventTrigger EventName="Loaded">
+            <b:InvokeCommandAction Command="{Binding OnLoadedCommand}" />
+        </b:EventTrigger>
+    </b:Interaction.Triggers>
 
     <Grid>
-        <GroupBox Header="Devices">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden" Margin="-8">
-                <Border
-                    Padding="8"
-                    BorderThickness="0"
-                    Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
-                    <ItemsControl
-                        ItemsSource="{Binding Devices}"
-                        ItemsPanel="{StaticResource VerticalAudioDevicesPanelTemplate}"
-                        ItemTemplate="{StaticResource VerticalAudioDeviceDataTemplate}" />
-                </Border>
-            </ScrollViewer>
+        <GroupBox>
+            <GroupBox.Header>
+                <DockPanel Margin="-8">
+                    <Border Padding="8">
+                        <TextBlock
+                            Text="Devices"
+                            Foreground="{StaticResource PrimaryHueMidForegroundBrush}"
+                            VerticalAlignment="Center" />
+                    </Border>
+                    <Grid DockPanel.Dock="Right">
+                        <Button
+                            Style="{StaticResource MaterialDesignIconButton}"
+                            Command="{Binding OnOrientationChangeCommand}"
+                            Margin="0,0,9,0"
+                            HorizontalAlignment="Right"
+                            Width="28"
+                            Height="28">
+                            <materialDesign:PackIcon
+                                Kind="ScreenRotation"
+                                Foreground="{StaticResource PrimaryHueDarkBrush}" />
+                        </Button>
+                    </Grid>
+                </DockPanel>
+            </GroupBox.Header>
+
+            <ContentControl
+                interactivity:RegionManager.RegionName="{x:Static constants:Regions.AudioDeviceSubRegion}"
+                interactivity:RegionManager.RegionManager="{Binding RegionManager}" />
         </GroupBox>
     </Grid>
 </UserControl>

@@ -75,6 +75,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Page Include="UI\Styles\AudioDeviceTemplate.xaml" />
+        <Page Include="UI\Views\Controls\AudioDevicesSubHorizontalPage.xaml" />
+        <Page Include="UI\Views\Controls\AudioDevicesSubVerticalPage.xaml" />
         <Page Include="UI\Views\ShellWindow.xaml" />
         <Page Include="UI\Views\SettingsPage.xaml" />
         <Page Include="UI\Views\AudioSessionsPage.xaml" />
