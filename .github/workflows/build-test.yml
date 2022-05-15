@@ -1,0 +1,36 @@
+name: build-and-test-application
+
+on:
+  push:
+
+env:
+  buildConfigrationName: Debug
+  buildPlatformName: Any CPU
+  pathOfSolution: ${{ github.workspace }}\SimpleVolumeMixer.sln
+
+jobs:
+  build-artifact:
+    runs-on: windows-2019
+    
+    steps:
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: |
+            3.1.x
+            5.x
+            6.x
+
+      - name: checkout this solution
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: build and test
+        id: build-and-test
+        uses: ./.github/actions/build-and-test
+        with:
+          solution: ${{ env.pathOfSolution }}
+          buildConfiguration: ${{ env.buildConfigrationName }}
+          buildPlatform: ${{ env.buildPlatformName }}
