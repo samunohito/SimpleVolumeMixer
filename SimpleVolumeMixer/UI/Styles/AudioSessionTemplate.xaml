@@ -13,18 +13,20 @@
 
     <!-- 横向きパネルに表示するカード -->
     <DataTemplate x:Key="HorizontalAudioSessionDataTemplate" DataType="audio:IAudioSessionCard">
-        <materialDesign:Card Margin="0,4,0,4"
-                             Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
+        <materialDesign:Card
+            Margin="0,4,0,4"
+            Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
             <DockPanel Margin="8,5,8,7">
                 <DockPanel DockPanel.Dock="Left" Margin="0,0,0,0">
                     <!-- カードの表示名 -->
-                    <TextBlock DockPanel.Dock="Right"
-                               Margin="8, 0, 0, 0"
-                               Width="80"
-                               VerticalAlignment="Center"
-                               TextAlignment="Left"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding DisplayName.Value}" />
+                    <TextBlock
+                        DockPanel.Dock="Right"
+                        Margin="8, 0, 0, 0"
+                        Width="80"
+                        VerticalAlignment="Center"
+                        TextAlignment="Left"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{Binding DisplayName.Value}" />
                     <!-- アイコン部分。PackIconを使うかどうかで使用する部品を切り替える -->
                     <Control
                         Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
@@ -118,16 +120,18 @@
 
     <!-- 縦向きパネルに表示するカード -->
     <DataTemplate x:Key="VerticalAudioSessionDataTemplate" DataType="audio:IAudioSessionCard">
-        <materialDesign:Card Margin="4,0,4,0"
-                             Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
+        <materialDesign:Card
+            Margin="4,0,4,0"
+            Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
             <DockPanel Margin="8,10,8,5" Width="80">
                 <DockPanel DockPanel.Dock="Top" Margin="0,4,0,0">
                     <!-- カードの表示名 -->
-                    <TextBlock DockPanel.Dock="Bottom"
-                               Margin="0, 4, 0, 0"
-                               TextAlignment="Center"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding DisplayName.Value}" />
+                    <TextBlock
+                        DockPanel.Dock="Bottom"
+                        Margin="0, 4, 0, 0"
+                        TextAlignment="Center"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{Binding DisplayName.Value}" />
                     <!-- アイコン部分。PackIconを使うかどうかで使用する部品を切り替える -->
                     <Control
                         Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
