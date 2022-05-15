@@ -64,7 +64,7 @@ public partial class PeakBar : UserControl
             nameof(Orientation),
             typeof(Orientation),
             typeof(PeakBar),
-            new PropertyMetadata(Orientation.Vertical));
+            new PropertyMetadata(Orientation.Vertical, OrientationPropertyChanged));
 
     private static readonly DependencyProperty PeakBarHandlerProperty =
         DependencyProperty.Register(
@@ -74,12 +74,18 @@ public partial class PeakBar : UserControl
             new PropertyMetadata(null, PeakBarHandlerPropertyChanged));
 
     private readonly InternalPeakBarHandler _handler;
-    private readonly double _originWidth = 4.0;
-    private readonly double _originHeight = 4.0;
+    private readonly double _originWidth;
+    private readonly double _originHeight;
+    private IMeterSizeCalculator _calculator;
 
     public PeakBar()
     {
         InitializeComponent();
+
+        _originWidth = 4.0;
+        _originHeight = 4.0;
+
+        _calculator = new VerticalMeterSizeCalculator(this);
 
         _handler = new InternalPeakBarHandler();
         _handler.NotifiedValue += OnNotifiedValue;
@@ -153,7 +159,7 @@ public partial class PeakBar : UserControl
     private static void MeterMaximumPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var peakBar = (PeakBar)d;
-        peakBar.UpdateMeterArea(peakBar.MeterValue);
+        peakBar.UpdateMeterSize(peakBar.MeterValue);
     }
 
     private static void PeakBarHandlerPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -165,79 +171,35 @@ public partial class PeakBar : UserControl
         }
     }
 
+    private static void OrientationPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var peakBar = (PeakBar)d;
+        var newValue = (Orientation)e.NewValue;
+        switch (newValue)
+        {
+            case Orientation.Horizontal:
+                peakBar._calculator = new HorizontalMeterSizeCalculator(peakBar);
+                break;
+            case Orientation.Vertical:
+                peakBar._calculator = new VerticalMeterSizeCalculator(peakBar);
+                break;
+        }
+    }
+
     private void OnNotifiedValue(object? sender, PeakBarNotifyValueEventArgs e)
     {
         var value = e.Value;
 
         Dispatcher.Invoke(() =>
         {
-            UpdateMeterArea(value);
+            UpdateMeterSize(value);
             MeterValue = value;
         });
     }
 
-    private void UpdateMeterArea(double newMeterValue)
+    private void UpdateMeterSize(double newMeterValue)
     {
-        var canvasSize = (Orientation == Orientation.Horizontal)
-            ? BackCanvas.ActualWidth
-            : BackCanvas.ActualHeight;
-
-        if (newMeterValue <= 0.0 || Maximum == 0.0)
-        {
-            SetAreaSize(0);
-            return;
-        }
-
-        var meterMaximum = MeterMaximum;
-        if (meterMaximum <= newMeterValue)
-        {
-            SetAreaSize(canvasSize);
-            return;
-        }
-
-        var newHeight = canvasSize * (newMeterValue / meterMaximum);
-        if (newHeight <= 0.0)
-        {
-            SetAreaSize(0);
-            return;
-        }
-
-        if (canvasSize <= newHeight)
-        {
-            SetAreaSize(newHeight);
-            return;
-        }
-
-        SetAreaSize(newHeight);
-    }
-
-    private void SetAreaSize(double newMeterValue)
-    {
-        var maximum = Maximum == 0.0 ? 1.0 : Maximum;
-        var barRatio = Value / maximum;
-        switch (Orientation)
-        {
-            case Orientation.Horizontal:
-                GrayArea.Width = newMeterValue;
-                GreenArea.Width = newMeterValue * barRatio;
-                if (Math.Abs(GrayArea.Height - _originHeight) > 0.01)
-                {
-                    GrayArea.Height = _originHeight;
-                    GreenArea.Height = _originHeight;
-                }
-
-                break;
-            case Orientation.Vertical:
-                GrayArea.Height = newMeterValue;
-                GreenArea.Height = newMeterValue * barRatio;
-                if (Math.Abs(GrayArea.Width - _originWidth) > 0.01)
-                {
-                    GrayArea.Width = _originWidth;
-                    GreenArea.Width = _originWidth;
-                }
-
-                break;
-        }
+        _calculator.UpdateMeterSize(newMeterValue);
     }
 
     private class InternalPeakBarHandler : IPeakBarHandler
@@ -258,5 +220,161 @@ public partial class PeakBar : UserControl
         }
 
         public double Value { get; }
+    }
+
+    private interface IMeterSizeCalculator
+    {
+        /// <summary>
+        /// メーター部分の描画領域サイズとして使用する値
+        /// </summary>
+        double MaximumCanvasSize { get; }
+
+        /// <summary>
+        /// メーター部分の最大値として使用する値
+        /// </summary>
+        double MaximumMeterValue { get; }
+
+        /// <summary>
+        /// スライダー部分の最大値として使用する値
+        /// </summary>
+        double MaximumSliderValue { get; }
+
+        /// <summary>
+        /// スライダー部分の現在値として使用する値
+        /// </summary>
+        double CurrentSliderValue { get; }
+
+        /// <summary>
+        /// メーターの描画サイズを計算し、サイズを更新する
+        /// </summary>
+        /// <param name="newMeterValue"></param>
+        void UpdateMeterSize(double newMeterValue);
+    }
+
+    private abstract class AbstractMeterSizeCalculator : IMeterSizeCalculator
+    {
+        public AbstractMeterSizeCalculator(PeakBar parent)
+        {
+            Parent = parent;
+        }
+
+        /// <summary>
+        /// サイズ計算対象の<see cref="PeakBar"/>
+        /// </summary>
+        protected PeakBar Parent { get; }
+
+        /// <inheritdoc cref="IMeterSizeCalculator.MaximumCanvasSize"/>
+        public abstract double MaximumCanvasSize { get; }
+
+        /// <inheritdoc cref="IMeterSizeCalculator.MaximumMeterValue"/>
+        public double MaximumMeterValue => Parent.MeterMaximum;
+
+        /// <inheritdoc cref="IMeterSizeCalculator.MaximumSliderValue"/>
+        public double MaximumSliderValue => Parent.Maximum;
+
+        /// <inheritdoc cref="IMeterSizeCalculator.CurrentSliderValue"/>
+        public double CurrentSliderValue => Parent.Value;
+
+        /// <inheritdoc cref="IMeterSizeCalculator.UpdateMeterSize"/>
+        public void UpdateMeterSize(double newMeterValue)
+        {
+            var maximumSliderValue = MaximumSliderValue;
+
+            if (newMeterValue <= 0.0 || maximumSliderValue == 0.0)
+            {
+                SetMeterSize(0);
+                return;
+            }
+
+            var maximumCanvasSize = MaximumCanvasSize;
+            var maximumMeterValue = MaximumMeterValue;
+            if (maximumMeterValue <= newMeterValue)
+            {
+                SetMeterSize(maximumCanvasSize);
+                return;
+            }
+
+            var newMeterSize = maximumCanvasSize * (newMeterValue / maximumMeterValue);
+            if (newMeterSize <= 0.0)
+            {
+                SetMeterSize(0);
+                return;
+            }
+
+            if (maximumCanvasSize <= newMeterSize)
+            {
+                SetMeterSize(newMeterSize);
+                return;
+            }
+
+            SetMeterSize(newMeterSize);
+        }
+
+        protected double CalcSliderValueRatio()
+        {
+            return CurrentSliderValue / MaximumSliderValue;
+        }
+
+        /// <summary>
+        /// 縦か横かにより更新するプロパティが異なるので抽象化
+        /// </summary>
+        /// <param name="newSize"></param>
+        protected abstract void SetMeterSize(double newSize);
+    }
+
+    /// <summary>
+    /// 横向き時に使用するメーター部分サイズ計算用クラス
+    /// </summary>
+    private class HorizontalMeterSizeCalculator : AbstractMeterSizeCalculator
+    {
+        public HorizontalMeterSizeCalculator(PeakBar parent) : base(parent)
+        {
+        }
+
+        public override double MaximumCanvasSize => Parent.BackCanvas.ActualWidth;
+
+        protected override void SetMeterSize(double newSize)
+        {
+            var grayArea = Parent.GrayArea;
+            var greenArea = Parent.GreenArea;
+            var originHeight = Parent._originHeight;
+            var barRatio = CalcSliderValueRatio();
+
+            grayArea.Width = newSize;
+            greenArea.Width = newSize * barRatio;
+            if (Math.Abs(grayArea.Height - originHeight) > 0.01)
+            {
+                grayArea.Height = originHeight;
+                greenArea.Height = originHeight;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 縦向き時に使用するメーター部分サイズ計算用クラス
+    /// </summary>
+    private class VerticalMeterSizeCalculator : AbstractMeterSizeCalculator
+    {
+        public VerticalMeterSizeCalculator(PeakBar parent) : base(parent)
+        {
+        }
+
+        public override double MaximumCanvasSize => Parent.BackCanvas.ActualHeight;
+
+        protected override void SetMeterSize(double newSize)
+        {
+            var grayArea = Parent.GrayArea;
+            var greenArea = Parent.GreenArea;
+            var originWidth = Parent._originWidth;
+            var barRatio = CalcSliderValueRatio();
+
+            grayArea.Height = newSize;
+            greenArea.Height = newSize * barRatio;
+            if (Math.Abs(grayArea.Width - originWidth) > 0.01)
+            {
+                grayArea.Width = originWidth;
+                greenArea.Width = originWidth;
+            }
+        }
     }
 }

@@ -73,13 +73,23 @@ public partial class App : PrismApplication
 
         // Views
         containerRegistry.RegisterForNavigation<SettingsPage, SettingsPageViewModel>(PageKeys.Settings);
+        
         containerRegistry.RegisterForNavigation<AudioSessionsPage, AudioSessionsPageViewModel>(PageKeys.AudioSessions);
-        containerRegistry.RegisterForNavigation<AudioSessionsSubHorizontalPage, AudioSessionsPageSubViewModel>(
-            PageKeys.AudioSessionsSubHorizontal);
-        containerRegistry.RegisterForNavigation<AudioSessionsSubVerticalPage, AudioSessionsPageSubViewModel>(
-            PageKeys.AudioSessionsSubVertical);
+        containerRegistry.RegisterForNavigation<
+            AudioSessionsSubHorizontalPage,
+            AudioSessionsPageSubViewModel>(PageKeys.AudioSessionsSubHorizontal);
+        containerRegistry.RegisterForNavigation<
+            AudioSessionsSubVerticalPage,
+            AudioSessionsPageSubViewModel>(PageKeys.AudioSessionsSubVertical);
+        
         containerRegistry.RegisterForNavigation<AudioDevicesPage, AudioDevicesPageViewModel>(PageKeys.AudioDevices);
-
+        containerRegistry.RegisterForNavigation<
+            AudioDevicesSubHorizontalPage,
+            AudioDevicesPageSubViewModel>(PageKeys.AudioDevicesSubHorizontal);
+        containerRegistry.RegisterForNavigation<
+            AudioDevicesSubVerticalPage, 
+            AudioDevicesPageSubViewModel>(PageKeys.AudioDevicesSubVertical);
+        
         containerRegistry.RegisterForNavigation<ShellWindow, ShellWindowViewModel>();
 
         // Configuration

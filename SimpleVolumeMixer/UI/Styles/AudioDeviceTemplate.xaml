@@ -1,0 +1,292 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:audio="clr-namespace:SimpleVolumeMixer.UI.ViewModels.Audio"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:controls="clr-namespace:SimpleVolumeMixer.UI.Views.Controls"
+                    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+                    xmlns:interactivity="http://prismlibrary.com/">
+    
+    <!-- 横向きパネル -->
+    <ItemsPanelTemplate x:Key="HorizontalAudioDevicesPanelTemplate">
+        <StackPanel Orientation="Vertical" />
+    </ItemsPanelTemplate>
+
+    <!-- 横向きパネルに表示するカード -->
+    <DataTemplate x:Key="HorizontalAudioDeviceDataTemplate" DataType="audio:AudioDeviceViewModel">
+        <materialDesign:Card
+            Margin="0,4,0,4"
+            Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
+            <DockPanel Margin="8,5,8,7">
+                <DockPanel DockPanel.Dock="Left" Margin="0,0,0,0">
+                    <!-- カードの表示名 -->
+                    <TextBlock
+                        DockPanel.Dock="Right"
+                        Margin="8, 0, 0, 0"
+                        Width="80"
+                        VerticalAlignment="Center"
+                        TextAlignment="Center"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{Binding FriendlyName.Value}" />
+                    <!-- アイコン部分 -->
+                    <Grid
+                        Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
+                        <materialDesign:PackIcon
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Kind="SpeakerMultiple"
+                            Width="32"
+                            Height="32" />
+                    </Grid>
+                </DockPanel>
+                
+                <DockPanel DockPanel.Dock="Right" Margin="12,0,0,0">
+                    <!-- ミュートボタン -->
+                    <Grid DockPanel.Dock="Right">
+                        <Button Command="{Binding MuteStateChangeCommand}"
+                                Style="{StaticResource MaterialDesignIconButton}"
+                                Width="32"
+                                Height="32">
+                            <materialDesign:PackIcon
+                                Width="24"
+                                Height="24">
+                                <materialDesign:PackIcon.Style>
+                                    <Style TargetType="materialDesign:PackIcon">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
+                                                <Setter Property="Kind" Value="VolumeOff" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
+                                                <Setter Property="Kind" Value="VolumeHigh" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </materialDesign:PackIcon.Style>
+                            </materialDesign:PackIcon>
+                        </Button>
+                    </Grid>
+
+                    <materialDesign:Card
+                        DockPanel.Dock="Bottom"
+                        Margin="0,0,8,0">
+
+                        <StackPanel
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+
+                            <Button
+                                Height="28"
+                                Width="28"
+                                Margin="4,4,4,4"
+                                Command="{Binding CommunicationRoleApplyCommand}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger
+                                                Binding="{Binding Role.Communications.Value}"
+                                                Value="True">
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=Phone}" />
+                                            </DataTrigger>
+                                            <DataTrigger
+                                                Binding="{Binding Role.Communications.Value}"
+                                                Value="False">
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=PhoneOff}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button
+                                Height="28"
+                                Width="28"
+                                Margin="4,4,4,4"
+                                Command="{Binding MultimediaRoleApplyCommand}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger
+                                                Binding="{Binding Role.Multimedia.Value}"
+                                                Value="True">
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=MusicNote}" />
+                                            </DataTrigger>
+                                            <DataTrigger
+                                                Binding="{Binding Role.Multimedia.Value}"
+                                                Value="False">
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=MusicNoteOff}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </materialDesign:Card>
+                </DockPanel>
+                
+                <!-- ハンドル付きピークバー -->
+                <controls:PeakBar
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Margin="8,0,0,0"
+                    MeterMaximum="1.0"
+                    Maximum="1000.0"
+                    Minimum="0.0"
+                    SmallChange="1.0"
+                    LargeChange="10.0"
+                    MeterValue="{Binding PeakValue.Value}"
+                    Value="{Binding MasterVolume.Value, Mode=TwoWay}">
+                    <b:Interaction.Triggers>
+                        <b:EventTrigger EventName="Ready">
+                            <interactivity:InvokeCommandAction
+                                Command="{Binding PeakBarReadyCommand}" />
+                        </b:EventTrigger>
+                    </b:Interaction.Triggers>
+                </controls:PeakBar>
+            </DockPanel>
+        </materialDesign:Card>
+    </DataTemplate>
+
+    <!-- 縦向きパネル -->
+    <ItemsPanelTemplate x:Key="VerticalAudioDevicesPanelTemplate">
+        <StackPanel Orientation="Horizontal" />
+    </ItemsPanelTemplate>
+    
+    <!-- 縦向きパネルに表示するカード -->
+    <DataTemplate x:Key="VerticalAudioDeviceDataTemplate" DataType="audio:AudioDeviceViewModel">
+        <materialDesign:Card
+            Margin="4,0,4,0"
+            Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ItemsControl}}">
+            <DockPanel Margin="8,10,8,5" Width="80">
+                <DockPanel DockPanel.Dock="Top" Margin="0,4,0,0">
+                    <!-- カードの表示名 -->
+                    <TextBlock
+                        DockPanel.Dock="Bottom"
+                        Margin="0, 4, 0, 0"
+                        TextAlignment="Center"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{Binding FriendlyName.Value}" />
+                    <!-- アイコン部分 -->
+                    <Grid
+                        Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=DockPanel}}">
+                        <materialDesign:PackIcon
+                            HorizontalAlignment="Center"
+                            Kind="SpeakerMultiple"
+                            Width="32"
+                            Height="32" />
+                    </Grid>
+                </DockPanel>
+                <DockPanel DockPanel.Dock="Bottom" Margin="0,4,0,0">
+                    <Grid DockPanel.Dock="Top">
+                        <ToggleButton Command="{Binding MuteStateChangeCommand}">
+                            <ToggleButton.Style>
+                                <Style
+                                    TargetType="ToggleButton"
+                                    BasedOn="{StaticResource MaterialDesignIconButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="True">
+                                            <Setter
+                                                Property="Content"
+                                                Value="{materialDesign:PackIcon Kind=VolumeOff}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsMuted.Value}" Value="False">
+                                            <Setter
+                                                Property="Content"
+                                                Value="{materialDesign:PackIcon Kind=VolumeHigh}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToggleButton.Style>
+                        </ToggleButton>
+                    </Grid>
+
+                    <materialDesign:Card
+                        DockPanel.Dock="Bottom"
+                        Margin="0,0,0,8">
+
+                        <StackPanel
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+
+                            <Button
+                                Height="28"
+                                Width="28"
+                                Margin="4,4,4,4"
+                                Command="{Binding CommunicationRoleApplyCommand}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger
+                                                Binding="{Binding Role.Communications.Value}"
+                                                Value="True">
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=Phone}" />
+                                            </DataTrigger>
+                                            <DataTrigger
+                                                Binding="{Binding Role.Communications.Value}"
+                                                Value="False">
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=PhoneOff}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button
+                                Height="28"
+                                Width="28"
+                                Margin="4,4,4,4"
+                                Command="{Binding MultimediaRoleApplyCommand}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger
+                                                Binding="{Binding Role.Multimedia.Value}"
+                                                Value="True">
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=MusicNote}" />
+                                            </DataTrigger>
+                                            <DataTrigger
+                                                Binding="{Binding Role.Multimedia.Value}"
+                                                Value="False">
+                                                <Setter
+                                                    Property="Content"
+                                                    Value="{materialDesign:PackIcon Kind=MusicNoteOff}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </materialDesign:Card>
+                </DockPanel>
+                <controls:PeakBar
+                    HorizontalAlignment="Center"
+                    Margin="0,16,0,0"
+                    MeterMaximum="1.0"
+                    Maximum="1000.0"
+                    Minimum="0.0"
+                    SmallChange="1.0"
+                    LargeChange="10.0"
+                    MeterValue="{Binding PeakValue.Value}"
+                    Value="{Binding MasterVolume.Value, Mode=TwoWay}">
+                    <b:Interaction.Triggers>
+                        <b:EventTrigger EventName="Ready">
+                            <interactivity:InvokeCommandAction
+                                Command="{Binding PeakBarReadyCommand}" />
+                        </b:EventTrigger>
+                    </b:Interaction.Triggers>
+                </controls:PeakBar>
+            </DockPanel>
+        </materialDesign:Card>
+    </DataTemplate>
+
+</ResourceDictionary>
