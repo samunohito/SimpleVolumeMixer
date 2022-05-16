@@ -45,13 +45,16 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
     private readonly MMDeviceEnumerator _deviceEnumerator;
     private readonly MMNotificationClient _notificationClient;
     private readonly NotificationClientEventAdapter _clientEventAdapter;
+    private readonly DataFlowType _targetDataFlow;
 
     /// <summary>
     /// ctor
     /// </summary>
+    /// <param name="dataFlowType"></param>
     /// <param name="logger"></param>
-    public AudioDeviceAccessorManager(ILogger logger)
+    public AudioDeviceAccessorManager(DataFlowType dataFlowType, ILogger logger)
     {
+        _targetDataFlow = dataFlowType;
         _logger = logger;
         _deviceEnumerator = new MMDeviceEnumerator().AddTo(Disposable);
         _notificationClient = new MMNotificationClient(_deviceEnumerator).AddTo(Disposable);
@@ -96,9 +99,8 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
     /// 引数のデバイスIDとデータフローを持つデバイスを取得する
     /// </summary>
     /// <param name="deviceId"></param>
-    /// <param name="dataFlowType"></param>
     /// <returns></returns>
-    public AudioDeviceAccessor? GetDevice(string? deviceId, DataFlowType dataFlowType)
+    public AudioDeviceAccessor? GetDevice(string? deviceId)
     {
         if (deviceId == null)
         {
@@ -107,28 +109,27 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
 
         lock (Gate)
         {
-            return Collection.FirstOrDefault(x => x.DeviceId == deviceId && x.DataFlow == dataFlowType);
+            return Collection.FirstOrDefault(x => x.DeviceId == deviceId && x.DataFlow == _targetDataFlow);
         }
     }
 
     /// <summary>
-    /// 引数の<see cref="DataFlowType"/>と<see cref="RoleType"/>が割り当てられているデバイスを取得する
+    /// <see cref="RoleType"/>が割り当てられているデバイスを取得する
     /// </summary>
-    /// <param name="dataFlowType"></param>
     /// <param name="roleType"></param>
     /// <returns></returns>
     /// <exception cref="ApplicationException"></exception>
-    public AudioDeviceAccessor? GetDefaultDevice(DataFlowType dataFlowType, RoleType roleType)
+    public AudioDeviceAccessor? GetDefaultDevice(RoleType roleType)
     {
         lock (Gate)
         {
-            if (Count <= 0 || dataFlowType == DataFlowType.Unknown || roleType == RoleType.Unknown)
+            if (Count <= 0 || roleType == RoleType.Unknown)
             {
                 return null;
             }
 
             using var defaultDevice = _deviceEnumerator.GetDefaultAudioEndpoint(
-                AccessorHelper.DataFlowsRev[dataFlowType],
+                AccessorHelper.DataFlowsRev[_targetDataFlow],
                 AccessorHelper.RolesRev[roleType]);
             if (defaultDevice == null)
             {
@@ -140,7 +141,7 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
                 throw new ApplicationException("unknown device : " + defaultDevice);
             }
 
-            return GetDevice(defaultDevice.DeviceID, dataFlowType);
+            return GetDevice(defaultDevice.DeviceID);
         }
     }
 
@@ -194,7 +195,7 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
     /// <param name="device"></param>
     public void Remove(MMDevice device)
     {
-        var target = GetDevice(device.DeviceID, AccessorHelper.DataFlows[device.DataFlow]);
+        var target = GetDevice(device.DeviceID);
         if (target == null)
         {
             return;
@@ -226,7 +227,8 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
     {
         lock (Gate)
         {
-            using var devices = _deviceEnumerator.EnumAudioEndpoints(DataFlow.Render, DeviceState.Active);
+            var dataFlow = AccessorHelper.DataFlowsRev[_targetDataFlow];
+            using var devices = _deviceEnumerator.EnumAudioEndpoints(dataFlow, DeviceState.Active);
             if (devices == null)
             {
                 throw new InvalidOperationException("通常はありえない");
@@ -237,22 +239,13 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
                 Add(device);
             }
 
-            if (Collection.Any(x => x.DataFlow == DataFlowType.Render))
+            if (Collection.Any(x => x.DataFlow == _targetDataFlow))
             {
                 // deviceが1つもない状態でGetDefaultAudioEndpointを呼ぶとエラー落ちする
-                using var mulDevice = _deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
-                using var comDevice = _deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Communications);
-                DeviceRoleSync(mulDevice.DeviceID, DataFlowType.Render, RoleType.Multimedia);
-                DeviceRoleSync(comDevice.DeviceID, DataFlowType.Render, RoleType.Communications);
-            }
-
-            if (Collection.Any(x => x.DataFlow == DataFlowType.Capture))
-            {
-                // deviceが1つもない状態でGetDefaultAudioEndpointを呼ぶとエラー落ちする
-                using var mulDevice = _deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
-                using var comDevice = _deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
-                DeviceRoleSync(mulDevice.DeviceID, DataFlowType.Capture, RoleType.Multimedia);
-                DeviceRoleSync(comDevice.DeviceID, DataFlowType.Capture, RoleType.Communications);
+                using var mulDevice = _deviceEnumerator.GetDefaultAudioEndpoint(dataFlow, Role.Multimedia);
+                using var comDevice = _deviceEnumerator.GetDefaultAudioEndpoint(dataFlow, Role.Communications);
+                DeviceRoleSync(mulDevice.DeviceID, _targetDataFlow, RoleType.Multimedia);
+                DeviceRoleSync(comDevice.DeviceID, _targetDataFlow, RoleType.Communications);
             }
         }
     }
@@ -288,7 +281,7 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
 
             // 今回あたらしくCommunications/Multimediaに設定されたものにフラグを立てる.
             // 1つのデバイスが複数のRoleを持ったとしても、持っているRoleの数だけ通知してくるため、都度確認して対応するRoleのフラグを管理する必要がある
-            var target = GetDevice(deviceId, dataFlowType);
+            var target = GetDevice(deviceId);
             if (target == null)
             {
                 return;
@@ -313,7 +306,8 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
     /// <param name="e"></param>
     private void OnDeviceAdded(object? sender, DeviceNotificationEventArgs e)
     {
-        if (e.TryGetDevice(out var newDevice) && !Contains(newDevice))
+        var targetDataFlow = AccessorHelper.DataFlowsRev[_targetDataFlow];
+        if (e.TryGetDevice(out var newDevice) && newDevice.DataFlow == targetDataFlow)
         {
             Add(newDevice);
         }
@@ -326,7 +320,11 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
     /// <param name="e"></param>
     private void OnDeviceRemoved(object? sender, DeviceNotificationEventArgs e)
     {
-        Remove(e.DeviceId);
+        var targetDataFlow = AccessorHelper.DataFlowsRev[_targetDataFlow];
+        if (e.TryGetDevice(out var removedDevice) && removedDevice.DataFlow == targetDataFlow)
+        {
+            Remove(e.DeviceId);
+        }
     }
 
     /// <summary>
@@ -348,20 +346,20 @@ public class AudioDeviceAccessorManager : SynchronizedObservableCollectionWrappe
     /// <param name="e"></param>
     private void OnDeviceStateChanged(object? sender, DeviceStateChangedEventArgs e)
     {
-        switch (e.DeviceState)
+        var targetDataFlow = AccessorHelper.DataFlowsRev[_targetDataFlow];
+        if (e.TryGetDevice(out var device) && device.DataFlow == targetDataFlow)
         {
-            case DeviceState.Active:
-                if (e.TryGetDevice(out var device))
-                {
+            switch (e.DeviceState)
+            {
+                case DeviceState.Active:
                     Add(device);
-                }
-
-                break;
-            case DeviceState.Disabled:
-            case DeviceState.NotPresent:
-            case DeviceState.UnPlugged:
-                Remove(e.DeviceId);
-                break;
+                    break;
+                case DeviceState.Disabled:
+                case DeviceState.NotPresent:
+                case DeviceState.UnPlugged:
+                    Remove(e.DeviceId);
+                    break;
+            }
         }
     }
 

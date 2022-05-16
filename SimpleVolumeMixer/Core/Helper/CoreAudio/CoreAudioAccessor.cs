@@ -16,10 +16,21 @@ public class CoreAudioAccessor : DisposableComponent
     /// </summary>
     /// <seealso cref="AudioDeviceAccessorManager.Remove(AudioDeviceAccessor)"/>
     /// <seealso cref="NotificationClientEventAdapter.DeviceRemoved"/>
-    public event EventHandler<AudioDeviceAccessorEventArgs>? DeviceDisposing
+    public event EventHandler<AudioDeviceAccessorEventArgs>? RenderDeviceDisposing
     {
-        add => _deviceManager.DeviceDisposing += value;
-        remove => _deviceManager.DeviceDisposing -= value;
+        add => _renderDeviceManager.DeviceDisposing += value;
+        remove => _renderDeviceManager.DeviceDisposing -= value;
+    }
+
+    /// <summary>
+    /// CoreAudioAPIからデバイスの破棄通知があり、<see cref="AudioDeviceAccessorManager"/>がそれを受けてデバイスの破棄を開始した時に呼び出される。
+    /// </summary>
+    /// <seealso cref="AudioDeviceAccessorManager.Remove(AudioDeviceAccessor)"/>
+    /// <seealso cref="NotificationClientEventAdapter.DeviceRemoved"/>
+    public event EventHandler<AudioDeviceAccessorEventArgs>? CaptureDeviceDisposing
+    {
+        add => _captureDeviceManager.DeviceDisposing += value;
+        remove => _captureDeviceManager.DeviceDisposing -= value;
     }
 
     /// <summary>
@@ -27,10 +38,21 @@ public class CoreAudioAccessor : DisposableComponent
     /// </summary>
     /// <seealso cref="AudioDeviceAccessorManager.Remove(AudioDeviceAccessor)"/>
     /// <seealso cref="NotificationClientEventAdapter.DeviceRemoved"/>
-    public event EventHandler<AudioDeviceAccessorEventArgs>? DeviceDisposed
+    public event EventHandler<AudioDeviceAccessorEventArgs>? RenderDeviceDisposed
     {
-        add => _deviceManager.DeviceDisposed += value;
-        remove => _deviceManager.DeviceDisposed -= value;
+        add => _renderDeviceManager.DeviceDisposed += value;
+        remove => _renderDeviceManager.DeviceDisposed -= value;
+    }
+
+    /// <summary>
+    /// CoreAudioAPIからデバイスの破棄通知があり、<see cref="AudioDeviceAccessorManager"/>がそれを受けてデバイスの破棄を完了した時に呼び出される。
+    /// </summary>
+    /// <seealso cref="AudioDeviceAccessorManager.Remove(AudioDeviceAccessor)"/>
+    /// <seealso cref="NotificationClientEventAdapter.DeviceRemoved"/>
+    public event EventHandler<AudioDeviceAccessorEventArgs>? CaptureDeviceDisposed
+    {
+        add => _captureDeviceManager.DeviceDisposed += value;
+        remove => _captureDeviceManager.DeviceDisposed -= value;
     }
 
     /// <summary>
@@ -39,14 +61,27 @@ public class CoreAudioAccessor : DisposableComponent
     /// <seealso cref="AudioDeviceAccessorManager"/>
     /// <seealso cref="NotificationClientEventAdapter.DefaultDeviceChanged"/>
     /// <seealso cref="AudioDeviceRole"/>
-    public event EventHandler<DeviceAccessorRoleHolderChangedEventArgs>? DeviceRoleChanged
+    public event EventHandler<DeviceAccessorRoleHolderChangedEventArgs>? RenderDeviceRoleChanged
     {
-        add => _deviceManager.DeviceRoleChanged += value;
-        remove => _deviceManager.DeviceRoleChanged -= value;
+        add => _renderDeviceManager.DeviceRoleChanged += value;
+        remove => _renderDeviceManager.DeviceRoleChanged -= value;
+    }
+
+    /// <summary>
+    /// CoreAudioAPIからデバイスの破棄通知があり、<see cref="AudioDeviceAccessorManager"/>がそれを受けてデバイスのロールを最新に更新した際に呼び出される。
+    /// </summary>
+    /// <seealso cref="AudioDeviceAccessorManager"/>
+    /// <seealso cref="NotificationClientEventAdapter.DefaultDeviceChanged"/>
+    /// <seealso cref="AudioDeviceRole"/>
+    public event EventHandler<DeviceAccessorRoleHolderChangedEventArgs>? CaptureDeviceRoleChanged
+    {
+        add => _captureDeviceManager.DeviceRoleChanged += value;
+        remove => _captureDeviceManager.DeviceRoleChanged -= value;
     }
 
     private readonly ILogger _logger;
-    private readonly AudioDeviceAccessorManager _deviceManager;
+    private readonly AudioDeviceAccessorManager _renderDeviceManager;
+    private readonly AudioDeviceAccessorManager _captureDeviceManager;
 
     /// <summary>
     /// ctor
@@ -55,28 +90,50 @@ public class CoreAudioAccessor : DisposableComponent
     public CoreAudioAccessor(ILogger logger)
     {
         _logger = logger;
-        _deviceManager = new AudioDeviceAccessorManager(logger).AddTo(Disposable);
-        _deviceManager.CollectAudioEndpoints();
+        _renderDeviceManager = new AudioDeviceAccessorManager(DataFlowType.Render, logger).AddTo(Disposable);
+        _renderDeviceManager.CollectAudioEndpoints();
+        _captureDeviceManager = new AudioDeviceAccessorManager(DataFlowType.Capture, logger).AddTo(Disposable);
+        _captureDeviceManager.CollectAudioEndpoints();
     }
 
     /// <summary>
-    /// 現在使用可能な<see cref="AudioDeviceAccessor"/>の一覧を取得する。
+    /// 現在再生用として使用可能な<see cref="AudioDeviceAccessor"/>の一覧を取得する。
     /// 読み取り専用であり、このオブジェクトからデバイスの増減を行うことは出来ない。
     /// デバイスの増減は<see cref="AudioDeviceAccessorManager.CollectAudioEndpoints"/>によりCoreAudioAPIからデバイス一覧を取り直すか、
     /// <see cref="AudioDeviceAccessorManager"/>がCoreAudioAPIからの通知を受け、その結果デバイスが追加されるかに限る。
     /// </summary>
-    public ReadOnlyObservableCollection<AudioDeviceAccessor> AudioDevices => _deviceManager.ReadOnlyCollection;
+    public ReadOnlyObservableCollection<AudioDeviceAccessor> RenderAudioDevices =>
+        _renderDeviceManager.ReadOnlyCollection;
 
     /// <summary>
-    /// 引数の<see cref="DataFlowType"/>と<see cref="RoleType"/>が割り当てられているデバイスを取得する
+    /// 現在録音用として使用可能な<see cref="AudioDeviceAccessor"/>の一覧を取得する。
+    /// 読み取り専用であり、このオブジェクトからデバイスの増減を行うことは出来ない。
+    /// デバイスの増減は<see cref="AudioDeviceAccessorManager.CollectAudioEndpoints"/>によりCoreAudioAPIからデバイス一覧を取り直すか、
+    /// <see cref="AudioDeviceAccessorManager"/>がCoreAudioAPIからの通知を受け、その結果デバイスが追加されるかに限る。
     /// </summary>
-    /// <param name="dataFlowType"></param>
+    public ReadOnlyObservableCollection<AudioDeviceAccessor> CaptureAudioDevices =>
+        _captureDeviceManager.ReadOnlyCollection;
+
+    /// <summary>
+    /// <see cref="RoleType"/>が割り当てられている再生デバイスを取得する
+    /// </summary>
     /// <param name="roleType"></param>
     /// <returns></returns>
     /// <seealso cref="AudioDeviceAccessorManager.GetDefaultDevice"/>
-    public AudioDeviceAccessor? GetDefaultDevice(DataFlowType dataFlowType, RoleType roleType)
+    public AudioDeviceAccessor? GetDefaultRenderDevice(RoleType roleType)
     {
-        return _deviceManager.GetDefaultDevice(dataFlowType, roleType);
+        return _renderDeviceManager.GetDefaultDevice(roleType);
+    }
+
+    /// <summary>
+    /// <see cref="RoleType"/>が割り当てられている録音デバイスを取得する
+    /// </summary>
+    /// <param name="roleType"></param>
+    /// <returns></returns>
+    /// <seealso cref="AudioDeviceAccessorManager.GetDefaultDevice"/>
+    public AudioDeviceAccessor? GetDefaultCaptureDevice(RoleType roleType)
+    {
+        return _captureDeviceManager.GetDefaultDevice(roleType);
     }
 
     protected override void OnDisposing()

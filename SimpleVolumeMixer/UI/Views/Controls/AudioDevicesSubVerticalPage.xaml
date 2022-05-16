@@ -20,7 +20,7 @@
                 BorderThickness="0"
                 Height="{Binding ViewportHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=ScrollViewer}}">
                 <ItemsControl
-                    ItemsSource="{Binding Devices}"
+                    ItemsSource="{Binding Devices.Value}"
                     ItemsPanel="{StaticResource VerticalAudioDevicesPanelTemplate}"
                     ItemTemplate="{StaticResource VerticalAudioDeviceDataTemplate}" />
             </Border>

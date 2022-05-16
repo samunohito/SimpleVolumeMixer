@@ -23,26 +23,41 @@ public class CoreAudioService : IDisposable, ICoreAudioService
         _coreAudioRepository = coreAudioRepository;
         
         // AudioDeviceAccessorに対し1-1でAudioDeviceのインスタンスを結びつけたい
-        var instanceManager = new KeyValueInstanceManager<AudioDeviceAccessor, AudioDevice>(x => new AudioDevice(x));
-        
-        Devices = _coreAudioRepository.AudioDevices
-            .ToReadOnlyReactiveCollection(x => instanceManager.Obtain(x))
+        var renderInstanceManager = new KeyValueInstanceManager<AudioDeviceAccessor, AudioDevice>(x => new AudioDevice(x));
+        var captureInstanceManager = new KeyValueInstanceManager<AudioDeviceAccessor, AudioDevice>(x => new AudioDevice(x));
+
+        RenderDevices = _coreAudioRepository.RenderAudioDevices
+            .ToReadOnlyReactiveCollection(x => renderInstanceManager.Obtain(x))
+            .AddTo(_disposable);
+        CaptureDevices = _coreAudioRepository.CaptureAudioDevices
+            .ToReadOnlyReactiveCollection(x => captureInstanceManager.Obtain(x))
             .AddTo(_disposable);
         
         // Repositoryにあわせて、各ロールのデバイスはDevicesにも登録されているものであるようにする
-        CommunicationRoleDevice = _coreAudioRepository.CommunicationRoleDevice
-            .Select(x => x != null ? instanceManager.Obtain(x) : null)
+        CommunicationRoleRenderDevice = _coreAudioRepository.CommunicationRoleRenderDevice
+            .Select(x => x != null ? renderInstanceManager.Obtain(x) : null)
             .ToReadOnlyReactivePropertySlim()
             .AddTo(_disposable);
-        MultimediaRoleDevice = _coreAudioRepository.MultimediaRoleDevice
-            .Select(x => x != null ? instanceManager.Obtain(x) : null)
+        MultimediaRoleRenderDevice = _coreAudioRepository.MultimediaRoleRenderDevice
+            .Select(x => x != null ? renderInstanceManager.Obtain(x) : null)
+            .ToReadOnlyReactivePropertySlim()
+            .AddTo(_disposable);
+        CommunicationRoleCaptureDevice = _coreAudioRepository.CommunicationRoleCaptureDevice
+            .Select(x => x != null ? captureInstanceManager.Obtain(x) : null)
+            .ToReadOnlyReactivePropertySlim()
+            .AddTo(_disposable);
+        MultimediaRoleCaptureDevice = _coreAudioRepository.MultimediaRoleCaptureDevice
+            .Select(x => x != null ? captureInstanceManager.Obtain(x) : null)
             .ToReadOnlyReactivePropertySlim()
             .AddTo(_disposable);
     }
 
-    public ReadOnlyReactiveCollection<AudioDevice> Devices { get; }
-    public IReadOnlyReactiveProperty<AudioDevice?> CommunicationRoleDevice { get; }
-    public IReadOnlyReactiveProperty<AudioDevice?> MultimediaRoleDevice { get; }
+    public ReadOnlyReactiveCollection<AudioDevice> RenderDevices { get; }
+    public ReadOnlyReactiveCollection<AudioDevice> CaptureDevices { get; }
+    public IReadOnlyReactiveProperty<AudioDevice?> CommunicationRoleRenderDevice { get; }
+    public IReadOnlyReactiveProperty<AudioDevice?> MultimediaRoleRenderDevice { get; }
+    public IReadOnlyReactiveProperty<AudioDevice?> CommunicationRoleCaptureDevice { get; }
+    public IReadOnlyReactiveProperty<AudioDevice?> MultimediaRoleCaptureDevice { get; }
 
     public void SetDefaultDevice(AudioDevice device, DataFlowType dataFlowType, RoleType roleType)
     {

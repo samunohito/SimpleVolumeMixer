@@ -1,4 +1,9 @@
-﻿using DisposableComponents;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Reactive.Linq;
+using DisposableComponents;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Contracts.Services;
@@ -19,17 +24,26 @@ public class AudioDevicesPageUseCase : DisposableComponent
     public AudioDevicesPageUseCase(ICoreAudioService coreAudioService)
     {
         _coreAudioService = coreAudioService;
-
-        // AudioDeviceの破棄はより上位で行いたいため、ここではReadOnlyReactiveCollectionの破棄処理呼び出しを抑止する設定にする
-        Devices = coreAudioService.Devices
-            .ToReadOnlyReactiveCollection(disposeElement: false)
+        
+        SelectedDataFlowType = new ReactivePropertySlim<DataFlowType>(Core.Helper.CoreAudio.Types.DataFlowType.Render);
+        Devices = SelectedDataFlowType
+            .Select(x => x == DataFlowType.Render
+                ? coreAudioService.RenderDevices
+                : coreAudioService.CaptureDevices)
+            .ToReadOnlyReactivePropertySlim()
             .AddTo(Disposable);
     }
 
     /// <summary>
-    /// 使用可能なデバイス一覧
+    /// 一覧に表示するデバイスの種別.
     /// </summary>
-    public ReadOnlyReactiveCollection<AudioDevice> Devices { get; }
+    public IReactiveProperty<DataFlowType> SelectedDataFlowType { get; }
+
+    /// <summary>
+    /// 使用可能なデバイス一覧.
+    /// <see cref="SelectedDataFlowType"/>にて選択されている種別のデバイスが表示される.
+    /// </summary>
+    public IReadOnlyReactiveProperty<ReadOnlyObservableCollection<AudioDevice>?> Devices { get; }
 
     /// <summary>
     /// デバイスロールの変更要求（委譲処理）

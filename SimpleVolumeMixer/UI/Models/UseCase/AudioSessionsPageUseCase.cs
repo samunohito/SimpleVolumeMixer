@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using DisposableComponents;
@@ -6,6 +8,7 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Contracts.Services;
 using SimpleVolumeMixer.Core.Helper.Component;
+using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 
 namespace SimpleVolumeMixer.UI.Models.UseCase;
@@ -18,12 +21,12 @@ public class AudioSessionsPageUseCase : DisposableComponent
     public AudioSessionsPageUseCase(ICoreAudioService coreAudioService)
     {
         // AudioDeviceの破棄はより上位で行いたいため、ここではReadOnlyReactiveCollectionの破棄処理呼び出しを抑止する設定にする
-        Devices = coreAudioService.Devices
+        Devices = coreAudioService.RenderDevices
             .ToReadOnlyReactiveCollection(disposeElement: false)
             .AddTo(Disposable);
 
         // マルチメディアロールのデバイスを初期表示にしたい.
-        SelectedDevice = coreAudioService.MultimediaRoleDevice
+        SelectedDevice = coreAudioService.MultimediaRoleRenderDevice
             .ObserveOnUIDispatcher()
             .ToReactiveProperty()
             .AddTo(Disposable);

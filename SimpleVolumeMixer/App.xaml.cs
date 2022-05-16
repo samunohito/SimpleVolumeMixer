@@ -70,6 +70,8 @@ public partial class App : PrismApplication
         // UseCases
         containerRegistry.GetContainer()
             .RegisterType<AudioSessionsPageUseCase>(new DisposableComponentLifetimeManager());
+        containerRegistry.GetContainer()
+            .RegisterType<AudioDevicesPageUseCase>(new DisposableComponentLifetimeManager());
 
         // Views
         containerRegistry.RegisterForNavigation<SettingsPage, SettingsPageViewModel>(PageKeys.Settings);
