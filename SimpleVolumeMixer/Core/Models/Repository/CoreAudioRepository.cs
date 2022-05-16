@@ -24,8 +24,10 @@ public class CoreAudioRepository : ICoreAudioRepository
     private readonly ILogger _logger;
     private readonly CompositeDisposable _disposable;
     private readonly CoreAudioAccessor _accessor;
-    private readonly IReactiveProperty<AudioDeviceAccessor?> _communicationRoleDevice;
-    private readonly IReactiveProperty<AudioDeviceAccessor?> _multimediaRoleDevice;
+    private readonly IReactiveProperty<AudioDeviceAccessor?> _communicationRoleRenderDevice;
+    private readonly IReactiveProperty<AudioDeviceAccessor?> _multimediaRoleRenderDevice;
+    private readonly IReactiveProperty<AudioDeviceAccessor?> _communicationRoleCaptureDevice;
+    private readonly IReactiveProperty<AudioDeviceAccessor?> _multimediaRoleCaptureDevice;
 
     /// <summary>
     /// ctor
@@ -36,48 +38,90 @@ public class CoreAudioRepository : ICoreAudioRepository
         _logger = logger;
         _disposable = new CompositeDisposable();
         _accessor = new CoreAudioAccessor(logger).AddTo(_disposable);
-        _accessor.DeviceRoleChanged += OnDeviceRoleChanged;
-        _accessor.DeviceDisposed += OnDeviceDisposed;
+        _accessor.RenderDeviceRoleChanged += OnRenderDeviceRoleChanged;
+        _accessor.RenderDeviceDisposed += OnRenderDeviceDisposed;
+        _accessor.CaptureDeviceRoleChanged += OnCaptureDeviceRoleChanged;
+        _accessor.CaptureDeviceDisposed += OnCaptureDeviceDisposed;
 
-        _communicationRoleDevice = new ReactivePropertySlim<AudioDeviceAccessor?>(_accessor.GetDefaultDevice(
-                DataFlowType.Render,
-                RoleType.Communications)
-            )
-            .AddTo(_disposable);
-        _multimediaRoleDevice = new ReactivePropertySlim<AudioDeviceAccessor?>(_accessor.GetDefaultDevice(
-                DataFlowType.Render,
-                RoleType.Multimedia)
-            )
-            .AddTo(_disposable);
+        _communicationRoleRenderDevice =
+            new ReactivePropertySlim<AudioDeviceAccessor?>(_accessor.GetDefaultRenderDevice(RoleType.Communications))
+                .AddTo(_disposable);
+        _multimediaRoleRenderDevice =
+            new ReactivePropertySlim<AudioDeviceAccessor?>(_accessor.GetDefaultRenderDevice(RoleType.Multimedia))
+                .AddTo(_disposable);
+        _communicationRoleCaptureDevice =
+            new ReactivePropertySlim<AudioDeviceAccessor?>(_accessor.GetDefaultCaptureDevice(RoleType.Communications))
+                .AddTo(_disposable);
+        _multimediaRoleCaptureDevice =
+            new ReactivePropertySlim<AudioDeviceAccessor?>(_accessor.GetDefaultCaptureDevice(RoleType.Multimedia))
+                .AddTo(_disposable);
     }
 
-    public ReadOnlyObservableCollection<AudioDeviceAccessor> AudioDevices => _accessor.AudioDevices;
-    public IReadOnlyReactiveProperty<AudioDeviceAccessor?> CommunicationRoleDevice => _communicationRoleDevice;
-    public IReadOnlyReactiveProperty<AudioDeviceAccessor?> MultimediaRoleDevice => _multimediaRoleDevice;
+    public ReadOnlyObservableCollection<AudioDeviceAccessor> RenderAudioDevices => _accessor.RenderAudioDevices;
+    
+    public ReadOnlyObservableCollection<AudioDeviceAccessor> CaptureAudioDevices => _accessor.CaptureAudioDevices;
 
-    private void OnDeviceRoleChanged(object? sender, DeviceAccessorRoleHolderChangedEventArgs e)
+    public IReadOnlyReactiveProperty<AudioDeviceAccessor?> CommunicationRoleRenderDevice =>
+        _communicationRoleRenderDevice;
+
+    public IReadOnlyReactiveProperty<AudioDeviceAccessor?> MultimediaRoleRenderDevice => 
+        _multimediaRoleRenderDevice;
+
+    public IReadOnlyReactiveProperty<AudioDeviceAccessor?> CommunicationRoleCaptureDevice =>
+        _communicationRoleCaptureDevice;
+
+    public IReadOnlyReactiveProperty<AudioDeviceAccessor?> MultimediaRoleCaptureDevice => 
+        _multimediaRoleCaptureDevice;
+
+    private void OnRenderDeviceRoleChanged(object? sender, DeviceAccessorRoleHolderChangedEventArgs e)
     {
         if (e.Role == RoleType.Communications && e.NewState)
         {
-            _communicationRoleDevice.Value = e.Device;
+            _communicationRoleRenderDevice.Value = e.Device;
         }
 
         if (e.Role == RoleType.Multimedia && e.NewState)
         {
-            _multimediaRoleDevice.Value = e.Device;
+            _multimediaRoleRenderDevice.Value = e.Device;
         }
     }
 
-    private void OnDeviceDisposed(object? sender, AudioDeviceAccessorEventArgs e)
+    private void OnRenderDeviceDisposed(object? sender, AudioDeviceAccessorEventArgs e)
     {
-        if (e.Device == CommunicationRoleDevice.Value)
+        if (e.Device == _communicationRoleRenderDevice.Value)
         {
-            _communicationRoleDevice.Value = null;
+            _communicationRoleRenderDevice.Value = null;
         }
 
-        if (e.Device == MultimediaRoleDevice.Value)
+        if (e.Device == _multimediaRoleRenderDevice.Value)
         {
-            _multimediaRoleDevice.Value = null;
+            _multimediaRoleRenderDevice.Value = null;
+        }
+    }
+
+    private void OnCaptureDeviceRoleChanged(object? sender, DeviceAccessorRoleHolderChangedEventArgs e)
+    {
+        if (e.Role == RoleType.Communications && e.NewState)
+        {
+            _communicationRoleCaptureDevice.Value = e.Device;
+        }
+
+        if (e.Role == RoleType.Multimedia && e.NewState)
+        {
+            _multimediaRoleCaptureDevice.Value = e.Device;
+        }
+    }
+
+    private void OnCaptureDeviceDisposed(object? sender, AudioDeviceAccessorEventArgs e)
+    {
+        if (e.Device == _communicationRoleCaptureDevice.Value)
+        {
+            _communicationRoleCaptureDevice.Value = null;
+        }
+
+        if (e.Device == _multimediaRoleCaptureDevice.Value)
+        {
+            _multimediaRoleCaptureDevice.Value = null;
         }
     }
 
@@ -93,10 +137,14 @@ public class CoreAudioRepository : ICoreAudioRepository
         switch (roleType)
         {
             case RoleType.Communications:
-                currentDevice = _accessor.GetDefaultDevice(dataFlowType, RoleType.Communications);
+                currentDevice = dataFlowType == DataFlowType.Render
+                    ? _accessor.GetDefaultRenderDevice(RoleType.Communications)
+                    : _accessor.GetDefaultCaptureDevice(RoleType.Communications);
                 break;
             case RoleType.Multimedia:
-                currentDevice = _accessor.GetDefaultDevice(dataFlowType, RoleType.Multimedia);
+                currentDevice = dataFlowType == DataFlowType.Render
+                    ? _accessor.GetDefaultRenderDevice(RoleType.Multimedia)
+                    : _accessor.GetDefaultCaptureDevice(RoleType.Multimedia);
                 break;
             default:
                 return;
@@ -112,7 +160,10 @@ public class CoreAudioRepository : ICoreAudioRepository
 
     public void Dispose()
     {
-        _accessor.DeviceRoleChanged -= OnDeviceRoleChanged;
+        _accessor.RenderDeviceRoleChanged -= OnRenderDeviceRoleChanged;
+        _accessor.CaptureDeviceRoleChanged -= OnCaptureDeviceRoleChanged;
+        _accessor.RenderDeviceDisposed -= OnRenderDeviceDisposed;
+        _accessor.CaptureDeviceDisposed -= OnCaptureDeviceDisposed;
         _disposable.Dispose();
     }
 }

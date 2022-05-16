@@ -8,6 +8,7 @@ using Prism.Regions;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SimpleVolumeMixer.Core.Helper.Component;
+using SimpleVolumeMixer.Core.Helper.CoreAudio.Types;
 using SimpleVolumeMixer.Core.Models.Domain.CoreAudio;
 using SimpleVolumeMixer.UI.Constants;
 using SimpleVolumeMixer.UI.Models.UseCase;
@@ -22,8 +23,6 @@ namespace SimpleVolumeMixer.UI.ViewModels;
 /// </summary>
 public class AudioDevicesPageViewModel : DisposableComponent, INavigationAware
 {
-    private readonly AudioDevicesPageUseCase _useCase;
-    
     /// <summary>
     /// OnNavigatedTo ～ OnNavigatedFromの間だけ使うIDisposable向けのやつ
     /// </summary>
@@ -32,10 +31,12 @@ public class AudioDevicesPageViewModel : DisposableComponent, INavigationAware
     public AudioDevicesPageViewModel(IRegionManager regionManager, AudioDevicesPageUseCase useCase)
     {
         RegionManager = regionManager;
-        _useCase = useCase;
 
         Orientation = new ReactivePropertySlim<Orientation>(System.Windows.Controls.Orientation.Vertical);
-
+        SelectedDataFlowType = useCase.SelectedDataFlowType
+            .ToReactivePropertySlimAsSynchronized(x => x.Value)
+            .AddTo(Disposable);
+        
         OnLoadedCommand = new DelegateCommand(OnLoaded);
         OnOrientationChangeCommand = new DelegateCommand(OnOrientationChange);
     }
@@ -50,6 +51,11 @@ public class AudioDevicesPageViewModel : DisposableComponent, INavigationAware
     /// 子ページの種類を決定するプロパティ.
     /// </summary>
     public IReactiveProperty<Orientation> Orientation { get; }
+    
+    /// <summary>
+    /// 一覧に表示するデバイスの種別.
+    /// </summary>
+    public IReactiveProperty<DataFlowType> SelectedDataFlowType { get; }
     
     /// <summary>
     /// ページロード時イベント
@@ -83,6 +89,12 @@ public class AudioDevicesPageViewModel : DisposableComponent, INavigationAware
     /// </summary>
     private void OnLoaded()
     {
+        if (_disposableNavigationAware == null)
+        {
+            // OnNavigatedToより前にここに来ることは無いと思われるが、念のため
+            _disposableNavigationAware = new CompositeDisposable();
+        }
+        
         UpdateAudioSessionView();
         Orientation
             .Subscribe(x => UpdateAudioSessionView())

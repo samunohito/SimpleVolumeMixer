@@ -9,6 +9,8 @@
     xmlns:interactivity="http://prismlibrary.com/"
     xmlns:constants="clr-namespace:SimpleVolumeMixer.UI.Constants"
     xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:types="clr-namespace:SimpleVolumeMixer.Core.Helper.CoreAudio.Types"
     d:DataContext="{d:DesignInstance Type=viewModels:AudioDevicesPageViewModel}"
     Style="{StaticResource BaseUserControlStyle}"
     mc:Ignorable="d"
@@ -20,36 +22,60 @@
             <b:InvokeCommandAction Command="{Binding OnLoadedCommand}" />
         </b:EventTrigger>
     </b:Interaction.Triggers>
+    
+    <UserControl.Resources>
+        <x:Array Type="types:DataFlowType" x:Key="DataFlowTypes">
+            <types:DataFlowType>Render</types:DataFlowType>
+            <types:DataFlowType>Capture</types:DataFlowType>
+        </x:Array>
+    </UserControl.Resources>
 
     <Grid>
-        <GroupBox>
-            <GroupBox.Header>
-                <DockPanel Margin="-8">
-                    <Border Padding="8">
-                        <TextBlock
-                            Text="Devices"
-                            Foreground="{StaticResource PrimaryHueMidForegroundBrush}"
-                            VerticalAlignment="Center" />
-                    </Border>
-                    <Grid DockPanel.Dock="Right">
-                        <Button
-                            Style="{StaticResource MaterialDesignIconButton}"
-                            Command="{Binding OnOrientationChangeCommand}"
-                            Margin="0,0,9,0"
-                            HorizontalAlignment="Right"
-                            Width="28"
-                            Height="28">
-                            <materialDesign:PackIcon
-                                Kind="ScreenRotation"
-                                Foreground="{StaticResource PrimaryHueDarkBrush}" />
-                        </Button>
-                    </Grid>
-                </DockPanel>
-            </GroupBox.Header>
+        <DockPanel>
+            <GroupBox DockPanel.Dock="Top">
+                <GroupBox.Header>
+                    <TextBlock
+                        Text="DataFlow"
+                        Foreground="{StaticResource PrimaryHueMidForegroundBrush}"
+                        VerticalAlignment="Center" />
+                </GroupBox.Header>
+                <Grid>
+                    <ComboBox
+                        ItemsSource="{Binding Source={StaticResource DataFlowTypes}}"
+                        SelectedItem="{Binding SelectedDataFlowType.Value, Mode=TwoWay}">
+                    </ComboBox>
+                </Grid>
+            </GroupBox>
+            
+            <GroupBox>
+                <GroupBox.Header>
+                    <DockPanel Margin="-8">
+                        <Border Padding="8">
+                            <TextBlock
+                                Text="Devices"
+                                Foreground="{StaticResource PrimaryHueMidForegroundBrush}"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <Grid DockPanel.Dock="Right">
+                            <Button
+                                Style="{StaticResource MaterialDesignIconButton}"
+                                Command="{Binding OnOrientationChangeCommand}"
+                                Margin="0,0,9,0"
+                                HorizontalAlignment="Right"
+                                Width="28"
+                                Height="28">
+                                <materialDesign:PackIcon
+                                    Kind="ScreenRotation"
+                                    Foreground="{StaticResource PrimaryHueDarkBrush}" />
+                            </Button>
+                        </Grid>
+                    </DockPanel>
+                </GroupBox.Header>
 
-            <ContentControl
-                interactivity:RegionManager.RegionName="{x:Static constants:Regions.AudioDeviceSubRegion}"
-                interactivity:RegionManager.RegionManager="{Binding RegionManager}" />
-        </GroupBox>
+                <ContentControl
+                    interactivity:RegionManager.RegionName="{x:Static constants:Regions.AudioDeviceSubRegion}"
+                    interactivity:RegionManager.RegionManager="{Binding RegionManager}" />
+            </GroupBox>
+        </DockPanel>
     </Grid>
 </UserControl>
