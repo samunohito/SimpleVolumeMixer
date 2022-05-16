@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Reactive.Linq;
 using DisposableComponents;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -19,14 +23,15 @@ public class AudioDevicesPageSubViewModel : DisposableComponent
         
         // 現在のデバイス一覧
         Devices = useCase.Devices
-            .ToReadOnlyReactiveCollection(CreateViewModel)
+            .Select(x => x?.ToReadOnlyReactiveCollection(CreateViewModel))
+            .ToReadOnlyReactivePropertySlim()
             .AddTo(Disposable);
     }
 
     /// <summary>
     /// 現在システムに認識されているデバイス一覧
     /// </summary>
-    public ReadOnlyReactiveCollection<AudioDeviceViewModel> Devices { get; }
+    public IReadOnlyReactiveProperty<ReadOnlyObservableCollection<AudioDeviceViewModel>?> Devices { get; }
     
     /// <summary>
     /// ModelからViewModelを作る.
