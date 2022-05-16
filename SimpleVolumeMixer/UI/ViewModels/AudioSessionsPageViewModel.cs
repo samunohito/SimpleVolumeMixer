@@ -114,6 +114,13 @@ public class AudioSessionsPageViewModel : DisposableComponent, INavigationAware
     private void OnLoaded()
     {
         UpdateAudioSessionView();
+        
+        if (_disposableNavigationAware == null)
+        {
+            // OnNavigatedToより前にここに来ることは無いと思われるが、念のため
+            _disposableNavigationAware = new CompositeDisposable();
+        }
+        
         Orientation
             .Subscribe(x => UpdateAudioSessionView())
             .AddTo(_disposableNavigationAware);
