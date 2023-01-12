@@ -3,6 +3,9 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using CSCore.CoreAudioAPI;
+using CSCore.SoundIn;
+using CSCore.SoundOut;
+using CSCore.Streams;
 using DisposableComponents;
 using Microsoft.Extensions.Logging;
 using Reactive.Bindings.Extensions;
@@ -41,6 +44,8 @@ public class AudioDeviceAccessor : SafetyAccessComponent
     private readonly AudioEndpointVolume _endpointVolume;
     private readonly AudioMeterInformation _meterInformation;
     private readonly AudioSessionAccessorManager _accessorManager;
+    private WasapiCapture? _capture;
+    private WasapiOut? _out;
 
     /// <summary>
     /// ctor
@@ -55,6 +60,8 @@ public class AudioDeviceAccessor : SafetyAccessComponent
         _endpointVolume = AudioEndpointVolume.FromDevice(Device).AddTo(Disposable);
         _meterInformation = AudioMeterInformation.FromDevice(Device).AddTo(Disposable);
         _accessorManager = new AudioSessionAccessorManager(this, logger);
+        _capture = null;
+        _out = null;
 
         Role = new AudioDeviceRole(this);
     }
@@ -159,10 +166,78 @@ public class AudioDeviceAccessor : SafetyAccessComponent
         _accessorManager.CloseSession();
     }
 
+    public SoundSource StartCapture(
+        bool eventSync = true,
+        AudioClientShareModeType shareMode = AudioClientShareModeType.Shared,
+        int latency = 50
+    )
+    {
+        // 最低限の実装なので必要な機能がある場合は適宜追加する
+        
+        StopCapture();
+
+        var mode = AccessorHelper.AudioClientShareModesRev[shareMode];
+        _capture = new WasapiCapture(eventSync, mode, latency);
+        _capture.Device = Device;
+        _capture.Initialize();
+        _capture.Start();
+
+        return new SoundSource(_capture);
+    }
+
+    public void StopCapture()
+    {
+        // 最低限の実装なので必要な機能がある場合は適宜追加する
+        
+        if (_capture == null)
+        {
+            return;
+        }
+
+        _capture.Stop();
+        _capture.Dispose();
+        _capture = null;
+    }
+
+    public void StartPlaySound(
+        SoundSource source,
+        bool eventSync = true,
+        AudioClientShareModeType shareMode = AudioClientShareModeType.Shared,
+        int latency = 50
+    )
+    {
+        // 最低限の実装なので必要な機能がある場合は適宜追加する
+        
+        StopPlaySound();
+        
+        var mode = AccessorHelper.AudioClientShareModesRev[shareMode];
+        _out = new WasapiOut(eventSync, mode, latency);
+        _out.Device = Device;
+
+        var soundInSource = new SoundInSource(source.SoundIn);
+        _out.Initialize(soundInSource);
+        _out.Play();
+    }
+    
+    public void StopPlaySound()
+    {
+        // 最低限の実装なので必要な機能がある場合は適宜追加する
+        
+        if (_out == null)
+        {
+            return;
+        }
+
+        _out.Stop();
+        _out.Dispose();
+        _out = null;
+    }
+
     protected override void OnDisposing()
     {
         _logger.LogInformation("disposing device... {}", FriendlyName);
 
+        StopCapture();
         CloseSession();
         base.OnDisposing();
     }

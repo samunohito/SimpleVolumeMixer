@@ -13,7 +13,7 @@ public static class AccessorHelper
 {
     /// <summary>
     /// [CoreAudioAPI -> Apps]
-    /// enum conversion table for DataFlow.
+    /// enum conversion table for <see cref="DataFlow"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<DataFlow, DataFlowType> DataFlows =
         new Dictionary<DataFlow, DataFlowType>
@@ -25,14 +25,14 @@ public static class AccessorHelper
 
     /// <summary>
     /// [Apps -> CoreAudioAPI]
-    /// enum conversion table for DataFlow.
+    /// enum conversion table for <see cref="DataFlow"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<DataFlowType, DataFlow> DataFlowsRev =
         DataFlows.ToDictionary(x => x.Value, x => x.Key);
 
     /// <summary>
     /// [CoreAudioAPI -> Apps]
-    /// enum conversion table for DeviceState.
+    /// enum conversion table for <see cref="DeviceState"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<DeviceState, DeviceStateType> DeviceStates =
         new Dictionary<DeviceState, DeviceStateType>
@@ -46,14 +46,14 @@ public static class AccessorHelper
 
     /// <summary>
     /// [Apps -> CoreAudioAPI]
-    /// enum conversion table for DeviceState.
+    /// enum conversion table for <see cref="DeviceState"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<DeviceStateType, DeviceState> DeviceStatesRev =
         DeviceStates.ToDictionary(x => x.Value, x => x.Key);
 
     /// <summary>
     /// [CoreAudioAPI -> Apps]
-    /// enum conversion table for AudioSessionState.
+    /// enum conversion table for <see cref="AudioSessionState"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<AudioSessionState, AudioSessionStateType> SessionStates =
         new Dictionary<AudioSessionState, AudioSessionStateType>
@@ -65,14 +65,14 @@ public static class AccessorHelper
 
     /// <summary>
     /// [Apps -> CoreAudioAPI]
-    /// enum conversion table for AudioSessionState.
+    /// enum conversion table for <see cref="AudioSessionState"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<AudioSessionStateType, AudioSessionState> SessionStatesRev =
         SessionStates.ToDictionary(x => x.Value, x => x.Key);
 
     /// <summary>
     /// [CoreAudioAPI -> Apps]
-    /// enum conversion table for Role.
+    /// enum conversion table for <see cref="Role"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<Role, RoleType> Roles =
         new Dictionary<Role, RoleType>
@@ -84,14 +84,14 @@ public static class AccessorHelper
 
     /// <summary>
     /// [Apps -> CoreAudioAPI]
-    /// enum conversion table for Role.
+    /// enum conversion table for <see cref="Role"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<RoleType, Role> RolesRev =
         Roles.ToDictionary(x => x.Value, x => x.Key);
 
     /// <summary>
     /// [CoreAudioAPI -> Apps]
-    /// enum conversion table for AudioSessionDisconnectReason.
+    /// enum conversion table for <see cref="AudioSessionDisconnectReason"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<AudioSessionDisconnectReason, AudioSessionDisconnectReasonType>
         SessionDisconnectReasons =
@@ -125,9 +125,28 @@ public static class AccessorHelper
 
     /// <summary>
     /// [Apps -> CoreAudioAPI]
-    /// enum conversion table for AudioSessionDisconnectReason.
+    /// enum conversion table for <see cref="AudioSessionDisconnectReason"/>.
     /// </summary>
     public static readonly IReadOnlyDictionary<AudioSessionDisconnectReasonType, AudioSessionDisconnectReason>
         SessionDisconnectReasonsRev =
             SessionDisconnectReasons.ToDictionary(x => x.Value, x => x.Key);
+    
+    
+    /// <summary>
+    /// [CoreAudioAPI -> Apps]
+    /// enum conversion table for <see cref="AudioClientShareMode"/>.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<AudioClientShareMode, AudioClientShareModeType> AudioClientShareModes =
+        new Dictionary<AudioClientShareMode, AudioClientShareModeType>
+        {
+            { AudioClientShareMode.Shared, AudioClientShareModeType.Shared },
+            { AudioClientShareMode.Exclusive, AudioClientShareModeType.Exclusive }
+        };
+
+    /// <summary>
+    /// [Apps -> CoreAudioAPI]
+    /// enum conversion table for <see cref="AudioClientShareMode"/>.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<AudioClientShareModeType, AudioClientShareMode> AudioClientShareModesRev =
+        AudioClientShareModes.ToDictionary(x => x.Value, x => x.Key);
 }

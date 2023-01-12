@@ -28,7 +28,7 @@ public class SynchronizedObservableCollectionWrapper<T> : DisposableComponent wh
     /// <summary>
     /// Managed ObservableCollection
     /// </summary>
-    protected ObservableCollection<T> Collection { get; }
+    public ObservableCollection<T> Collection { get; }
 
     /// <summary>
     /// This is a read-only collection, linked to the update of the wrapped <see cref="ObservableCollection{T}"/>.
